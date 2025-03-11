@@ -452,7 +452,7 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 1
   m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: -2432090755550338912, guid: 6d4ca7483ef7aa34fbcc4f4a13773f1f, type: 3}
 --- !u!1001 &1899392875
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -623,7 +623,7 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 1
   m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: -2432090755550338912, guid: 3f946c218b1506540b135fd7ad39b941, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
