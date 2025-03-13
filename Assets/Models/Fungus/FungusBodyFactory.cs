@@ -15,6 +15,7 @@ public class FungusBodyFactory : MonoBehaviour
         if (Instance == null)
             Instance = this;
         else
+            // Checks if there is already an instance of the class, if so, it destroys that because of the singleton
             Destroy(gameObject);
     }
 
@@ -26,7 +27,7 @@ public class FungusBodyFactory : MonoBehaviour
     }
 
 
-    // Typename should be renamed later
+    // Typename GridObject could be renamed later
     public FungusBody SpawnFungusBody(GridObject tekton) {
         
         if (tekton == null) {
@@ -34,8 +35,8 @@ public class FungusBodyFactory : MonoBehaviour
             return null;
         }
 
-        float bodyHeight = bodyPrefab.GetComponent<FungusBody>().height;
-        // float tektonHeight = tekton.height;
+        // additional checks if the requirements for fungus spawning are met
+
         Vector3 spawnPosition = tekton.transform.position + new Vector3(0, tekton.transform.localScale.y + dropHeight, 0);
 
         GameObject newFungusBody = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
