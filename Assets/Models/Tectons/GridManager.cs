@@ -50,6 +50,12 @@ public class GridManager : MonoBehaviour
 
         GridObject gridObject = Tecton.GetComponent<GridObject>();
 
+        if (gridObject == null)
+        {
+            Debug.LogError("Object does not have GridObject component");
+            return;
+        }
+
         gridObject.x = x;
         gridObject.z = z;
 
@@ -61,12 +67,18 @@ public class GridManager : MonoBehaviour
     {
         if (obj == null)
         {
-            Debug.LogError("Object does not have GridObject component");
+            Debug.LogError("Invalid object");
             return;
         }
 
         GridObject gridObject = obj.GetComponent<GridObject>();
-        
+
+        if (gridObject == null)
+        {
+            Debug.LogError("Object does not have GridObject component");
+            return;
+        }
+
         int currentX = gridObject.x;
         int currentZ = gridObject.z;
 
@@ -113,12 +125,21 @@ public class GridManager : MonoBehaviour
     // Destroy using GameObject reference
     public void DestroyGameObject(GameObject obj)
     {
-        GridObject gridObject = obj.GetComponent<GridObject>();
+
         if (obj == null)
         {
             Debug.LogError("Invalid object");
             return;
         }
+        
+        GridObject gridObject = obj.GetComponent<GridObject>();
+
+        if (gridObject == null)
+        {
+            Debug.LogError("Invalid object");
+            return;
+        }
+
         int x = gridObject.x;
         int z = gridObject.z;
 
