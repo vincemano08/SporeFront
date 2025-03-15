@@ -30,7 +30,7 @@ public class GridObject : MonoBehaviour
     public void AddSpores(int amount)
     {
         sporeCount += amount;
-        Debug.Log($"({x},{z}) tekton spóra száma: {sporeCount}");
+        Debug.Log($"({x},{z}) Number of spores: {sporeCount}");
 
         // If the spore count reaches the threshold and there is no fungus body yet, initiate the growth of a new fungus body.
         if (sporeCount >= sporeThreshold && FungusBody == null)
