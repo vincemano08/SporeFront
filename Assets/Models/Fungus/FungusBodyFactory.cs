@@ -28,8 +28,8 @@ public class FungusBodyFactory : MonoBehaviour
 
     public FungusBody SpawnFungusBody(GridObject gridObject) {
         
-        if (gridObject == null) {
-            Debug.LogError("Invalid tekton");
+        if (gridObject == null || gridObject.FungusBody != null) {
+            Debug.LogError("Invalid tekton or tekton already occupied by a fungus body");
             return null;
         }
 
