@@ -21,6 +21,32 @@ public class GridObject : MonoBehaviour
         }
     }
 
+    public int sporeCount = 0;
+    public int sporeThreshold = 5;
+
+    // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
+
+    /// <param name="amount">Hozzáadandó spórák száma</param>
+    public void AddSpores(int amount)
+    {
+        sporeCount += amount;
+        Debug.Log($"({x},{z}) tekton spóra száma: {sporeCount}");
+
+        // If the spore count reaches the threshold and there is no fungus body yet, initiate the growth of a new fungus body.
+        if (sporeCount >= sporeThreshold && FungusBody == null)
+        {
+            if (FungusBodyFactory.Instance != null)
+            {
+                FungusBodyFactory.Instance.SpawnFungusBody(this);
+                sporeCount = 0; // Reseteljük a spóraszámlálót
+            }
+            else
+            {
+                Debug.LogError("FungusBodyFactory példány nem található.");
+            }
+        }
+    }
+
     public void Awake()
     {
         if (gameObject.GetComponent<Collider>() == null)
