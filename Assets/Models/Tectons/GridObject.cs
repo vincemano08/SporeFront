@@ -9,5 +9,4 @@ public class GridObject : MonoBehaviour
         Debug.Log("Clikced on a tekton, spawning a fungus body");
         FungusBodyFactory.Instance.SpawnFungusBody(this);    
     }
-
 }
