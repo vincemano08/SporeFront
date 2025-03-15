@@ -24,6 +24,7 @@ public class FungusReproduction : MonoBehaviour
             {
                 GridObject currentGrid = fungusBody.GridObject;
                 Destroy(fungusBody.gameObject);
+                currentGrid.FungusBody = null;
             }
             return;
         }
