@@ -26,22 +26,33 @@ public class FungusBodyFactory : MonoBehaviour
         }
     }
 
-
-    // Typename GridObject could be renamed later
-    public FungusBody SpawnFungusBody(GridObject tekton) {
+    public FungusBody SpawnFungusBody(GridObject gridObject) {
         
-        if (tekton == null) {
+        if (gridObject == null) {
             Debug.LogError("Invalid tekton");
             return null;
         }
 
         // additional checks if the requirements for fungus spawning are met
 
-        Vector3 spawnPosition = tekton.transform.position + new Vector3(0, tekton.transform.localScale.y + dropHeight, 0);
+        Vector3 spawnPosition = gridObject.transform.position + new Vector3(0, gridObject.transform.localScale.y + dropHeight, 0);
 
-        GameObject newFungusBody = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
-        newFungusBody.transform.parent = bodyParent;
-        return newFungusBody.GetComponent<FungusBody>();
+        GameObject newFungusBodyObj = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
+        newFungusBodyObj.transform.parent = bodyParent;
+        
+        FungusBody fungusBody = newFungusBodyObj.GetComponent<FungusBody>();
+        if (fungusBody == null)
+        {
+            Debug.LogError("Spawned FungusBody prefab is missing the FungusBody component!", newFungusBodyObj);
+            Destroy(newFungusBodyObj); // Clean up orphaned object
+            return null;
+        }
+
+        // Assign the fungus body to the tekton and vice versa
+        fungusBody.GridObject = gridObject;
+        gridObject.FungusBody = fungusBody;
+
+        return fungusBody;
 
     }
 
