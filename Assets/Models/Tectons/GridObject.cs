@@ -26,7 +26,7 @@ public class GridObject : MonoBehaviour
 
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
 
-    /// <param name="amount">Hozzáadandó spórák száma</param>
+    /// <param name="amount">Number of spores to be added.</param>
     public void AddSpores(int amount)
     {
         sporeCount += amount;
@@ -38,11 +38,11 @@ public class GridObject : MonoBehaviour
             if (FungusBodyFactory.Instance != null)
             {
                 FungusBodyFactory.Instance.SpawnFungusBody(this);
-                sporeCount = 0; // Reseteljük a spóraszámlálót
+                sporeCount = 0; // Reset the spore counter.
             }
             else
             {
-                Debug.LogError("FungusBodyFactory példány nem található.");
+                Debug.LogError("FungusBodyFactory instance not found.");
             }
         }
     }

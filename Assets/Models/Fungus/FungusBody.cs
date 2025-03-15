@@ -25,7 +25,7 @@ public class FungusBody : MonoBehaviour
         reproduction = GetComponent<FungusReproduction>();
         if (reproduction == null)
         {
-            Debug.LogError("FungusReproduction komponens nem található!");
+            Debug.LogError("FungusReproduction component not found!");
         }
     }
 
