@@ -14,6 +14,14 @@ public class FungusReproduction : MonoBehaviour
 
     private bool canRelease = true;
 
+    /// <summary>
+    /// Initiates the spore release process for the fungus.
+    /// </summary>
+    /// <remarks>
+    /// If the fungus has reached its spore production limit, this method logs a message and destroys the fungus body,
+    /// clearing its reference from the associated grid object. If a spore release is already in progress (cooldown active),
+    /// it logs a corresponding message and takes no further action. Otherwise, it starts the coroutine that manages the spore emission.
+    /// </remarks>
     public void TriggerSporeRelease()
     {
         if (currentProductionCount >= sporeProductionLimit)
@@ -35,6 +43,15 @@ public class FungusReproduction : MonoBehaviour
         }
         StartCoroutine(ReleaseSporesCoroutine());
     }
+    /// <summary>
+    /// Coroutine that manages the spore release process by disabling further releases, updating the production count, and initiating spore spreading based on the fungus's grid position.
+    /// </summary>
+    /// <remarks>
+    /// The coroutine retrieves the FungusBody component to obtain the current grid coordinates and calls the spore spreading routine. If the FungusBody or its associated GridObject is missing, it logs an error message. After executing the spore spread logic, it waits for a specified cooldown period before re-enabling spore release.
+    /// </remarks>
+    /// <returns>
+    /// An IEnumerator for use with Unity's coroutine system.
+    /// </returns>
     private IEnumerator ReleaseSporesCoroutine()
     {
         canRelease = false;
@@ -57,7 +74,16 @@ public class FungusReproduction : MonoBehaviour
     }
     /// <summary>
     /// Method for spore spreading: spores are distributed to neighboring (or, in advanced cases, more distant) tektons.
+    /// <summary>
+    /// Distributes spores from the specified grid cell to its neighboring cells.
     /// </summary>
+    /// <param name="x">The x-coordinate of the source cell.</param>
+    /// <param name="z">The z-coordinate of the source cell.</param>
+    /// <remarks>
+    /// The method retrieves the GridManager from the scene and determines the spread radius based on whether advanced spreading is enabled (radius of 2) or not (radius of 1).
+    /// It then iterates over adjacent cells within this radius (excluding the source cell) and, if a valid GridObject is found, adds spores equal to the spore release amount.
+    /// If the GridManager is not found, an error is logged.
+    /// </remarks>
     private void SpreadSpores(int x, int z)
     {
         GridManager gridManager = FindFirstObjectByType<GridManager>();

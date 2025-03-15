@@ -26,7 +26,15 @@ public class GridObject : MonoBehaviour
 
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
 
-    /// <param name="amount">Number of spores to be added.</param>
+    /// <summary>
+    /// Adds spores to this grid object and triggers fungus body growth when the spore threshold is reached.
+    /// </summary>
+    /// <param name="amount">The number of spores to add.</param>
+    /// <remarks>
+    /// Increments the spore count and logs the updated count along with the grid coordinates.
+    /// If the spore count meets or exceeds the threshold and no fungus body is present, attempts to spawn a new fungus body
+    /// using the FungusBodyFactory. If the factory instance is unavailable, logs an error; otherwise, resets the spore count.
+    /// </remarks>
     public void AddSpores(int amount)
     {
         sporeCount += amount;
@@ -47,6 +55,12 @@ public class GridObject : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Validates that the GameObject has an attached Collider component.
+    /// </summary>
+    /// <remarks>
+    /// This method is called during initialization. If no Collider is found, an error is logged.
+    /// </remarks>
     public void Awake()
     {
         if (gameObject.GetComponent<Collider>() == null)
