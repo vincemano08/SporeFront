@@ -55,12 +55,22 @@ public class FungusReproduction : MonoBehaviour
         yield return new WaitForSeconds(sporeCooldown);
         canRelease = true;
     }
+    private GridManager gridManager;
+    private void Awake()
+    {
+        gridManager = FindFirstObjectByType<GridManager>();
+        if (gridManager == null) 
+        {
+            Debug.LogError("GridManager not found in the scene!");
+        }
+    }
+
     /// <summary>
     /// Method for spore spreading: spores are distributed to neighboring (or, in advanced cases, more distant) tektons.
     /// </summary>
     private void SpreadSpores(int x, int z)
     {
-        GridManager gridManager = FindFirstObjectByType<GridManager>();
+        
         if (gridManager == null)
         {
             Debug.LogError("GridManager not found in the scene!");
