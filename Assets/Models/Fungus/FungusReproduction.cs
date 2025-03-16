@@ -78,18 +78,20 @@ public class FungusReproduction : MonoBehaviour
 
                 int newX = x + dx;
                 int newZ = z + dz;
-                if (newX >= 0 && newX < gridManager.width && newZ >= 0 && newZ < gridManager.height)
-                {
-                    GameObject neighborObj = gridManager.GetObject(newX, newZ);
-                    if (neighborObj != null)
-                    {
-                        GridObject neighborGrid = neighborObj.GetComponent<GridObject>();
-                        if (neighborGrid != null)
-                        {
-                            neighborGrid.AddSpores(sporeReleaseAmount);
-                        }
-                    }
-                }
+
+                if (newX < 0 || newX >= gridManager.width || newZ < 0 || newZ >= gridManager.height)
+                    continue;
+
+                GameObject neighborObj = gridManager.GetObject(newX, newZ);
+                if (neighborObj == null)
+                    continue;
+
+                GridObject neighborGrid = neighborObj.GetComponent<GridObject>();
+                if (neighborGrid == null)
+                    continue;
+
+                neighborGrid.AddSpores(sporeReleaseAmount);
+
             }
         }
     }
