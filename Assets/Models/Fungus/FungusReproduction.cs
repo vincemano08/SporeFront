@@ -14,6 +14,22 @@ public class FungusReproduction : MonoBehaviour
 
     private bool canRelease = true;
 
+    private GridManager gridManager;
+    private FungusBody fungusBody;
+    private void Awake()
+    {
+        gridManager = FindFirstObjectByType<GridManager>();
+        if (gridManager == null)
+        {
+            Debug.LogError("GridManager not found in the scene!");
+        }
+
+        fungusBody = GetComponent<FungusBody>();
+        if (fungusBody == null)
+        {
+            Debug.LogError("FungusBody component not found!");
+        }
+    }
     public void TriggerSporeRelease()
     {
         if (currentProductionCount >= sporeProductionLimit)
@@ -54,15 +70,6 @@ public class FungusReproduction : MonoBehaviour
 
         yield return new WaitForSeconds(sporeCooldown);
         canRelease = true;
-    }
-    private GridManager gridManager;
-    private void Awake()
-    {
-        gridManager = FindFirstObjectByType<GridManager>();
-        if (gridManager == null) 
-        {
-            Debug.LogError("GridManager not found in the scene!");
-        }
     }
 
     /// <summary>
