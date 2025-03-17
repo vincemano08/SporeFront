@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class FungusBodyFactory : MonoBehaviour
 {
-    
+
     // Singleton pattern - later could be DI instead
     public static FungusBodyFactory Instance { get; private set; }
     public GameObject bodyPrefab;
@@ -11,7 +11,8 @@ public class FungusBodyFactory : MonoBehaviour
     [Tooltip("How high above the tekton the fungus body should spawn")]
     public float dropHeight = 3;
 
-    private void Awake() {
+    private void Awake()
+    {
         if (Instance == null)
             Instance = this;
         else
@@ -19,27 +20,31 @@ public class FungusBodyFactory : MonoBehaviour
             Destroy(gameObject);
     }
 
-    public void Start() {
-        if (bodyParent == null) {
+    public void Start()
+    {
+        if (bodyParent == null)
+        {
             Debug.Log("Creating parent object for fungus bodies");
             bodyParent = new GameObject("FungusBodies").transform;
         }
     }
 
-    public FungusBody SpawnFungusBody(GridObject gridObject) {
-        
-        if (gridObject == null || gridObject.FungusBody != null) {
+    public FungusBody SpawnFungusBody(Tecton tecton)
+    {
+
+        if (tecton == null || tecton.FungusBody != null)
+        {
             Debug.LogError("Invalid tekton or tekton already occupied by a fungus body");
             return null;
         }
 
         // additional checks if the requirements for fungus spawning are met
 
-        Vector3 spawnPosition = gridObject.transform.position + new Vector3(0, gridObject.transform.localScale.y + dropHeight, 0);
+        Vector3 spawnPosition = tecton.transform.position + new Vector3(0, tecton.transform.localScale.y + dropHeight, 0);
 
         GameObject newFungusBodyObj = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
         newFungusBodyObj.transform.parent = bodyParent;
-        
+
         FungusBody fungusBody = newFungusBodyObj.GetComponent<FungusBody>();
         if (fungusBody == null)
         {
@@ -49,8 +54,8 @@ public class FungusBodyFactory : MonoBehaviour
         }
 
         // Assign the fungus body to the tekton and vice versa
-        fungusBody.GridObject = gridObject;
-        gridObject.FungusBody = fungusBody;
+        fungusBody.Tecton = tecton;
+        tecton.FungusBody = fungusBody;
 
         return fungusBody;
 

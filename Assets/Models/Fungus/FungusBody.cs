@@ -3,18 +3,18 @@ using UnityEngine;
 public class FungusBody : MonoBehaviour
 {
 
-    private GridObject gridObject;
-    public GridObject GridObject
+    private Tecton tecton;
+    public Tecton Tecton
     {
-        get { return gridObject; }
+        get { return tecton; }
         set
         {
-            if (gridObject != null)
+            if (tecton != null)
             {
                 Debug.LogError("Fungus body already has a tekton");
                 return;
             }
-            gridObject = value;
+            tecton = value;
         }
     }
 

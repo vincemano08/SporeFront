@@ -36,9 +36,9 @@ public class FungusReproduction : MonoBehaviour
         {
             Debug.Log("The fungus body has reached the spore production limit.");
             FungusBody fungusBody = GetComponent<FungusBody>();
-            if (fungusBody != null && fungusBody.GridObject != null)
+            if (fungusBody != null && fungusBody.Tecton != null)
             {
-                GridObject currentGrid = fungusBody.GridObject;
+                Tecton currentGrid = fungusBody.Tecton;
                 Destroy(fungusBody.gameObject);
                 currentGrid.FungusBody = null;
             }
@@ -58,9 +58,9 @@ public class FungusReproduction : MonoBehaviour
 
         // Access the associated GridObject through the FungusBody.
         FungusBody fungusBody = GetComponent<FungusBody>();
-        if (fungusBody != null && fungusBody.GridObject != null)
+        if (fungusBody != null && fungusBody.Tecton != null)
         {
-            GridObject currentGrid = fungusBody.GridObject;
+            Tecton currentGrid = fungusBody.Tecton;
             SpreadSpores(currentGrid.x, currentGrid.z);
         }
         else
@@ -77,7 +77,7 @@ public class FungusReproduction : MonoBehaviour
     /// </summary>
     private void SpreadSpores(int x, int z)
     {
-        
+
         if (gridManager == null)
         {
             Debug.LogError("GridManager not found in the scene!");
@@ -93,8 +93,8 @@ public class FungusReproduction : MonoBehaviour
                 if (dx == 0 && dz == 0)
                     continue;
 
-                int newX = x + dx;
-                int newZ = z + dz;
+                int newX = x + dx * Tecton.GridSize;
+                int newZ = z + dz * Tecton.GridSize;
 
                 if (newX < 0 || newX >= gridManager.width || newZ < 0 || newZ >= gridManager.height)
                     continue;
@@ -103,7 +103,7 @@ public class FungusReproduction : MonoBehaviour
                 if (neighborObj == null)
                     continue;
 
-                GridObject neighborGrid = neighborObj.GetComponent<GridObject>();
+                Tecton neighborGrid = neighborObj.GetComponent<Tecton>();
                 if (neighborGrid == null)
                     continue;
 
