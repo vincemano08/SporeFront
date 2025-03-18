@@ -1,5 +1,7 @@
+using NUnit.Framework;
 using System.Collections;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class FungusReproduction : MonoBehaviour
 {
@@ -61,7 +63,7 @@ public class FungusReproduction : MonoBehaviour
         if (fungusBody != null && fungusBody.Tecton != null)
         {
             Tecton currentGrid = fungusBody.Tecton;
-            SpreadSpores(currentGrid.x, currentGrid.z);
+            SpreadSpores(currentGrid.x + currentGrid.gridSize / 2, currentGrid.z + currentGrid.gridSize / 2);
         }
         else
         {
@@ -84,7 +86,9 @@ public class FungusReproduction : MonoBehaviour
             return;
         }
 
-        int spreadRadius = isAdvanced ? 2 : 1;
+        int spreadRadius = isAdvanced ? 12 : 6;
+        List<Tecton> visitedNeighbors = new List<Tecton>();
+
 
         for (int dx = -spreadRadius; dx <= spreadRadius; dx++)
         {
@@ -93,8 +97,8 @@ public class FungusReproduction : MonoBehaviour
                 if (dx == 0 && dz == 0)
                     continue;
 
-                int newX = x + dx * Tecton.GridSize;
-                int newZ = z + dz * Tecton.GridSize;
+                int newX = x + dx;
+                int newZ = z + dz;
 
                 if (newX < 0 || newX >= gridManager.width || newZ < 0 || newZ >= gridManager.height)
                     continue;
@@ -103,11 +107,14 @@ public class FungusReproduction : MonoBehaviour
                 if (neighborObj == null)
                     continue;
 
-                Tecton neighborGrid = neighborObj.GetComponent<Tecton>();
+                GridObject neighborGrid = neighborObj.GetComponent<GridObject>();
                 if (neighborGrid == null)
                     continue;
+                if (visitedNeighbors.Contains(neighborGrid.parentTecton))
+                    continue;
 
-                neighborGrid.AddSpores(sporeReleaseAmount);
+                neighborGrid.parentTecton.AddSpores(sporeReleaseAmount);
+                visitedNeighbors.Add(neighborGrid.parentTecton);
 
             }
         }

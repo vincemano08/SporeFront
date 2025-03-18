@@ -40,7 +40,7 @@ public class FungusBodyFactory : MonoBehaviour
 
         // additional checks if the requirements for fungus spawning are met
 
-        Vector3 spawnPosition = tecton.transform.position + new Vector3(0, tecton.transform.localScale.y + dropHeight, 0);
+        Vector3 spawnPosition = new Vector3(tecton.x + tecton.gridSize / 2, 1, tecton.z + tecton.gridSize / 2) + new Vector3(0, tecton.transform.localScale.y + dropHeight, 0);
 
         GameObject newFungusBodyObj = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
         newFungusBodyObj.transform.parent = bodyParent;

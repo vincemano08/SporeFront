@@ -5,7 +5,7 @@ public class GridManager : MonoBehaviour
 {
     public int width = 100;
     public int height = 100;
-
+    public int tectonSize = 5;
 
     private GameObject[,] grid;
 
@@ -23,30 +23,31 @@ public class GridManager : MonoBehaviour
     public void GenerateMap()
     {
         // Calculate how many tectons we can fit
-        int tectonCountX = width / (Tecton.GridSize + 1);
-        int tectonCountZ = height / (Tecton.GridSize + 1);
+        int tectonCountX = width / (tectonSize + 1);
+        int tectonCountZ = height / (tectonSize + 1);
 
         for (int tx = 0; tx < tectonCountX; tx++)
         {
             for (int tz = 0; tz < tectonCountZ; tz++)
             {
                 // Calculate actual position (with spacing)
-                int x = tx * (Tecton.GridSize + 1);
-                int z = tz * (Tecton.GridSize + 1);
+                int x = tx * (tectonSize + 1);
+                int z = tz * (tectonSize + 1);
 
                 GameObject tectonGO = new GameObject($"Tecton_{x}_{z}");
                 tectonGO.transform.SetParent(mapParent);
                 Tecton tecton = tectonGO.AddComponent<Tecton>();
                 tecton.x = x;
                 tecton.z = z;
+                tecton.gridSize = tectonSize;
 
-                // Store the tecton in the grid
-                grid[x, z] = tectonGO;
+
+
 
                 // Create the grid objects for this tecton
-                for (int i = 0; i < Tecton.GridSize; i++)
+                for (int i = 0; i < tectonSize; i++)
                 {
-                    for (int j = 0; j < Tecton.GridSize; j++)
+                    for (int j = 0; j < tectonSize; j++)
                     {
                         int gridX = x + i;
                         int gridZ = z + j;
@@ -63,12 +64,16 @@ public class GridManager : MonoBehaviour
                         }
                         gridObjectComponent.x = gridX;
                         gridObjectComponent.z = gridZ;
+                        gridObjectComponent.parentTecton = tecton;
+                        //store grid object in grid
+                        grid[gridX, gridZ] = gridObject;
+                        tecton.grid[i, j] = gridObjectComponent;
                     }
                 }
             }
         }
 
-        Debug.Log($"Generated {tectonCountX * tectonCountZ} Tectons with {tectonCountX * tectonCountZ * Tecton.GridSize * Tecton.GridSize} GridObjects");
+        Debug.Log($"Generated {tectonCountX * tectonCountZ} Tectons with {tectonCountX * tectonCountZ * tectonSize * tectonSize} GridObjects");
     }
 
 

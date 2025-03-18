@@ -3,13 +3,9 @@ using System.Collections.Generic;
 
 public class Tecton : MonoBehaviour
 {
-    private static int gridSize = 5;
-    public static int GridSize
-    {
-        get { return gridSize; }
-    }
+    public int gridSize = 5;
 
-    private GridObject[,] grid = new GridObject[GridSize, GridSize];
+    public GridObject[,] grid;
 
     public int x;
     public int z;
@@ -32,7 +28,6 @@ public class Tecton : MonoBehaviour
             fungusBody = value;
         }
     }
-
 
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
     /// <param name="amount">Number of spores to be added.</param>
@@ -58,9 +53,10 @@ public class Tecton : MonoBehaviour
 
     public void InitializeGrid()
     {
-        for (int i = 0; i < GridSize; i++)
+        grid = new GridObject[gridSize, gridSize];
+        for (int i = 0; i < gridSize; i++)
         {
-            for (int j = 0; j < GridSize; j++)
+            for (int j = 0; j < gridSize; j++)
             {
 
                 if (gridPrefab == null)
@@ -81,7 +77,8 @@ public class Tecton : MonoBehaviour
 
     public void Awake()
     {
-        //InitializeGrid();
+        //initialize the grid
+        grid = new GridObject[gridSize, gridSize];
     }
 
     public void OnMouseDown()

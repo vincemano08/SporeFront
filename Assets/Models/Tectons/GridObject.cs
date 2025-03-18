@@ -5,6 +5,7 @@ public class GridObject : MonoBehaviour
 {
     public int x;
     public int z;
+    public Tecton parentTecton;
 
 
     public void Awake()
@@ -29,6 +30,16 @@ public class GridObject : MonoBehaviour
         Mesh mesh = cube.GetComponent<MeshFilter>().mesh;
         Destroy(cube);
         return mesh;
+    }
+
+    public void OnMouseDown()
+    {
+        if (FungusBodyFactory.Instance == null)
+        {
+            Debug.LogError("FungusBodyFactory not found");
+            return;
+        }
+        FungusBodyFactory.Instance.SpawnFungusBody(parentTecton);
     }
 
 
