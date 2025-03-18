@@ -8,6 +8,7 @@ public class Tecton : MonoBehaviour
     {
         get { return gridSize; }
     }
+
     private GridObject[,] grid = new GridObject[GridSize, GridSize];
 
     public int x;
@@ -15,7 +16,7 @@ public class Tecton : MonoBehaviour
     public int sporeCount = 0;
     public int sporeThreshold = 5;
     private FungusBody fungusBody;
-
+    public GameObject gridPrefab;
 
     public FungusBody FungusBody
     {
@@ -61,7 +62,14 @@ public class Tecton : MonoBehaviour
         {
             for (int j = 0; j < GridSize; j++)
             {
-                GameObject gridObjectGO = new GameObject($"GridObject_{i}_{j}");
+
+                if (gridPrefab == null)
+                {
+                    Debug.LogError("gridPrefab is not assigned in Tecton!");
+                    return;
+                }
+
+                GameObject gridObjectGO = Instantiate(gridPrefab, new Vector3(x + i, 0, z + j), Quaternion.identity);
                 gridObjectGO.transform.parent = this.transform;
                 GridObject gridObject = gridObjectGO.AddComponent<GridObject>();
                 gridObject.x = x + i;
@@ -73,7 +81,7 @@ public class Tecton : MonoBehaviour
 
     public void Awake()
     {
-        InitializeGrid();
+        //InitializeGrid();
     }
 
     public void OnMouseDown()
