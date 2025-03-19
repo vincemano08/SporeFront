@@ -38,7 +38,8 @@ public class MoveToMouse : MonoBehaviour
         }
         // Move towards the target position
         transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
-        transform.rotation = Quaternion.LookRotation(target - transform.position);
+        if (target != transform.position)
+            transform.rotation = Quaternion.LookRotation(target - transform.position);
 
     }
     private void OnMouseDown()
