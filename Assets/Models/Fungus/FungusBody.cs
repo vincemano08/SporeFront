@@ -1,20 +1,21 @@
+using System;
 using UnityEngine;
 
 public class FungusBody : MonoBehaviour
 {
-
-    private GridObject gridObject;
-    public GridObject GridObject
+    private Renderer objectRenderer;
+    private Tecton tecton;
+    public Tecton Tecton
     {
-        get { return gridObject; }
+        get { return tecton; }
         set
         {
-            if (gridObject != null)
+            if (tecton != null)
             {
                 Debug.LogError("Fungus body already has a tekton");
                 return;
             }
-            gridObject = value;
+            tecton = value;
         }
     }
 
@@ -29,6 +30,15 @@ public class FungusBody : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        // Get the Renderer component (Make sure the GameObject has one!)
+        objectRenderer = GetComponent<Renderer>();
+
+        // Optional: Set a default color
+        ChangeColor(Color.white);
+    }
+
     // Public method to trigger spore release
     public void TriggerSporeRelease()
     {
@@ -40,4 +50,16 @@ public class FungusBody : MonoBehaviour
         TriggerSporeRelease();
     }
 
+    internal void ChangeColor(Color newColor)
+    {
+        if (objectRenderer != null)
+        {
+            objectRenderer.material.color = newColor;
+        }
+        else
+        {
+            Debug.LogWarning("Renderer not found on " + gameObject.name);
+        }
+
+    }
 }

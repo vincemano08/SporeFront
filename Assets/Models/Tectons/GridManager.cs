@@ -3,15 +3,16 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    public int width = 10;
-    public int height = 10;
-
+    public int width = 100;
+    public int height = 100;
+    public int tectonSize = 5;
 
     private GameObject[,] grid;
 
     public Transform mapParent;
+    public GameObject gridObjectPrefab;
 
-    public GameObject prefab;
+
 
     private void Awake()
     {
@@ -21,46 +22,62 @@ public class GridManager : MonoBehaviour
 
     public void GenerateMap()
     {
-        for (int x = 0; x < width; x++)
+        // Calculate how many tectons we can fit
+        int tectonCountX = width / (tectonSize + 2);
+        int tectonCountZ = height / (tectonSize + 2);
+
+        for (int tx = 0; tx < tectonCountX; tx++)
         {
-            for (int z = 0; z < height; z++)
+            for (int tz = 0; tz < tectonCountZ; tz++)
             {
-                PlaceObject(x, z, prefab);
+                // Calculate actual position (with spacing)
+                int x = tx * (tectonSize + 2);
+                int z = tz * (tectonSize + 2);
+
+                GameObject tectonGO = new GameObject($"Tecton_{x}_{z}");
+                tectonGO.transform.SetParent(mapParent);
+                Tecton tecton = tectonGO.AddComponent<Tecton>();
+                tecton.x = x;
+                tecton.z = z;
+                tecton.gridSize = tectonSize;
+
+
+
+
+                // Create the grid objects for this tecton
+                for (int i = 0; i < tectonSize; i++)
+                {
+                    for (int j = 0; j < tectonSize; j++)
+                    {
+                        int gridX = x + i;
+                        int gridZ = z + j;
+
+                        GameObject gridObject = Instantiate(gridObjectPrefab, new Vector3(gridX, 0, gridZ), Quaternion.identity);
+                        gridObject.transform.SetParent(tectonGO.transform);
+                        gridObject.name = $"GridObject_{gridX}_{gridZ}";
+
+                        // Assign coordinates to the GridObject component
+                        GridObject gridObjectComponent = gridObject.GetComponent<GridObject>();
+                        if (gridObjectComponent == null)
+                        {
+                            gridObjectComponent = gridObject.AddComponent<GridObject>();
+                        }
+                        gridObjectComponent.x = gridX;
+                        gridObjectComponent.z = gridZ;
+                        gridObjectComponent.parentTecton = tecton;
+                        //store grid object in grid
+                        grid[gridX, gridZ] = gridObject;
+                        tecton.grid[i, j] = gridObjectComponent;
+                    }
+                }
             }
         }
+
+        Debug.Log($"Generated {tectonCountX * tectonCountZ} Tectons with {tectonCountX * tectonCountZ * tectonSize * tectonSize} GridObjects");
     }
 
-    public void PlaceObject(int x, int z, GameObject prefab)
-    {
-        if(x < 0 || x >= width || z < 0 || z >= height)
-        {
-            Debug.LogError("Invalid coordinates");
-            return;
-        }
 
-        if(grid[x, z] != null)
-        {
-            Debug.LogError("There is already an object at this position");
-            return;
-        }
 
-        Vector3 position = new Vector3(x, 0.5f, z);
-
-        GameObject Tecton = Instantiate(prefab, position, Quaternion.identity, mapParent);
-
-        GridObject gridObject = Tecton.GetComponent<GridObject>();
-
-        if (gridObject == null)
-        {
-            Debug.LogError("Object does not have GridObject component");
-            return;
-        }
-
-        gridObject.x = x;
-        gridObject.z = z;
-
-        grid[x, z] = Tecton;
-    }
 
 
     public void MoveObject(GameObject obj, int newX, int newZ)
@@ -71,16 +88,16 @@ public class GridManager : MonoBehaviour
             return;
         }
 
-        GridObject gridObject = obj.GetComponent<GridObject>();
+        Tecton tecton = obj.GetComponent<Tecton>();
 
-        if (gridObject == null)
+        if (tecton == null)
         {
-            Debug.LogError("Object does not have GridObject component");
+            Debug.LogError("Object does not have tecton component");
             return;
         }
 
-        int currentX = gridObject.x;
-        int currentZ = gridObject.z;
+        int currentX = tecton.x;
+        int currentZ = tecton.z;
 
         if (newX < 0 || newX >= width || newZ < 0 || newZ >= height)
         {
@@ -97,8 +114,8 @@ public class GridManager : MonoBehaviour
         grid[currentX, currentZ] = null;
         grid[newX, newZ] = obj;
 
-        gridObject.x = newX;
-        gridObject.z = newZ;
+        tecton.x = newX;
+        tecton.z = newZ;
 
         obj.transform.position = new Vector3(newX, 0.5f, newZ);
     }
@@ -131,17 +148,17 @@ public class GridManager : MonoBehaviour
             Debug.LogError("Invalid object");
             return;
         }
-        
-        GridObject gridObject = obj.GetComponent<GridObject>();
 
-        if (gridObject == null)
+        Tecton tecton = obj.GetComponent<Tecton>();
+
+        if (tecton == null)
         {
             Debug.LogError("Invalid object");
             return;
         }
 
-        int x = gridObject.x;
-        int z = gridObject.z;
+        int x = tecton.x;
+        int z = tecton.z;
 
         Destroy(grid[x, z]);
         grid[x, z] = null;

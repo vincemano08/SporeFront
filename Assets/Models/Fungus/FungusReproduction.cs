@@ -1,5 +1,7 @@
+using NUnit.Framework;
 using System.Collections;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class FungusReproduction : MonoBehaviour
 {
@@ -36,9 +38,9 @@ public class FungusReproduction : MonoBehaviour
         {
             Debug.Log("The fungus body has reached the spore production limit.");
             FungusBody fungusBody = GetComponent<FungusBody>();
-            if (fungusBody != null && fungusBody.GridObject != null)
+            if (fungusBody != null && fungusBody.Tecton != null)
             {
-                GridObject currentGrid = fungusBody.GridObject;
+                Tecton currentGrid = fungusBody.Tecton;
                 Destroy(fungusBody.gameObject);
                 currentGrid.FungusBody = null;
             }
@@ -58,17 +60,26 @@ public class FungusReproduction : MonoBehaviour
 
         // Access the associated GridObject through the FungusBody.
         FungusBody fungusBody = GetComponent<FungusBody>();
-        if (fungusBody != null && fungusBody.GridObject != null)
+        if (fungusBody != null && fungusBody.Tecton != null)
         {
-            GridObject currentGrid = fungusBody.GridObject;
-            SpreadSpores(currentGrid.x, currentGrid.z);
+            Tecton currentGrid = fungusBody.Tecton;
+            SpreadSpores(currentGrid.x + currentGrid.gridSize / 2, currentGrid.z + currentGrid.gridSize / 2);
         }
         else
         {
             Debug.LogError("FungusBody or the associated GridObject not found!");
         }
 
+        //Changing the color of the fungus, to show that cooldown is in progress
+        if (fungusBody != null)
+        {
+            fungusBody.ChangeColor(Color.red);
+        }
         yield return new WaitForSeconds(sporeCooldown);
+        if (fungusBody != null)
+        {
+            fungusBody.ChangeColor(Color.white);
+        }
         canRelease = true;
     }
 
@@ -77,14 +88,16 @@ public class FungusReproduction : MonoBehaviour
     /// </summary>
     private void SpreadSpores(int x, int z)
     {
-        
+
         if (gridManager == null)
         {
             Debug.LogError("GridManager not found in the scene!");
             return;
         }
 
-        int spreadRadius = isAdvanced ? 2 : 1;
+        int spreadRadius = isAdvanced ? 12 : 6;
+        List<Tecton> visitedNeighbors = new List<Tecton>();
+
 
         for (int dx = -spreadRadius; dx <= spreadRadius; dx++)
         {
@@ -107,7 +120,13 @@ public class FungusReproduction : MonoBehaviour
                 if (neighborGrid == null)
                     continue;
 
-                neighborGrid.AddSpores(sporeReleaseAmount);
+                Tecton neighborTecton = neighborGrid.parentTecton;
+
+                if (visitedNeighbors.Contains(neighborTecton))
+                    continue;
+
+                neighborGrid.parentTecton.AddSpores(sporeReleaseAmount);
+                visitedNeighbors.Add(neighborTecton);
 
             }
         }
