@@ -123,3 +123,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   x: 0
   z: 0
+  parentTecton: {fileID: 0}

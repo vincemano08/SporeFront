@@ -4,8 +4,8 @@ using UnityEngine;
 public class MovableObjectSpawner : MonoBehaviour
 {
     public GameObject insectPrefab;
-    public int numberOfInsectsToSpawn = 10;
-    public float heightOffset = 0.5f;
+    public int numberOfInsectsToSpawn;
+    public float heightOffset;
 
     private GridManager gridManager;
     private List<Tecton> availableTectons = new List<Tecton>();
@@ -57,10 +57,13 @@ public class MovableObjectSpawner : MonoBehaviour
 
         // Calculate spawn position at center of Tecton
         Vector3 spawnPosition = new Vector3(
-            selectedTecton.x + selectedTecton.gridSize / 2f,
+            selectedTecton.x + selectedTecton.gridSize / 2f - insectPrefab.transform.localScale.x / 2f,
             heightOffset,
-            selectedTecton.z + selectedTecton.gridSize / 2f
+            selectedTecton.z + selectedTecton.gridSize / 2f - insectPrefab.transform.localScale.z / 2f
         );
+
+        // log sp
+        Debug.Log($"Spawning insect at position: {spawnPosition}");
 
         // Spawn the insect
         GameObject insect = Instantiate(insectPrefab, spawnPosition, Quaternion.identity);
