@@ -14,6 +14,7 @@ public class Tecton : MonoBehaviour
     private FungusBody fungusBody;
     public GameObject gridPrefab;
 
+
     public FungusBody FungusBody
     {
         get { return fungusBody; }
@@ -36,6 +37,8 @@ public class Tecton : MonoBehaviour
         sporeCount += amount;
         Debug.Log($"({x},{z}) Number of spores: {sporeCount}");
 
+        this.ChangeColor(new Color(0, 1, sporeCount / 10));
+
         // If the spore count reaches the threshold and there is no fungus body yet, initiate the growth of a new fungus body.
         if (sporeCount >= sporeThreshold && FungusBody == null)
         {
@@ -43,6 +46,7 @@ public class Tecton : MonoBehaviour
             {
                 FungusBodyFactory.Instance.SpawnFungusBody(this);
                 sporeCount = 0; // Reset the spore counter.
+                this.ChangeColor(Color.green);
             }
             else
             {
@@ -79,7 +83,10 @@ public class Tecton : MonoBehaviour
     {
         //initialize the grid
         grid = new GridObject[gridSize, gridSize];
+
     }
+
+
 
     public void OnMouseDown()
     {
@@ -89,5 +96,17 @@ public class Tecton : MonoBehaviour
             return;
         }
         FungusBodyFactory.Instance.SpawnFungusBody(this);
+    }
+
+    internal void ChangeColor(Color newColor)
+    {
+        for (int i = 0; i < gridSize; i++)
+        {
+            for (int j = 0; j < gridSize; j++)
+            {
+                grid[i, j].ChangeColor(newColor);
+            }
+        }
+
     }
 }

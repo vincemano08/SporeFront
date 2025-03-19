@@ -6,6 +6,7 @@ public class GridObject : MonoBehaviour
     public int x;
     public int z;
     public Tecton parentTecton;
+    private Renderer objectRenderer;
 
 
     public void Awake()
@@ -22,6 +23,24 @@ public class GridObject : MonoBehaviour
         {
             Debug.LogError("GridObject does not have Collider component");
         }
+        // Get the Renderer component (Make sure the GameObject has one!)
+        objectRenderer = GetComponent<Renderer>();
+
+        // Optional: Set a default color
+        ChangeColor(Color.green);
+    }
+
+    internal void ChangeColor(Color newColor)
+    {
+        if (objectRenderer != null)
+        {
+            objectRenderer.material.color = newColor;
+        }
+        else
+        {
+            Debug.LogWarning("Renderer not found on " + gameObject.name);
+        }
+
     }
 
     private Mesh CreateCubeMesh()
