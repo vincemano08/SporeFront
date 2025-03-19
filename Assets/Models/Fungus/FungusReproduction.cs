@@ -70,7 +70,16 @@ public class FungusReproduction : MonoBehaviour
             Debug.LogError("FungusBody or the associated GridObject not found!");
         }
 
+        //Changing the color of the fungus, to show that cooldown is in progress
+        if (fungusBody != null)
+        {
+            fungusBody.ChangeColor(Color.red);
+        }
         yield return new WaitForSeconds(sporeCooldown);
+        if (fungusBody != null)
+        {
+            fungusBody.ChangeColor(Color.white);
+        }
         canRelease = true;
     }
 
@@ -110,11 +119,14 @@ public class FungusReproduction : MonoBehaviour
                 GridObject neighborGrid = neighborObj.GetComponent<GridObject>();
                 if (neighborGrid == null)
                     continue;
-                if (visitedNeighbors.Contains(neighborGrid.parentTecton))
+
+                Tecton neighborTecton = neighborGrid.parentTecton;
+
+                if (visitedNeighbors.Contains(neighborTecton))
                     continue;
 
                 neighborGrid.parentTecton.AddSpores(sporeReleaseAmount);
-                visitedNeighbors.Add(neighborGrid.parentTecton);
+                visitedNeighbors.Add(neighborTecton);
 
             }
         }
