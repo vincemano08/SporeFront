@@ -5,7 +5,7 @@ using UnityEngine;
 public class MoveToMouse : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public float speed = 5.00f;
+    public float speed;
     private Vector3 target;
     private bool selected = false;
     public static List<MoveToMouse> movableObjects = new List<MoveToMouse>();
@@ -36,9 +36,10 @@ public class MoveToMouse : MonoBehaviour
                 Debug.Log($"Moving to position: {target}");
             }
         }
-
         // Move towards the target position
         transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+        transform.rotation = Quaternion.LookRotation(target - transform.position);
+
     }
     private void OnMouseDown()
     {
