@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using UnityEditor.UIElements;
 using UnityEngine;
 
 public class MoveToMouse : MonoBehaviour
@@ -5,10 +7,12 @@ public class MoveToMouse : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public float speed = 5.00f;
     private Vector3 target;
-
+    private bool selected = false;
+    public static List<MoveToMouse> movableObjects = new List<MoveToMouse>();
 
     void Start()
     {
+        movableObjects.Add(this);
         target = transform.position;
     }
 
@@ -16,7 +20,7 @@ public class MoveToMouse : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1) && selected)
         {
             // Convert screen position to world position
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -35,5 +39,19 @@ public class MoveToMouse : MonoBehaviour
 
         // Move towards the target position
         transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+    }
+    private void OnMouseDown()
+    {
+        selected = !selected;
+        gameObject.GetComponent<Renderer>().material.color = selected ? Color.red : Color.white;
+
+        foreach (var item in movableObjects)
+        {
+            if(item != this)
+            {
+                item.selected = false;
+                item.gameObject.GetComponent<Renderer>().material.color = Color.white;
+            }
+        }
     }
 }
