@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -3639606638479547345}
   - component: {fileID: 5417127625134381961}
   - component: {fileID: -3625614812306017971}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: FungusBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
