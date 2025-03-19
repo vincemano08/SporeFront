@@ -10,7 +10,7 @@ public class Tecton : MonoBehaviour
     public int x;
     public int z;
     public int sporeCount = 0;
-    public int sporeThreshold = 5;
+    public int sporeThreshold = 10;
     private FungusBody fungusBody;
     public GameObject gridPrefab;
 
@@ -34,10 +34,14 @@ public class Tecton : MonoBehaviour
     /// <param name="amount">Number of spores to be added.</param>
     public void AddSpores(int amount)
     {
+        if (fungusBody != null)
+        {
+            return;
+        }
         sporeCount += amount;
         Debug.Log($"({x},{z}) Number of spores: {sporeCount}");
 
-        this.ChangeColor(new Color(0, 1, sporeCount / 10));
+        this.ChangeColor(new Color(0, 1, sporeCount / 10f));
 
         // If the spore count reaches the threshold and there is no fungus body yet, initiate the growth of a new fungus body.
         if (sporeCount >= sporeThreshold && FungusBody == null)
