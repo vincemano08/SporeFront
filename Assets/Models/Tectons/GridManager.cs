@@ -23,16 +23,16 @@ public class GridManager : MonoBehaviour
     public void GenerateMap()
     {
         // Calculate how many tectons we can fit
-        int tectonCountX = width / (tectonSize + 1);
-        int tectonCountZ = height / (tectonSize + 1);
+        int tectonCountX = width / (tectonSize + 2);
+        int tectonCountZ = height / (tectonSize + 2);
 
         for (int tx = 0; tx < tectonCountX; tx++)
         {
             for (int tz = 0; tz < tectonCountZ; tz++)
             {
                 // Calculate actual position (with spacing)
-                int x = tx * (tectonSize + 1);
-                int z = tz * (tectonSize + 1);
+                int x = tx * (tectonSize + 2);
+                int z = tz * (tectonSize + 2);
 
                 GameObject tectonGO = new GameObject($"Tecton_{x}_{z}");
                 tectonGO.transform.SetParent(mapParent);
