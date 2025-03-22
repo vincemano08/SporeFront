@@ -45,7 +45,7 @@ public class MoveInsect : MonoBehaviour {
             Vector3 targetPosition = nextGridObject.transform.position + new Vector3(0, 1f, 0);
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
 
-            if (Vector3.Distance(transform.position, targetPosition) < 0.1f) {
+            if (Vector3.Distance(transform.position, targetPosition) < 0.01f) {
                 currentGridObject.occupantType = OccupantType.None;
                 currentGridObject = path.Dequeue();
             }
