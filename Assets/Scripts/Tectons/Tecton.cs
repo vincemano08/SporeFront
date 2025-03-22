@@ -70,8 +70,6 @@ public class Tecton : MonoBehaviour {
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
     /// <param name="amount">Number of spores to be added.</param>
     public void AddSpores(int amount) {
-        if (fungusBody != null) return;
-
         for (int i = 0; i < amount; i++) {
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();
             sporeManager.SpawnSpore(spawnGridObject);

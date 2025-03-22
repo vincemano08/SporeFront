@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 1502440308238626614}
   - component: {fileID: 4127098792716613656}
   - component: {fileID: 954124029279536945}
-  - component: {fileID: -3639606638479547345}
   - component: {fileID: 5417127625134381961}
   - component: {fileID: -3625614812306017971}
   m_Layer: 6
@@ -111,18 +110,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-3639606638479547345
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8331824232130077502}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c3d466a02800344b8b8087f2db6b4a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &5417127625134381961
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -163,6 +150,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sporeCooldown: 5
-  sporeReleaseAmount: 3
+  sporeReleaseAmount: 5
   sporeProductionLimit: 5
   isAdvanced: 0
