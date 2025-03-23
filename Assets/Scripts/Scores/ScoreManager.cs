@@ -19,7 +19,7 @@ public class ScoreManager : MonoBehaviour
     {
         ScoreP1 += score;
         if (eventChannel != null) 
-            eventChannel.RaiseUpdateHud(ScoreP1);
+            eventChannel.RaiseUpdateHudScore(ScoreP1);
     }
 
 
