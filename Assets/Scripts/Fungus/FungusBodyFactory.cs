@@ -10,6 +10,8 @@ public class FungusBodyFactory : MonoBehaviour {
     [Tooltip("How high above the tekton the fungus body should spawn")]
     [SerializeField] private float dropHeight = 3f;
 
+    [SerializeField] private EventChannel eventChannel;
+
     private void Awake() {
         if (Instance == null)
             Instance = this;
@@ -36,6 +38,8 @@ public class FungusBodyFactory : MonoBehaviour {
                 GridObject gridObject = hit.collider.GetComponent<GridObject>();
                 if (gridObject != null && gridObject.parentTecton.FungusBody == null) {
                     SpawnFungusBody(gridObject);
+                    if (eventChannel != null)
+                        eventChannel.RaiseScoreChanged(1);  // increase score by one
                 }
             }
         }
