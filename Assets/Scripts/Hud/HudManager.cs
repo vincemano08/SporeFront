@@ -1,9 +1,11 @@
+using TMPro;
 using UnityEngine;
 
 public class HudManager : MonoBehaviour
 {
 
     [SerializeField] private EventChannel eventChannel;
+    [SerializeField] private TextMeshProUGUI scoreText;
 
     private void OnEnable()
     {
@@ -17,6 +19,10 @@ public class HudManager : MonoBehaviour
             eventChannel.OnUpdateHud -= UpdateHud;
     }
 
-    private void UpdateHud(int currentScore) => Debug.Log($"Current score of P1 {currentScore}");
+    private void UpdateHud(int currentScore) 
+    {
+        if (scoreText != null) 
+            scoreText.text = $"Score: {currentScore}";
+    }
 
 }
