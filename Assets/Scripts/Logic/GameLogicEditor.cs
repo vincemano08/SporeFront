@@ -2,47 +2,37 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(GameLogic))]
-public class GameLogicEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        if (target == null)
-        {
+public class GameLogicEditor : Editor {
+    public override void OnInspectorGUI() {
+        if ( target == null ) {
             Debug.LogError("Target is null");
             return;
         }
 
-        GameLogic gameLogic = (GameLogic)target;
-        if (gameLogic == null)
-        {
+        GameLogic gameLogic = (GameLogic) target;
+        if ( gameLogic == null ) {
             Debug.LogError("GameLogic reference is null");
             return;
         }
 
         GUILayout.Label("Insects", EditorStyles.boldLabel);
 
-        if (GUILayout.Button("Spawn Insects"))
-        {
+        if ( GUILayout.Button("Spawn Insects") ) {
             InsectSpawner insectSpawner = FindFirstObjectByType<InsectSpawner>();
-            if (insectSpawner != null)
-            {
+            if ( insectSpawner != null ) {
                 insectSpawner.SpawnInsects();
             }
-            else
-            {
+            else {
                 Debug.LogWarning("No InsectSpawner found in the scene");
             }
         }
 
-        if (GUILayout.Button("Clear Insects"))
-        {
+        if ( GUILayout.Button("Clear Insects") ) {
             InsectSpawner insectSpawner = FindFirstObjectByType<InsectSpawner>();
-            if (insectSpawner != null)
-            {
+            if ( insectSpawner != null ) {
                 insectSpawner.RemoveAllInsects();
             }
-            else
-            {
+            else {
                 Debug.LogWarning("No InsectSpawner found in the scene");
             }
         }
