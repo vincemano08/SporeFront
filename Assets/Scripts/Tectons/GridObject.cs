@@ -23,10 +23,10 @@ public class GridObject : MonoBehaviour {
     }
 
     public void ChangeColor(Color newColor) {
-        if ( occupantType == OccupantType.Spore ) {
+        if (occupantType == OccupantType.Spore) {
             newColor = Color.magenta;
         }
-        if ( objectRenderer != null )
+        if (objectRenderer != null)
             objectRenderer.material.color = newColor;
         else
             Debug.LogWarning("Renderer not found on " + gameObject.name);
@@ -39,11 +39,11 @@ public class GridObject : MonoBehaviour {
     public static GridObject GetGridObjectAt(Vector3 position) {
         Ray ray = new Ray(position + new Vector3(0, 10, 0), Vector3.down);
         RaycastHit[] hits = Physics.RaycastAll(ray);
-        foreach ( var hit in hits ) {
+        foreach (var hit in hits) {
             // Check tag to make sure we are hitting a GridObject
-            if ( hit.collider.tag != "GridObject" ) continue;
+            if (hit.collider.tag != "GridObject") continue;
             var gridObject = hit.collider.GetComponent<GridObject>();
-            if ( gridObject != null ) {
+            if (gridObject != null) {
                 return gridObject;
             }
         }
@@ -58,9 +58,9 @@ public class GridObject : MonoBehaviour {
             new Vector2Int(0, -1),
             new Vector2Int(-1, 0)
         };
-        foreach ( var direction in directions ) {
+        foreach (var direction in directions) {
             var neighbor = GetGridObjectAt(new Vector3(X + direction.x, 0, Z + direction.y));
-            if ( neighbor != null ) {
+            if (neighbor != null) {
                 neighbors.Add(neighbor);
             }
         }

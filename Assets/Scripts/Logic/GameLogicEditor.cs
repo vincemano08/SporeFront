@@ -4,22 +4,22 @@ using UnityEngine;
 [CustomEditor(typeof(GameLogic))]
 public class GameLogicEditor : Editor {
     public override void OnInspectorGUI() {
-        if ( target == null ) {
+        if (target == null) {
             Debug.LogError("Target is null");
             return;
         }
 
         GameLogic gameLogic = (GameLogic) target;
-        if ( gameLogic == null ) {
+        if (gameLogic == null) {
             Debug.LogError("GameLogic reference is null");
             return;
         }
 
         GUILayout.Label("Insects", EditorStyles.boldLabel);
 
-        if ( GUILayout.Button("Spawn Insects") ) {
+        if (GUILayout.Button("Spawn Insects")) {
             InsectSpawner insectSpawner = FindFirstObjectByType<InsectSpawner>();
-            if ( insectSpawner != null ) {
+            if (insectSpawner != null) {
                 insectSpawner.SpawnInsects();
             }
             else {
@@ -27,9 +27,9 @@ public class GameLogicEditor : Editor {
             }
         }
 
-        if ( GUILayout.Button("Clear Insects") ) {
+        if (GUILayout.Button("Clear Insects")) {
             InsectSpawner insectSpawner = FindFirstObjectByType<InsectSpawner>();
-            if ( insectSpawner != null ) {
+            if (insectSpawner != null) {
                 insectSpawner.RemoveAllInsects();
             }
             else {

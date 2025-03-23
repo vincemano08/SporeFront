@@ -45,7 +45,7 @@ public class WorldGeneration : MonoBehaviour {
     private Vector2Int[] GenerateTectonCenters() {
         Vector2Int[] tectonCenters = new Vector2Int[tectonCount];
 
-        for ( int i = 0; i < tectonCount; i++ ) {
+        for (int i = 0; i < tectonCount; i++) {
             tectonCenters[i] = new Vector2Int(
                 Random.Range(0, Width),
                 Random.Range(0, Height)
@@ -56,19 +56,19 @@ public class WorldGeneration : MonoBehaviour {
     }
 
     private Vector2Int[] PerformLloydRelaxation(Vector2Int[] tectonCenters, int[,] tectonMap) {
-        for ( int iteration = 0; iteration < relaxationIterations; iteration++ ) {
+        for (int iteration = 0; iteration < relaxationIterations; iteration++) {
             Vector2Int[] newTectonCenters = new Vector2Int[tectonCount];
             int[] tectonSizes = new int[tectonCount];
 
             // Initialize arrays
-            for ( int i = 0; i < tectonCount; i++ ) {
+            for (int i = 0; i < tectonCount; i++) {
                 newTectonCenters[i] = Vector2Int.zero;
                 tectonSizes[i] = 0;
             }
 
             // Assign each cell to the closest tecton & calculate new tecton centers
-            for ( int x = 0; x < Width; x++ ) {
-                for ( int z = 0; z < Height; z++ ) {
+            for (int x = 0; x < Width; x++) {
+                for (int z = 0; z < Height; z++) {
                     int closestTecton = FindClosestTecton(tectonCenters, x, z);
 
                     tectonMap[x, z] = closestTecton;
@@ -78,8 +78,8 @@ public class WorldGeneration : MonoBehaviour {
             }
 
             // Recalculate tecton centers
-            for ( int i = 0; i < tectonCount; i++ ) {
-                if ( tectonSizes[i] > 0 ) {
+            for (int i = 0; i < tectonCount; i++) {
+                if (tectonSizes[i] > 0) {
                     tectonCenters[i] = newTectonCenters[i] / tectonSizes[i];
                 }
             }
@@ -92,9 +92,9 @@ public class WorldGeneration : MonoBehaviour {
         int closestTecton = 0;
         float minDistance = float.MaxValue;
 
-        for ( int i = 0; i < tectonCount; i++ ) {
+        for (int i = 0; i < tectonCount; i++) {
             float distance = Vector2Int.Distance(new Vector2Int(x, z), tectonCenters[i]);
-            if ( distance < minDistance ) {
+            if (distance < minDistance) {
                 minDistance = distance;
                 closestTecton = i;
             }
@@ -104,16 +104,16 @@ public class WorldGeneration : MonoBehaviour {
     }
 
     private void CreateTectons(int[,] tectonMap) {
-        for ( int x = 0; x < Width; x++ ) {
-            for ( int z = 0; z < Height; z++ ) {
+        for (int x = 0; x < Width; x++) {
+            for (int z = 0; z < Height; z++) {
                 // Check if tecton exists with the current id
                 bool tectonExists = false;
-                foreach ( Transform transform in mapParent ) {
-                    if ( transform.name == $"Tecton_{tectonMap[x, z]}" ) {
+                foreach (Transform transform in mapParent) {
+                    if (transform.name == $"Tecton_{tectonMap[x, z]}") {
                         tectonExists = true;
                     }
                 }
-                if ( tectonExists ) continue;
+                if (tectonExists) continue;
 
                 GameObject tectonObject = new GameObject($"Tecton_{tectonMap[x, z]}");
                 tectonObject.transform.SetParent(mapParent);
@@ -124,7 +124,7 @@ public class WorldGeneration : MonoBehaviour {
             }
         }
         // Not too efficient, but whatever
-        foreach ( Transform tectonTransform in mapParent ) {
+        foreach (Transform tectonTransform in mapParent) {
             Tecton tecton = tectonTransform.GetComponent<Tecton>();
             tecton.Neighbors = FindNeighboringTectons(tectonMap, tecton.Id)
                 .Select(id => Tecton.GetById(id)).ToHashSet();
@@ -135,9 +135,9 @@ public class WorldGeneration : MonoBehaviour {
         HashSet<int> neighbors = new HashSet<int>();
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
 
-        for ( int x = 0; x < width; x++ ) {
-            for ( int z = 0; z < height; z++ ) {
-                if ( tectonMap[x, z] == tectonID && !visited.Contains(new Vector2Int(x, z)) ) {
+        for (int x = 0; x < width; x++) {
+            for (int z = 0; z < height; z++) {
+                if (tectonMap[x, z] == tectonID && !visited.Contains(new Vector2Int(x, z))) {
                     VisitPerimeter(x, z, tectonMap, tectonID, neighbors, visited);
                 }
             }
@@ -158,22 +158,22 @@ public class WorldGeneration : MonoBehaviour {
             new Vector2Int(-1, 1), new Vector2Int(-1, -1)
         };
 
-        while ( queue.Count > 0 ) {
+        while (queue.Count > 0) {
             var current = queue.Dequeue();
 
-            foreach ( var dir in directions ) {
+            foreach (var dir in directions) {
                 int nx = current.x + dir.x;
                 int nz = current.y + dir.y;
 
-                if ( nx >= 0 && nx < width && nz >= 0 && nz < height ) {
+                if (nx >= 0 && nx < width && nz >= 0 && nz < height) {
                     int neighborID = tectonMap[nx, nz];
                     var neighborPos = new Vector2Int(nx, nz);
 
-                    if ( neighborID == tectonID && !visited.Contains(neighborPos) ) {
+                    if (neighborID == tectonID && !visited.Contains(neighborPos)) {
                         visited.Add(neighborPos);
                         queue.Enqueue(neighborPos);
                     }
-                    else if ( neighborID != tectonID ) {
+                    else if (neighborID != tectonID) {
                         neighbors.Add(neighborID);
                     }
                 }
@@ -182,9 +182,9 @@ public class WorldGeneration : MonoBehaviour {
     }
 
     private void PlaceGridObjects(int[,] tectonMap, Vector2Int[] tectonCenters) {
-        for ( int x = 0; x < Width; x++ ) {
-            for ( int z = 0; z < Height; z++ ) {
-                if ( !IsEdgeCell(tectonMap, x, z) ) {
+        for (int x = 0; x < Width; x++) {
+            for (int z = 0; z < Height; z++) {
+                if (!IsEdgeCell(tectonMap, x, z)) {
                     CreateGridObject(x, z, tectonMap[x, z]);
                 }
             }
@@ -192,9 +192,9 @@ public class WorldGeneration : MonoBehaviour {
     }
 
     private bool IsEdgeCell(int[,] tectonMap, int x, int z) {
-        if ( x > 0 && tectonMap[x, z] != tectonMap[x - 1, z] ) return true;
-        if ( z > 0 && tectonMap[x, z] != tectonMap[x, z - 1] ) return true;
-        if ( x > 0 && z > 0 && tectonMap[x, z] != tectonMap[x - 1, z - 1] ) return true;
+        if (x > 0 && tectonMap[x, z] != tectonMap[x - 1, z]) return true;
+        if (z > 0 && tectonMap[x, z] != tectonMap[x, z - 1]) return true;
+        if (x > 0 && z > 0 && tectonMap[x, z] != tectonMap[x - 1, z - 1]) return true;
 
         return false;
     }
@@ -222,11 +222,11 @@ public class WorldGeneration : MonoBehaviour {
 
     // Destroy all children of the map parent
     public void ClearMap() {
-        if ( mapParent == null ) return;
-        foreach ( Transform child in mapParent ) {
-            if ( child == null ) continue;
-            foreach ( Transform grandchild in child ) {
-                if ( grandchild == null ) continue;
+        if (mapParent == null) return;
+        foreach (Transform child in mapParent) {
+            if (child == null) continue;
+            foreach (Transform grandchild in child) {
+                if (grandchild == null) continue;
                 Destroy(grandchild.gameObject);
             }
             Destroy(child.gameObject);
@@ -235,7 +235,7 @@ public class WorldGeneration : MonoBehaviour {
 
     // Get object at position for other scripts to use
     public GameObject GetObject(int x, int z) {
-        if ( x < 0 || x >= Width || z < 0 || z >= Height ) {
+        if (x < 0 || x >= Width || z < 0 || z >= Height) {
             Debug.LogError($"Position ({x}, {z}) is out of bounds.");
             return null;
         }

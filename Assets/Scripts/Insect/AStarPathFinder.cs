@@ -18,22 +18,22 @@ public class AStarPathFinder : MonoBehaviour {
 
         openSet.Enqueue(start, fScore[start]);
 
-        while ( openSet.Count > 0 ) {
+        while (openSet.Count > 0) {
             var current = openSet.Dequeue();
 
-            if ( current == target ) return ReconstructPath(cameFrom, current);
+            if (current == target) return ReconstructPath(cameFrom, current);
 
-            foreach ( var neighbor in current.GetNeighbors() ) {
-                if ( neighbor.IsOccupied ) continue;
+            foreach (var neighbor in current.GetNeighbors()) {
+                if (neighbor.IsOccupied) continue;
 
                 float tentativeGScore = gScore[current] + 1;
 
-                if ( !gScore.ContainsKey(neighbor) || tentativeGScore < gScore[neighbor] ) {
+                if (!gScore.ContainsKey(neighbor) || tentativeGScore < gScore[neighbor]) {
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentativeGScore;
                     fScore[neighbor] = tentativeGScore + Heuristic(neighbor, target);
 
-                    if ( !openSet.Contains(neighbor) ) openSet.Enqueue(neighbor, fScore[neighbor]);
+                    if (!openSet.Contains(neighbor)) openSet.Enqueue(neighbor, fScore[neighbor]);
                 }
             }
         }
@@ -46,7 +46,7 @@ public class AStarPathFinder : MonoBehaviour {
 
     private static List<GridObject> ReconstructPath(Dictionary<GridObject, GridObject> cameFrom, GridObject current) {
         var totalPath = new List<GridObject> { current };
-        while ( cameFrom.ContainsKey(current) ) {
+        while (cameFrom.ContainsKey(current)) {
             current = cameFrom[current];
             totalPath.Insert(0, current);
         }

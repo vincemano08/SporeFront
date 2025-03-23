@@ -11,7 +11,7 @@ public class FungusBodyFactory : MonoBehaviour {
     [SerializeField] private float dropHeight = 3f;
 
     private void Awake() {
-        if ( Instance == null )
+        if (Instance == null)
             Instance = this;
         else
             // Checks if there is already an instance of the class, if so, it destroys that because of the singleton
@@ -20,12 +20,12 @@ public class FungusBodyFactory : MonoBehaviour {
 
     private void Start() {
         // Spawn a few fungus bodies by default
-        for ( int i = 0; i < 3; i++ ) {
+        for (int i = 0; i < 3; i++) {
             Tecton tecton = Tecton.ChooseRandom();
-            if ( tecton != null && tecton.FungusBody == null ) {
+            if (tecton != null && tecton.FungusBody == null) {
                 GridObject spawnGridObject = tecton.ChooseRandomEmptyGridObject();
 
-                if ( spawnGridObject == null ) {
+                if (spawnGridObject == null) {
                     Debug.LogError("No empty grid objects found on the selected Tecton");
                     return;
                 }
@@ -36,11 +36,11 @@ public class FungusBodyFactory : MonoBehaviour {
     }
 
     private void Update() {
-        if ( Input.GetMouseButtonDown(0) ) {
+        if (Input.GetMouseButtonDown(0)) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if ( Physics.Raycast(ray, out RaycastHit hit) ) {
+            if (Physics.Raycast(ray, out RaycastHit hit)) {
                 GridObject gridObject = hit.collider.GetComponent<GridObject>();
-                if ( gridObject != null && gridObject.parentTecton.FungusBody == null ) {
+                if (gridObject != null && gridObject.parentTecton.FungusBody == null) {
                     SpawnFungusBody(gridObject);
                 }
             }
@@ -50,7 +50,7 @@ public class FungusBodyFactory : MonoBehaviour {
     public FungusBody SpawnFungusBody(GridObject spawnGridObject) {
         Tecton tecton = spawnGridObject.parentTecton;
 
-        if ( tecton == null || tecton.FungusBody != null ) {
+        if (tecton == null || tecton.FungusBody != null) {
             Debug.LogError("Invalid tekton or tekton already occupied by a fungus body");
             return null;
         }
@@ -66,7 +66,7 @@ public class FungusBodyFactory : MonoBehaviour {
 
         FungusBody fungusBody = newFungusBody.GetComponent<FungusBody>();
         // Should never happen, but just in case
-        if ( fungusBody == null ) {
+        if (fungusBody == null) {
             Debug.LogError("Spawned FungusBody prefab is missing the FungusBody component!", newFungusBody);
             Destroy(newFungusBody); // Clean up orphaned object
             return null;
