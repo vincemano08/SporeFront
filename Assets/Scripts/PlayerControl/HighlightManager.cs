@@ -70,9 +70,9 @@ public class HighlightManager : MonoBehaviour
                 if(tecton != null)
                 {
                     currentHighlightedTecton = tecton;
-                    bool canConnect = FungalThreadManager.Instance.CanConnect(GameManager.Instance.SelectedFungusBody.Tecton, tecton);
+                    bool canConnect = GameManager.Instance.SelectedFungusBody != null && FungalThreadManager.Instance.CanConnect(GameManager.Instance.SelectedFungusBody.Tecton, tecton);
                     Material highlightMaterial = canConnect ? greenHighlightMaterial : redHighlightMaterial;
-                    HightLightTecton(tecton, highlightMaterial);
+                    HighLightTecton(tecton, highlightMaterial);
                 }
             }
         }
@@ -87,7 +87,7 @@ public class HighlightManager : MonoBehaviour
         }
     }
 
-    private void HightLightTecton(Tecton tecton, Material material)
+    private void HighLightTecton(Tecton tecton, Material material)
     {
         foreach (var gridObject in tecton.GridObjects)
         {
