@@ -18,7 +18,7 @@ public class EventChannel : ScriptableObject
 
     public void RaiseUpdateHud(int currentScore) {
         OnUpdateHud?.Invoke(currentScore);
-    }    
+    }
 
 
 }

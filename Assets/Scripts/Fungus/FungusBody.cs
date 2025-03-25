@@ -29,8 +29,23 @@ public class FungusBody : MonoBehaviour {
         objectRenderer = GetComponent<Renderer>();
     }
 
-    private void OnMouseDown() {
-        TriggerSporeRelease();
+    private void OnMouseDown()
+    {
+        if (GameManager.Instance.CurrentMode == ActionMode.ThreadGrowth)
+        {
+            // dont let the the fungusbody to get selected if the current mode is threadgrowth.
+            return;
+        }
+
+        // if the fungus body is already selected, deselect it. Otherwise, select it.
+        if (GameManager.Instance.SelectedFungusBody == this)
+        {
+            GameManager.Instance.DeselectFungus();
+        }
+        else
+        {
+            GameManager.Instance.SelectFungusBody(this);
+        }
     }
 
     public void TriggerSporeRelease() {
