@@ -40,7 +40,7 @@ public class HighlightManager : MonoBehaviour
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        // highlight the object under the mouse cursor
+        // Highlight the object under the mouse cursor
         if (Physics.Raycast(ray, out RaycastHit hit, maxHighlightDistance, highlightLayerMask))
         {
             GameObject hitObject = hit.collider.gameObject;

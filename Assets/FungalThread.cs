@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -48,13 +49,10 @@ public class FungalThread : MonoBehaviour
     private (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
     {
         float minDistance = float.MaxValue;
-        GridObject closestFromA = null;
-        GridObject closestFromB = null;
-
         var gridObjectsFromA = a.GridObjects.ToList();
         var gridObjectsFromB = b.GridObjects.ToList();
 
-        // find the closest pair of grid objects (for now its kinda ugly since it doesnt really choose the one in the middle but instead last found shortest)
+        // First pass: find the minimum distance between any grid objects of the two tectons
         foreach (var goA in gridObjectsFromA)
         {
             foreach (var goB in gridObjectsFromB)
@@ -63,9 +61,68 @@ public class FungalThread : MonoBehaviour
                 if (distance < minDistance)
                 {
                     minDistance = distance;
-                    closestFromA = goA;
-                    closestFromB = goB;
                 }
+            }
+        }
+
+
+        // Second pass: collect all pairs that are within the minimum distance + threshold
+        List<GridObject> candidatesFromA = new List<GridObject>();
+        List<GridObject> candidatesFromB = new List<GridObject>();
+
+        foreach (var goA in gridObjectsFromA)
+        {
+            foreach (var goB in gridObjectsFromB)
+            {
+                float distance = Vector3.Distance(goA.transform.position, goB.transform.position);
+                if (distance <= minDistance)
+                {
+                    candidatesFromA.Add(goA);
+                    candidatesFromB.Add(goB);
+                }
+            }
+        }
+
+        // Calculate the average position of candidates from each tecton
+        Vector3 avgPosA = Vector3.zero;
+        Vector3 avgPosB = Vector3.zero;
+
+        foreach (var candidate in candidatesFromA)
+        {
+            avgPosA += candidate.transform.position;
+        }
+
+        foreach (var candidate in candidatesFromB)
+        {
+            avgPosB += candidate.transform.position;
+        }
+
+        avgPosA /= candidatesFromA.Count;
+        avgPosB /= candidatesFromB.Count;
+
+        // Find the grid objects closest to the average positions
+        GridObject closestFromA = null;
+        GridObject closestFromB = null;
+        float closestDistA = float.MaxValue;
+        float closestDistB = float.MaxValue;
+
+        foreach (var goA in candidatesFromA)
+        {
+            float dist = Vector3.Distance(goA.transform.position, avgPosA);
+            if (dist < closestDistA)
+            {
+                closestDistA = dist;
+                closestFromA = goA;
+            }
+        }
+
+        foreach (var goB in candidatesFromB)
+        {
+            float dist = Vector3.Distance(goB.transform.position, avgPosB);
+            if (dist < closestDistB)
+            {
+                closestDistB = dist;
+                closestFromB = goB;
             }
         }
 
