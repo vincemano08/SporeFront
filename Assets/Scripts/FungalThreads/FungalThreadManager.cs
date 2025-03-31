@@ -16,6 +16,11 @@ public class FungalThreadManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+
+            if(threadPrefab == null)
+            {
+                Debug.LogError("Thread prefab is not set in the FungalThreadManager.");
+            }
         }
         else
         {
@@ -73,7 +78,7 @@ public class FungalThreadManager : MonoBehaviour
             return true;
         }
 
-        // shouldnt happen but just in case
+        // shouldn't happen but just in case
         Debug.LogError("Connection exists but no thread was found between tectons!");
         connections.Remove(key);
         return false;

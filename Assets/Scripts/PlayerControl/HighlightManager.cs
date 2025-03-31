@@ -11,7 +11,6 @@ public class HighlightManager : MonoBehaviour
 
     public GameObject currentHighlightedObject { get; private set; }
     private Tecton currentHighlightedTecton;
-
     void Update()
     {
         HandleHighlight();

@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     public FungusBody SelectedFungusBody { get; private set; }
     public FungusBody PrevFungusBody { get; private set; } = null;
 
+    [SerializeField] private HighlightManager highlightManager;
     [SerializeField] private EventChannel eventChannel;
 
     public ActionMode CurrentMode { get; private set; } = ActionMode.None;
@@ -24,6 +25,10 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            if(highlightManager == null)
+            {
+                highlightManager = FindFirstObjectByType<HighlightManager>();
+            }
         }
         else
         {
@@ -62,10 +67,16 @@ public class GameManager : MonoBehaviour
 
         CurrentMode = ActionMode.None;
 
-        FindFirstObjectByType<HighlightManager>()?.ResetAllHighlights();
+        highlightManager?.ResetAllHighlights();
     }
 
     private void Update()
+    {
+        HandleKeyboardInput();
+        HandleMouseInput();
+    }
+
+    private void HandleKeyboardInput()
     {
         if (SelectedFungusBody != null)
         {
@@ -76,6 +87,10 @@ public class GameManager : MonoBehaviour
             else if (Input.GetKeyDown(KeyCode.Escape))
                 DeselectFungus();
         }
+    }
+
+    private void HandleMouseInput()
+    {
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

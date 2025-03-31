@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,6 +15,7 @@ public class FungalThread : MonoBehaviour
         if(lineRenderer == null)
         {
             Debug.LogError("LineRenderer component not found on the object.");
+            return;
         }
         lineRenderer.startWidth = 0.3f;
         lineRenderer.endWidth = 0.3f;
@@ -48,16 +50,29 @@ public class FungalThread : MonoBehaviour
 
     private (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
     {
-        float minDistance = float.MaxValue;
-        var gridObjectsFromA = a.GridObjects.ToList();
-        var gridObjectsFromB = b.GridObjects.ToList();
+        if(a == null || b == null)
+        {
+            Debug.LogError("One or both of the tectons are null.");
+            return (null, null);
+        }
 
-        // First pass: find the minimum distance between any grid objects of the two tectons
+        var gridObjectsFromA = a.GridObjects;
+        var gridObjectsFromB = b.GridObjects;
+
+        if (gridObjectsFromA.Count == 0 || gridObjectsFromB.Count == 0)
+        {
+            Debug.LogError("One or both of the tectons have no grid objects.");
+            return (null, null);
+        }
+
+        float minDistance = float.MaxValue;
+
+        // First pass: find the minimum distance between any two grid objects
         foreach (var goA in gridObjectsFromA)
         {
             foreach (var goB in gridObjectsFromB)
             {
-                float distance = Vector3.Distance(goA.transform.position, goB.transform.position);
+                float distance = (goA.transform.position - goB.transform.position).sqrMagnitude;
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -65,6 +80,7 @@ public class FungalThread : MonoBehaviour
             }
         }
 
+        float exactMinDistance = minDistance;
 
         // Second pass: collect all pairs that are within the minimum distance + threshold
         List<GridObject> candidatesFromA = new List<GridObject>();
@@ -74,8 +90,8 @@ public class FungalThread : MonoBehaviour
         {
             foreach (var goB in gridObjectsFromB)
             {
-                float distance = Vector3.Distance(goA.transform.position, goB.transform.position);
-                if (distance <= minDistance)
+                float distance = (goA.transform.position - goB.transform.position).sqrMagnitude;
+                if (distance <= exactMinDistance + 0.0001f)
                 {
                     candidatesFromA.Add(goA);
                     candidatesFromB.Add(goB);
@@ -108,7 +124,7 @@ public class FungalThread : MonoBehaviour
 
         foreach (var goA in candidatesFromA)
         {
-            float dist = Vector3.Distance(goA.transform.position, avgPosA);
+            float dist = (goA.transform.position - avgPosA).sqrMagnitude;
             if (dist < closestDistA)
             {
                 closestDistA = dist;
@@ -118,7 +134,7 @@ public class FungalThread : MonoBehaviour
 
         foreach (var goB in candidatesFromB)
         {
-            float dist = Vector3.Distance(goB.transform.position, avgPosB);
+            float dist = (goB.transform.position - avgPosB).sqrMagnitude;
             if (dist < closestDistB)
             {
                 closestDistB = dist;
