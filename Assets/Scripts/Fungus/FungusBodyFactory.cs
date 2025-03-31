@@ -11,8 +11,8 @@ public class FungusBodyFactory : MonoBehaviour
     [Tooltip("How high above the tekton the fungus body should spawn")]
     [SerializeField] private float dropHeight = 3f;
 
-    private void Awake()
-    {
+ 
+    private void Awake() {
         if (Instance == null)
             Instance = this;
         else
@@ -37,22 +37,6 @@ public class FungusBodyFactory : MonoBehaviour
                 }
 
                 SpawnFungusBody(spawnGridObject);
-            }
-        }
-    }
-
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                GridObject gridObject = hit.collider.GetComponent<GridObject>();
-                if (gridObject != null && gridObject.parentTecton.FungusBody == null)
-                {
-                    SpawnFungusBody(gridObject);
-                }
             }
         }
     }
