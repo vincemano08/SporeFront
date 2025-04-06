@@ -58,6 +58,12 @@ public class Tecton : MonoBehaviour
     public static HashSet<Tecton> GetAll()
     {
         HashSet<Tecton> tectons = new HashSet<Tecton>();
+        if (parent == null)
+        {
+            Debug.LogError("parent is null");
+            return null;
+        }
+        
         foreach (Transform child in parent)
         {
             tectons.Add(child.GetComponent<Tecton>());
@@ -67,7 +73,9 @@ public class Tecton : MonoBehaviour
 
     public static Tecton ChooseRandom(Func<Tecton, bool> predicate = null)
     {
-        var tectons = GetAll().ToList();
+        var tectons = GetAll()?.ToList();
+        if (tectons == null)
+            return null;
         if (predicate != null)
         {
             tectons = tectons.Where(predicate).ToList();

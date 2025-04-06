@@ -1,3 +1,4 @@
+using Fusion;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,12 +10,13 @@ public enum OccupantType
     Spore
 }
 
-public class GridObject : MonoBehaviour
+public class GridObject : NetworkBehaviour
 {
 
     public int X { get; set; }
     public int Z { get; set; }
     public Tecton parentTecton { get; set; }
+    [Networked]
     public OccupantType occupantType { get; set; } = OccupantType.None;
     public bool IsOccupied => occupantType != OccupantType.None;
 

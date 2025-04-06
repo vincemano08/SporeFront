@@ -1,7 +1,8 @@
+using Fusion;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveInsect : MonoBehaviour
+public class MoveInsect : NetworkBehaviour
 {
 
     [SerializeField] private float speed;
@@ -13,7 +14,13 @@ public class MoveInsect : MonoBehaviour
     public bool Selected { get; set; } = false;
 
     private GridObject currentGridObject;
-    private Queue<GridObject> path;
+    
+    private NetworkQueue path;
+    public override void Spawned()
+    {
+        base.Spawned();
+        path = new NetworkQueue();
+    }
 
     private void Awake()
     {
@@ -35,7 +42,7 @@ public class MoveInsect : MonoBehaviour
                     var p = AStarPathFinder.FindPath(startGridObject, targetGridObject);
                     if (p != null)
                     {
-                        path = new Queue<GridObject>(p);
+                        path.Enqueue(p);
                         targetGridObject.occupantType = OccupantType.Insect;
                     }
                     else
@@ -43,6 +50,11 @@ public class MoveInsect : MonoBehaviour
                 }
             }
         }
+        
+
+    }
+    public override void FixedUpdateNetwork()
+    {
         // Move towards the target position
         if (path != null && path.Count > 0)
         {
@@ -51,7 +63,7 @@ public class MoveInsect : MonoBehaviour
             nextGridObject.occupantType = OccupantType.Insect;
 
             Vector3 targetPosition = nextGridObject.transform.position + new Vector3(0, 1f, 0);
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime);
 
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
@@ -59,7 +71,6 @@ public class MoveInsect : MonoBehaviour
                 currentGridObject = path.Dequeue();
             }
         }
-
     }
     private void OnMouseDown()
     {
