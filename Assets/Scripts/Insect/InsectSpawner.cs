@@ -21,10 +21,10 @@ public class InsectSpawner : NetworkBehaviour
     public override void Spawned()
     {
         // Csak a state authority (szerver/host) spawnolja az insektet.
-        //if (Object.HasStateAuthority)
-        //{
-        //    SpawnInsects();
-        //}
+        if (Object.HasStateAuthority)
+        {
+            SpawnInsects();
+        }
     }
 
     public void SpawnInsects()
@@ -81,7 +81,19 @@ public class InsectSpawner : NetworkBehaviour
         foreach (Transform child in gameObject.transform)
         {
             if (child == null) continue;
-            Destroy(child.gameObject);
+            NetworkObject networkObj = child.GetComponent<NetworkObject>(); // Get the NetworkObject component
+            if (networkObj != null && Runner != null)
+            {
+                // Only the state authority can despawn objects
+                if (Object.HasStateAuthority)
+                {
+                    Runner.Despawn(networkObj);
+                }
+            }
+            else
+            {
+                Destroy(child.gameObject);
+            }
         }
         insects.Clear();
     }
