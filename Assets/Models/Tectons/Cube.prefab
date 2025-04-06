@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 7572649993919571921}
   - component: {fileID: 9027918145314099403}
   - component: {fileID: -4799558012808547731}
+  - component: {fileID: 3442005169982714705}
+  - component: {fileID: 6574181538519861235}
   m_Layer: 7
   m_Name: Cube
   m_TagString: GridObject
@@ -121,3 +123,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a0ea8f22cb302f4b92e1afdd2da84ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3442005169982714705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8998479281897931918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 2184878666
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 6574181538519861235}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &6574181538519861235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8998479281897931918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0

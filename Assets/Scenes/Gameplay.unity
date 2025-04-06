@@ -1428,6 +1428,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1843253587}
   - component: {fileID: 1843253590}
+  - component: {fileID: 1843253591}
   m_Layer: 0
   m_Name: World Generation
   m_TagString: Untagged
@@ -1468,6 +1469,25 @@ MonoBehaviour:
   relaxationIterations: 4
   mapParent: {fileID: 1662312091}
   gridObjectPrefab: {fileID: 8998479281897931918, guid: a076406a21351924d91eb31df70d4bac, type: 3}
+--- !u!114 &1843253591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1843253585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 233997083
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 1843253590}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

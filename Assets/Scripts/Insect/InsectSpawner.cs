@@ -18,6 +18,7 @@ public class InsectSpawner : NetworkBehaviour
     {
         SpawnInsects();
     }*/
+    /*
     public override void Spawned()
     {
         // Csak a state authority (szerver/host) spawnolja az insektet.
@@ -25,7 +26,7 @@ public class InsectSpawner : NetworkBehaviour
         {
             SpawnInsects();
         }
-    }
+    }*/
 
     public void SpawnInsects()
     {

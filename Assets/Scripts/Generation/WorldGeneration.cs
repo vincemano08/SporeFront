@@ -1,8 +1,9 @@
+using Fusion;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class WorldGeneration : MonoBehaviour
+public class WorldGeneration : NetworkBehaviour
 {
 
     public int tectonCount;
@@ -19,12 +20,20 @@ public class WorldGeneration : MonoBehaviour
     public int Width { get => width; }
     public int Height { get => height; }
 
-
+    public override void Spawned() 
+    {
+        if (!Runner.IsServer)
+            return;
+        ClearMap();
+        GenerateMap();
+    }
+    /*
     private void OnEnable()
     {
         ClearMap();
         GenerateMap();
     }
+    */
 
     private void OnDisable()
     {
@@ -238,7 +247,8 @@ public class WorldGeneration : MonoBehaviour
 
     private void CreateGridObject(int x, int z, int tectonId)
     {
-        GameObject gridObject = Instantiate(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity);
+        NetworkObject networkObject = Runner.Spawn(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity);
+        GameObject gridObject = networkObject.gameObject;
 
         Tecton parentTecton = Tecton.GetById(tectonId);
 

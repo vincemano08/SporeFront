@@ -19,7 +19,7 @@ public class FungusBodyFactory : MonoBehaviour
             // Checks if there is already an instance of the class, if so, it destroys that because of the singleton
             Destroy(gameObject);
     }
-
+    
     private void Start()
     {
         // Spawn a few fungus bodies by default
@@ -40,7 +40,7 @@ public class FungusBodyFactory : MonoBehaviour
             }
         }
     }
-
+    
     public FungusBody SpawnFungusBody(GridObject spawnGridObject)
     {
         Tecton tecton = spawnGridObject.parentTecton;
