@@ -1,8 +1,10 @@
+using Fusion;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Unity.Collections.Unicode;
 
-public class InsectSpawner : MonoBehaviour
+public class InsectSpawner : NetworkBehaviour
 {
     [SerializeField] private GameObject insectPrefab;
     [SerializeField] private int numberOfInsects;
@@ -11,10 +13,18 @@ public class InsectSpawner : MonoBehaviour
     [SerializeField] private WorldGeneration worldGen;
 
     public HashSet<GameObject> insects = new HashSet<GameObject>();
-
+    /*
     void Start()
     {
         SpawnInsects();
+    }*/
+    public override void Spawned()
+    {
+        // Csak a state authority (szerver/host) spawnolja az insektet.
+        //if (Object.HasStateAuthority)
+        //{
+        //    SpawnInsects();
+        //}
     }
 
     public void SpawnInsects()
@@ -51,7 +61,9 @@ public class InsectSpawner : MonoBehaviour
         Vector3 spawnPosition = gridObject.transform.position + new Vector3(0, heightOffset, 0);
 
         // Spawn the insect
-        GameObject insect = Instantiate(insectPrefab, spawnPosition, Quaternion.identity);
+        NetworkObject insectNetworkObject = Runner.Spawn(insectPrefab, spawnPosition, Quaternion.identity);
+        GameObject insect = insectNetworkObject.gameObject;
+
         insect.name = $"Insect_{selectedTecton.Id}";
         insect.transform.SetParent(gameObject.transform);
         insects.Add(insect);
