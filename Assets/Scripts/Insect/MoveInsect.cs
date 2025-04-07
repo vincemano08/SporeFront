@@ -1,5 +1,6 @@
 using Fusion;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MoveInsect : NetworkBehaviour
@@ -15,11 +16,11 @@ public class MoveInsect : NetworkBehaviour
 
     private GridObject currentGridObject;
     
-    private NetworkQueue path;
+    private Queue<GridObject> path;
     public override void Spawned()
     {
         base.Spawned();
-        path = new NetworkQueue();
+        path = new Queue<GridObject>();
     }
 
     private void Awake()
@@ -42,7 +43,7 @@ public class MoveInsect : NetworkBehaviour
                     var p = AStarPathFinder.FindPath(startGridObject, targetGridObject);
                     if (p != null)
                     {
-                        path.Enqueue(p);
+                        path = new Queue<GridObject>(p);
                         targetGridObject.occupantType = OccupantType.Insect;
                     }
                     else
