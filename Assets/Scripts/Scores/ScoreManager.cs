@@ -6,7 +6,7 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private EventChannel eventChannel;
 
     // scores of player 1
-    public int ScoreP1 { get; set; }
+    public int ScoreP1 { get; set; } = 0;
 
     private void Start()
     {
@@ -19,7 +19,7 @@ public class ScoreManager : MonoBehaviour
     {
         ScoreP1 += score;
         if (eventChannel != null) 
-            eventChannel.RaiseUpdateHud(ScoreP1);
+            eventChannel.RaiseUpdateHudScore(ScoreP1);
     }
 
 
