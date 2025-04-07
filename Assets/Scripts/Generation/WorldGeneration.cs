@@ -13,6 +13,7 @@ public class WorldGeneration : NetworkBehaviour
     [SerializeField] private int relaxationIterations;
 
     [SerializeField] private Transform mapParent;
+    [SerializeField] private GameObject tectonPrefab;
     [SerializeField] private GameObject gridObjectPrefab;
 
     private GameObject[,] grid;
@@ -145,15 +146,18 @@ public class WorldGeneration : NetworkBehaviour
                 }
                 if (tectonExists) continue;
 
-                GameObject tectonObject = new GameObject($"Tecton_{tectonMap[x, z]}");
+                NetworkObject tectonNetworkObject = Runner.Spawn(tectonPrefab, Vector3.zero, Quaternion.identity);
+                GameObject tectonObject = tectonNetworkObject.gameObject;
+                tectonObject.name = $"Tecton_{tectonMap[x, z]}";
+
                 tectonObject.transform.SetParent(mapParent);
 
                 // Add Tecton component
-                Tecton tectonComponent = tectonObject.AddComponent<Tecton>();
-                tectonComponent.Init(tectonMap[x, z]);
-
-                // Make it networked
-                NetworkObject networkObject = tectonObject.AddComponent<NetworkObject>();
+                if (tectonObject.GetComponent<Tecton>() == null)
+                {
+                    Tecton tectonComponent = tectonObject.AddComponent<Tecton>();
+                    tectonComponent.Init(tectonMap[x, z], mapParent);
+                }
             }
         }
         // Not too efficient, but whatever
@@ -250,7 +254,7 @@ public class WorldGeneration : NetworkBehaviour
 
     private void CreateGridObject(int x, int z, int tectonId)
     {
-        NetworkObject networkObject = Runner.Spawn(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity, Runner.LocalPlayer);
+        NetworkObject networkObject = Runner.Spawn(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity);
         GameObject gridObject = networkObject.gameObject;
 
         Tecton parentTecton = Tecton.GetById(tectonId);

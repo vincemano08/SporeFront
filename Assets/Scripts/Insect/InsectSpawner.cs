@@ -2,7 +2,6 @@ using Fusion;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Unity.Collections.Unicode;
 
 public class InsectSpawner : NetworkBehaviour
 {
@@ -28,17 +27,17 @@ public class InsectSpawner : NetworkBehaviour
         }
     }*/
 
-    public void SpawnInsects()
+    public void SpawnInsects(PlayerRef player)
     {
         int spawnCount = Mathf.Min(numberOfInsects, worldGen.tectonCount);
         for (int i = 0; i < spawnCount; i++)
         {
-            SpawnInsectOnRandomTecton();
+            SpawnInsectOnRandomTecton(player);
         }
         Debug.Log($"Spawned {spawnCount} insects on Tectons");
     }
 
-    void SpawnInsectOnRandomTecton()
+    void SpawnInsectOnRandomTecton(PlayerRef player)
     {
         // Select a random Tecton
         Tecton selectedTecton = Tecton.ChooseRandom();
@@ -62,7 +61,7 @@ public class InsectSpawner : NetworkBehaviour
         Vector3 spawnPosition = gridObject.transform.position + new Vector3(0, heightOffset, 0);
 
         // Spawn the insect
-        NetworkObject insectNetworkObject = Runner.Spawn(insectPrefab, spawnPosition, Quaternion.identity);
+        NetworkObject insectNetworkObject = Runner.Spawn(insectPrefab, spawnPosition, Quaternion.identity, player);
         GameObject insect = insectNetworkObject.gameObject;
 
         insect.name = $"Insect_{selectedTecton.Id}";

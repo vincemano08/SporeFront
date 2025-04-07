@@ -16,7 +16,7 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     {
         if (Runner.IsServer)
         {
-            insectSpawner.SpawnInsects(); //spawn 3 insect if a player joins
+            insectSpawner.SpawnInsects(player); //spawn 3 insect if a player joins
         }
     }
 }

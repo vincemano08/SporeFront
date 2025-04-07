@@ -2,14 +2,13 @@ using Fusion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
-public class Tecton : MonoBehaviour
+public class Tecton : NetworkBehaviour, IAfterSpawned
 {
     public static Transform parent;
 
-    public int Id { get; private set; }
+    public new int Id { get; private set; }
     public int SporeThreshold { get; private set; }
     public HashSet<GridObject> GridObjects { get; private set; } = new HashSet<GridObject>();
     public HashSet<Tecton> Neighbors { get; set; }
@@ -33,25 +32,33 @@ public class Tecton : MonoBehaviour
         }
     }
 
-    private void Awake()
+    public override void Spawned()
     {
         sporeManager = FindFirstObjectByType<SporeManager>();
     }
 
+    public void AfterSpawned() {
+        this.transform.SetParent(parent);
+        this.name = $"Tecton_{Id}";
+        Debug.Log($"Tecton {Id} spawned");
+    }
+
     // Not a beautiful solution, good for now
-    public void Init(int id)
+    public void Init(int id, Transform parent)
     {
         this.Id = id;
         this.SporeThreshold = 5;
+        Tecton.parent = parent;
     }
 
     public static Tecton GetById(int id)
     {
         foreach (Transform child in parent)
         {
-            if (child.GetComponent<Tecton>().Id == id)
+            Tecton tectonComponent = child.GetComponent<Tecton>();
+            if (tectonComponent.Id == id)
             {
-                return child.GetComponent<Tecton>();
+                return tectonComponent;
             }
         }
         return null;

@@ -1468,6 +1468,7 @@ MonoBehaviour:
   height: 50
   relaxationIterations: 4
   mapParent: {fileID: 1662312091}
+  tectonPrefab: {fileID: 8998479281897931918, guid: 4bb8b9a85ae01f8488aea03c1ca2ddf8, type: 3}
   gridObjectPrefab: {fileID: 8998479281897931918, guid: a076406a21351924d91eb31df70d4bac, type: 3}
 --- !u!114 &1843253591
 MonoBehaviour:

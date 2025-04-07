@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using Fusion;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ public class GameLogicEditor : Editor
             InsectSpawner insectSpawner = FindFirstObjectByType<InsectSpawner>();
             if (insectSpawner != null)
             {
-                insectSpawner.SpawnInsects();
+                insectSpawner.SpawnInsects(PlayerRef.None);
             }
             else
             {
