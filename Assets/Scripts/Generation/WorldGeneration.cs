@@ -151,6 +151,9 @@ public class WorldGeneration : NetworkBehaviour
                 // Add Tecton component
                 Tecton tectonComponent = tectonObject.AddComponent<Tecton>();
                 tectonComponent.Init(tectonMap[x, z]);
+
+                // Make it networked
+                NetworkObject networkObject = tectonObject.AddComponent<NetworkObject>();
             }
         }
         // Not too efficient, but whatever
@@ -247,7 +250,7 @@ public class WorldGeneration : NetworkBehaviour
 
     private void CreateGridObject(int x, int z, int tectonId)
     {
-        NetworkObject networkObject = Runner.Spawn(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity);
+        NetworkObject networkObject = Runner.Spawn(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity, Runner.LocalPlayer);
         GameObject gridObject = networkObject.gameObject;
 
         Tecton parentTecton = Tecton.GetById(tectonId);

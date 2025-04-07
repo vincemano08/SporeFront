@@ -1,11 +1,12 @@
+using Fusion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class Tecton : MonoBehaviour
 {
-
     public static Transform parent;
 
     public int Id { get; private set; }
@@ -13,7 +14,8 @@ public class Tecton : MonoBehaviour
     public HashSet<GridObject> GridObjects { get; private set; } = new HashSet<GridObject>();
     public HashSet<Tecton> Neighbors { get; set; }
     public IEnumerable<GridObject> Spores => GridObjects.Where(go => go.occupantType == OccupantType.Spore);
-
+    
+    
     private SporeManager sporeManager;
 
     private FungusBody fungusBody;

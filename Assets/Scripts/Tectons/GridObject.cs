@@ -39,10 +39,8 @@ public class GridObject : NetworkBehaviour
             Debug.LogWarning("Renderer not found on " + gameObject.name);
     }
 
-    public static GridObject GetGridObjectAt(float x, float z)
-    {
-        return GetGridObjectAt(new Vector3(x, 0, z));
-    }
+    public static GridObject GetGridObjectAt(float x, float z) =>
+        GetGridObjectAt(new Vector3(x, 0, z));
 
     public static GridObject GetGridObjectAt(Vector3 position)
     {
