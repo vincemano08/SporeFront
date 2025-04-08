@@ -22,8 +22,11 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     {
         if (Runner.IsServer)
         {
-            insectSpawner.SpawnInsects(player); //spawn 3 insect if a player joins
-            fungusBodyFactory.SpawnDefault();
+            // Spawn one fungus body for the player
+            var fungusBody = fungusBodyFactory.SpawnDefault(player);
+
+            // Spawn insects near the fungus body
+            insectSpawner.SpawnInsectsNearBody(player, fungusBody);
         }
     }
 }

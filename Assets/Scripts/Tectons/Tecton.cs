@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Tecton : NetworkBehaviour, IAfterSpawned
+public class Tecton : NetworkBehaviour
 {
     public static Transform parent;
 
@@ -35,12 +35,10 @@ public class Tecton : NetworkBehaviour, IAfterSpawned
     public override void Spawned()
     {
         sporeManager = FindFirstObjectByType<SporeManager>();
-    }
-
-    public void AfterSpawned() {
-        this.transform.SetParent(parent);
-        this.name = $"Tecton_{Id}";
-        Debug.Log($"Tecton {Id} spawned");
+        if (sporeManager == null) {
+            Debug.LogError("SporeManager not found in the scene");
+            return;
+        }
     }
 
     // Not a beautiful solution, good for now
@@ -102,9 +100,14 @@ public class Tecton : NetworkBehaviour, IAfterSpawned
     /// <param name="amount">Number of spores to be added.</param>
     public void AddSpores(int amount)
     {
+        if (sporeManager == null) {
+            sporeManager = FindFirstObjectByType<SporeManager>();
+        }
+
         for (int i = 0; i < amount; i++)
         {
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();
+
             sporeManager.SpawnSpore(spawnGridObject);
         }
 
@@ -119,7 +122,10 @@ public class Tecton : NetworkBehaviour, IAfterSpawned
                 return;
             }
 
-            FungusBodyFactory.Instance.SpawnFungusBody(spawnGridObject);
+            // Get current tecton's fungus body's player
+            PlayerRef player = FungusBody != null ? FungusBody.GetComponent<NetworkObject>().InputAuthority : default;
+
+            FungusBodyFactory.Instance.SpawnFungusBody(spawnGridObject, player);
             // Despawn spores
             foreach (var gridObject in Spores)
             {

@@ -18,7 +18,7 @@ public class GameLogicEditor : Editor
             InsectSpawner insectSpawner = FindFirstObjectByType<InsectSpawner>();
             if (insectSpawner != null)
             {
-                insectSpawner.SpawnInsects(PlayerRef.None);
+                insectSpawner.SpawnInsectsNearBody(PlayerRef.None, null);
             }
             else
             {

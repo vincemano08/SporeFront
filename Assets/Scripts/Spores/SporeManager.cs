@@ -1,6 +1,7 @@
+using Fusion;
 using UnityEngine;
 
-public class SporeManager : MonoBehaviour
+public class SporeManager : NetworkBehaviour
 {
 
     [SerializeField] private GameObject sporePrefab;
@@ -20,9 +21,8 @@ public class SporeManager : MonoBehaviour
         }
 
         Vector3 position = gridObject.transform.position + Vector3.up;
-        GameObject spore = Instantiate(sporePrefab, position, Quaternion.identity);
-
-
+        NetworkObject networkSpore = Runner.Spawn(sporePrefab, position, Quaternion.identity);
+        GameObject spore = networkSpore.gameObject;
 
         spore.transform.SetParent(gridObject.transform);
         spore.name = "Spore";

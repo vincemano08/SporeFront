@@ -1,6 +1,5 @@
 using Fusion;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class InsectSpawner : NetworkBehaviour
@@ -12,44 +11,27 @@ public class InsectSpawner : NetworkBehaviour
     [SerializeField] private WorldGeneration worldGen;
 
     public HashSet<MoveInsect> insects = new HashSet<MoveInsect>();
-    /*
-    void Start()
-    {
-        SpawnInsects();
-    }*/
-    /*
-    public override void Spawned()
-    {
-        // Csak a state authority (szerver/host) spawnolja az insektet.
-        if (Object.HasStateAuthority)
-        {
-            SpawnInsects();
-        }
-    }*/
 
-    public void SpawnInsects(PlayerRef player)
+    public void SpawnInsectsNearBody(PlayerRef player, FungusBody fungusBody)
     {
         int spawnCount = Mathf.Min(numberOfInsects, worldGen.tectonCount);
+        Tecton bodyTecton = fungusBody.Tecton;
         for (int i = 0; i < spawnCount; i++)
         {
-            SpawnInsectOnRandomTecton(player);
+            // Only spawn around the fungus body
+            Tecton spawnTecton = Tecton.ChooseRandom(t => bodyTecton.Neighbors.Contains(t) || t == bodyTecton);
+            SpawnInsectOnTecton(player, spawnTecton);
         }
-        Debug.Log($"Spawned {spawnCount} insects on Tectons");
+        Debug.Log($"Spawned {spawnCount} insects.");
     }
 
-    void SpawnInsectOnRandomTecton(PlayerRef player)
+    void SpawnInsectOnTecton(PlayerRef player, Tecton tecton)
     {
-        // Select a random Tecton
-        Tecton selectedTecton = Tecton.ChooseRandom();
-        if (selectedTecton == null)
-        {
-            Debug.LogError("No Tectons found to spawn insects on");
-            return;
-        }
+        if (tecton == null) return;
 
         // TODO: Logic to prevent multiple insects on the same Tecton
 
-        GridObject gridObject = selectedTecton.ChooseRandomEmptyGridObject();
+        GridObject gridObject = tecton.ChooseRandomEmptyGridObject();
 
         if (gridObject == null)
         {
@@ -65,7 +47,7 @@ public class InsectSpawner : NetworkBehaviour
         GameObject insect = insectNetworkObject.gameObject;
         Debug.Log($"Insect owner: {insectNetworkObject.InputAuthority}");
 
-        insect.name = $"Insect_{selectedTecton.Id}";
+        insect.name = $"Insect_{tecton.Id}";
         insect.transform.SetParent(gameObject.transform);
 
         // Component should already be on the prefab

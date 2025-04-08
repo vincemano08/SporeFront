@@ -44,6 +44,14 @@ public class MoveInsect : NetworkBehaviour {
 
         // TODO: validate client input
 
+        // If the insect is already moving, and we get a new target, we need to mark the previous path unoccupied
+        if (path.Count > 0 || isMoving) {
+            foreach (var gridObject in path) {
+                gridObject.occupantType = OccupantType.None;
+            }
+            path.Clear();
+        }
+
         // Set the target grid object as occupied if it is not already
         if (targetGridObject.IsOccupied) {
             Debug.Log("Target grid object is already occupied");
@@ -96,6 +104,7 @@ public class MoveInsect : NetworkBehaviour {
         // Move towards the target position
         if (path != null && path.Count > 0) {
             var nextGridObject = path.Peek();
+
             // Reserving the next grid object
             nextGridObject.occupantType = OccupantType.Insect;
 
