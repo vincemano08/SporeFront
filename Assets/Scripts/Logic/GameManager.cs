@@ -108,6 +108,8 @@ public class GameManager : MonoBehaviour
                             DeselectFungus();
                         }
                     }
+                    /*
+                     * Accoding to current logic, we cant place fungusBody by clicking
                     else if (SelectedFungusBody == null && CurrentMode == ActionMode.None)
                     {
                         // added quality of life feature you dont have to click the fungus itself to select it. yippieee
@@ -121,7 +123,8 @@ public class GameManager : MonoBehaviour
                             if (eventChannel != null)
                                 eventChannel.RaiseScoreChanged(1);
                         }
-                    }
+                    }*/
+
                 }
             }
         }

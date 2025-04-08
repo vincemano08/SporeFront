@@ -1,6 +1,7 @@
+using Fusion;
 using UnityEngine;
 
-public class FungusBodyFactory : MonoBehaviour
+public class FungusBodyFactory : NetworkBehaviour
 {
 
     // Singleton pattern - later could be DI instead
@@ -21,6 +22,11 @@ public class FungusBodyFactory : MonoBehaviour
     }
     
     private void Start()
+    {
+        //SpawnDefault();
+    }
+
+    public void SpawnDefault() 
     {
         // Spawn a few fungus bodies by default
         for (int i = 0; i < 3; i++)
@@ -56,7 +62,8 @@ public class FungusBodyFactory : MonoBehaviour
         spawnGridObject.occupantType = OccupantType.FungusBody;
         Vector3 spawnPosition = spawnGridObject.transform.position + Vector3.up * dropHeight;
 
-        GameObject newFungusBody = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
+        NetworkObject newNetworkFungusBody = Runner.Spawn(bodyPrefab, spawnPosition, Quaternion.identity);
+        GameObject newFungusBody = newNetworkFungusBody.gameObject;
         newFungusBody.name = $"FungusBody_{tecton.Id}";
         newFungusBody.transform.SetParent(gameObject.transform);
 
