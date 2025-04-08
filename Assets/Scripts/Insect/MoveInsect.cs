@@ -14,10 +14,12 @@ public class MoveInsect : MonoBehaviour
 
     private GridObject currentGridObject;
     private Queue<GridObject> path;
+    private SporeManager sporeManager;
 
     private void Awake()
     {
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
+        sporeManager = FindFirstObjectByType<SporeManager>();
         currentGridObject = GridObject.GetGridObjectAt(transform.position);
     }
 
@@ -59,7 +61,7 @@ public class MoveInsect : MonoBehaviour
                 currentGridObject = path.Dequeue();
             }
         }
-
+        HandleKeyboardInput();
     }
     private void OnMouseDown()
     {
@@ -86,6 +88,18 @@ public class MoveInsect : MonoBehaviour
         if (renderer != null)
         {
             renderer.material = material;
+        }
+    }
+    
+    public void HandleKeyboardInput()
+    {
+        if(Selected && Input.GetKeyDown(KeyCode.C))
+        {
+            var neighbour = sporeManager.IsSporeNearby(currentGridObject);
+            if (neighbour != null)
+                sporeManager.ConsumeSpores(neighbour);
+            else
+                Debug.Log("No spores nearby");
         }
     }
 }

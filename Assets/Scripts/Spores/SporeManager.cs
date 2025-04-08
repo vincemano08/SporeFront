@@ -48,4 +48,25 @@ public class SporeManager : MonoBehaviour
             Debug.LogWarning("No spore found to remove on grid object");
         }
     }
+
+    public void ConsumeSpores(GridObject gridObject)
+    {
+        //elõre definiált idõbe telik az elfogyasztás
+        //utána a spórát töröljük
+        //StartCoroutine(ConsumeSporesCoroutine());
+        RemoveSpore(gridObject);
+    }
+    public GridObject IsSporeNearby(GridObject gridObject)
+    {
+        //szomszédos gridek ellenõrzése, hogy van-e ott spóra
+        var neighbourGridObjects = gridObject.GetNeighbors();
+        foreach (var neighbour in neighbourGridObjects)
+        {
+            if (neighbour.occupantType == OccupantType.Spore)
+            {
+                return neighbour;
+            }
+        }
+        return null;
+    }
 }
