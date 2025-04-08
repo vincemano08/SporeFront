@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ public class MoveInsect : MonoBehaviour
     private GridObject currentGridObject;
     private Queue<GridObject> path;
     private SporeManager sporeManager;
+    private bool isConsumingSpore = false;
 
     private void Awake()
     {
@@ -25,6 +27,8 @@ public class MoveInsect : MonoBehaviour
 
     private void Update()
     {
+        if (isConsumingSpore) return;
+
         if (Input.GetMouseButtonDown(1) && Selected)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -97,9 +101,19 @@ public class MoveInsect : MonoBehaviour
         {
             var neighbour = sporeManager.IsSporeNearby(currentGridObject);
             if (neighbour != null)
-                StartCoroutine(sporeManager.ConsumeSporesCoroutine(neighbour));
+                StartCoroutine(ConsumeSporeAndContinue(neighbour));
             else
                 Debug.Log("No spores nearby");
         }
+    }
+
+    private IEnumerator ConsumeSporeAndContinue(GridObject sporeGridObject)
+    {
+        isConsumingSpore = true;
+
+        yield return StartCoroutine(sporeManager.ConsumeSporesCoroutine(sporeGridObject));
+
+        isConsumingSpore = false;
+        Debug.Log("Spore consumed, continuing path...");
     }
 }
