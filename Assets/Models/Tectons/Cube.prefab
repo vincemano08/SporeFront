@@ -123,6 +123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a0ea8f22cb302f4b92e1afdd2da84ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _occupantType: 0
 --- !u!114 &3442005169982714705
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -157,6 +158,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _stateAuthorityChangeErrorCorrectionDelta: 0
   SyncScale: 0
-  SyncParent: 0
+  SyncParent: 1
   _autoAOIOverride: 1
   DisableSharedModeInterpolation: 0

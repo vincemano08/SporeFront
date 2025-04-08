@@ -1,8 +1,9 @@
+using Fusion;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class FungalThreadManager : MonoBehaviour
+public class FungalThreadManager : NetworkBehaviour
 {
     public static FungalThreadManager Instance { get; private set; }
     
@@ -49,7 +50,9 @@ public class FungalThreadManager : MonoBehaviour
         var key = GetConnectionKey(a, b);
         connections.Add(key);
 
-        GameObject threadObj = Instantiate(threadPrefab, transform);
+        
+        NetworkObject threadNetworkObj = Runner.Spawn(threadPrefab, transform.position,transform.rotation);
+        GameObject threadObj = threadNetworkObj.gameObject;
         FungalThread thread = threadObj.GetComponent<FungalThread>();
         thread.SetTectons(a, b);
         fungalThreads.Add(thread);

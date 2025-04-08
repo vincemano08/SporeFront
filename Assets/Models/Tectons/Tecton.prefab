@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4719245974697014785}
   - component: {fileID: 3442005169982714705}
+  - component: {fileID: 2273937136032257494}
   m_Layer: 7
   m_Name: Tecton
   m_TagString: GridObject
@@ -48,5 +49,18 @@ MonoBehaviour:
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
-  NetworkedBehaviours: []
+  NetworkedBehaviours:
+  - {fileID: 2273937136032257494}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &2273937136032257494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8998479281897931918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 533d644de35dac9448108b3f0b01d430, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
