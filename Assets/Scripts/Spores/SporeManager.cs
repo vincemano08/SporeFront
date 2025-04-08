@@ -1,9 +1,13 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SporeManager : MonoBehaviour
 {
 
     [SerializeField] private GameObject sporePrefab;
+    [SerializeField] private float sporeConsumptionTime = 2f;
+    [SerializeField] private EventChannel eventChannel;
 
     public void SpawnSpore(GridObject gridObject)
     {
@@ -49,16 +53,30 @@ public class SporeManager : MonoBehaviour
         }
     }
 
-    public void ConsumeSpores(GridObject gridObject)
+    public IEnumerator ConsumeSporesCoroutine(GridObject gridObject)
     {
-        //elõre definiált idõbe telik az elfogyasztás
-        //utána a spórát töröljük
-        //StartCoroutine(ConsumeSporesCoroutine());
+        if (gridObject == null)
+            yield break;
+
+        Debug.Log("Spore consumption has begun...");
+
+        yield return new WaitForSeconds(sporeConsumptionTime);
+
+        if (eventChannel != null)
+        {
+            int scoreValue = 1; // later may vary depending on the type of spore
+            eventChannel.RaiseScoreChanged(scoreValue);
+        }
+        else
+            Debug.LogWarning("ScoreManager is not assigned");
+
         RemoveSpore(gridObject);
+
+        Debug.Log("Spore consumed");
     }
+
     public GridObject IsSporeNearby(GridObject gridObject)
     {
-        //szomszédos gridek ellenõrzése, hogy van-e ott spóra
         var neighbourGridObjects = gridObject.GetNeighbors();
         foreach (var neighbour in neighbourGridObjects)
         {

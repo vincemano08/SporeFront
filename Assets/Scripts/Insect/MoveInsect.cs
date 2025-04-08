@@ -97,7 +97,7 @@ public class MoveInsect : MonoBehaviour
         {
             var neighbour = sporeManager.IsSporeNearby(currentGridObject);
             if (neighbour != null)
-                sporeManager.ConsumeSpores(neighbour);
+                StartCoroutine(sporeManager.ConsumeSporesCoroutine(neighbour));
             else
                 Debug.Log("No spores nearby");
         }
