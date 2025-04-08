@@ -68,15 +68,21 @@ public class SporeManager : MonoBehaviour
             eventChannel.RaiseScoreChanged(scoreValue);
         }
         else
-            Debug.LogWarning("ScoreManager is not assigned");
+            Debug.LogWarning("EventChannel is not assigned");
 
         RemoveSpore(gridObject);
 
         Debug.Log("Spore consumed");
     }
 
-    public GridObject IsSporeNearby(GridObject gridObject)
+    public GridObject FindNearbySpore(GridObject gridObject)
     {
+        if (gridObject == null)
+        {
+            Debug.LogWarning("FindNearbySpore received null gridObject");
+            return null;
+        }
+
         var neighbourGridObjects = gridObject.GetNeighbors();
         foreach (var neighbour in neighbourGridObjects)
         {

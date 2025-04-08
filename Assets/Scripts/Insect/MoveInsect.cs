@@ -95,11 +95,16 @@ public class MoveInsect : MonoBehaviour
         }
     }
     
-    public void HandleKeyboardInput()
+    private void HandleKeyboardInput()
     {
         if(Selected && Input.GetKeyDown(KeyCode.C))
         {
-            var neighbour = sporeManager.IsSporeNearby(currentGridObject);
+            if (sporeManager == null)
+            {
+                Debug.LogError("SporeManager not found in scene. Spore consumption functionality will not work.");
+                return;
+            }
+            var neighbour = sporeManager.FindNearbySpore(currentGridObject);
             if (neighbour != null)
                 StartCoroutine(ConsumeSporeAndContinue(neighbour));
             else
@@ -110,6 +115,13 @@ public class MoveInsect : MonoBehaviour
     private IEnumerator ConsumeSporeAndContinue(GridObject sporeGridObject)
     {
         isConsumingSpore = true;
+
+        if (sporeManager == null)
+        {
+            Debug.LogError("Cannot consume spore: SporeManager not available");
+            isConsumingSpore = false;
+            yield break;
+        }
 
         yield return StartCoroutine(sporeManager.ConsumeSporesCoroutine(sporeGridObject));
 
