@@ -11,7 +11,7 @@ public class InsectSpawner : NetworkBehaviour
 
     [SerializeField] private WorldGeneration worldGen;
 
-    public HashSet<GameObject> insects = new HashSet<GameObject>();
+    public HashSet<MoveInsect> insects = new HashSet<MoveInsect>();
     /*
     void Start()
     {
@@ -63,10 +63,10 @@ public class InsectSpawner : NetworkBehaviour
         // Spawn the insect
         NetworkObject insectNetworkObject = Runner.Spawn(insectPrefab, spawnPosition, Quaternion.identity, player);
         GameObject insect = insectNetworkObject.gameObject;
+        Debug.Log($"Insect owner: {insectNetworkObject.InputAuthority}");
 
         insect.name = $"Insect_{selectedTecton.Id}";
         insect.transform.SetParent(gameObject.transform);
-        insects.Add(insect);
 
         // Component should already be on the prefab
         MoveInsect insectComponent = insect.GetComponent<MoveInsect>();
@@ -74,6 +74,8 @@ public class InsectSpawner : NetworkBehaviour
         {
             insectComponent = insect.AddComponent<MoveInsect>();
         }
+        insects.Add(insectComponent);
+        Debug.Log($"Insect added.");
     }
 
     public void RemoveAllInsects()

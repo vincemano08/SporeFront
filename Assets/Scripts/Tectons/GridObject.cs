@@ -13,11 +13,10 @@ public enum OccupantType
 public class GridObject : NetworkBehaviour
 {
 
-    public int X { get; set; }
-    public int Z { get; set; }
+    [Networked] public int X { get; set; }
+    [Networked] public int Z { get; set; }
     public Tecton parentTecton { get; set; }
-    [Networked]
-    public OccupantType occupantType { get; set; } = OccupantType.None;
+    [Networked] public OccupantType occupantType { get; set; } = OccupantType.None;
     public bool IsOccupied => occupantType != OccupantType.None;
 
     private Renderer objectRenderer;

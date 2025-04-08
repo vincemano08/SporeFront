@@ -1,15 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AStarPathFinder : MonoBehaviour
 {
-    private static readonly Vector2Int[] Directions = {
-        new Vector2Int(0, 1),
-        new Vector2Int(1, 0),
-        new Vector2Int(0, -1),
-        new Vector2Int(-1, 0)
-    };
-
     public static List<GridObject> FindPath(GridObject start, GridObject target)
     {
         var openSet = new PriorityQueue<GridObject>();
@@ -25,7 +19,7 @@ public class AStarPathFinder : MonoBehaviour
             var current = openSet.Dequeue();
 
             if (current == target) return ReconstructPath(cameFrom, current);
-
+            
             foreach (var neighbor in current.GetNeighbors())
             {
                 if (neighbor.IsOccupied) continue;
