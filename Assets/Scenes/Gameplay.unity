@@ -859,6 +859,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sporePrefab: {fileID: 2200365787857225258, guid: 3ad90d5e9f03ff74db59b851208f6285, type: 3}
+  sporeConsumptionTime: 2
+  eventChannel: {fileID: 11400000, guid: 6bf5f1ad5b4e28e4789093b3b7a57d2e, type: 2}
 --- !u!4 &909358390
 Transform:
   m_ObjectHideFlags: 0
