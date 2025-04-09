@@ -12,7 +12,7 @@ public class FungalThread : MonoBehaviour
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        if(lineRenderer == null)
+        if (lineRenderer == null)
         {
             Debug.LogError("LineRenderer component not found on the object.");
             return;
@@ -47,16 +47,14 @@ public class FungalThread : MonoBehaviour
             lineRenderer.SetPosition(1, endPos);
         }
 
-        if (closestPair.Item1.ExternalNeighbor == null)
-            closestPair.Item1.ExternalNeighbor = closestPair.Item2;
+        closestPair.Item1.ExternalNeighbors.Add(closestPair.Item2);
 
-        if (closestPair.Item2.ExternalNeighbor == null)
-            closestPair.Item2.ExternalNeighbor = closestPair.Item1;
+        closestPair.Item2.ExternalNeighbors.Add(closestPair.Item1);
     }
 
     public (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
     {
-        if(a == null || b == null)
+        if (a == null || b == null)
         {
             Debug.LogError("One or both of the tectons are null.");
             return (null, null);
@@ -78,7 +76,7 @@ public class FungalThread : MonoBehaviour
         {
             foreach (var goB in gridObjectsFromB)
             {
-                float distance = (goA.transform.position - goB.transform.position).sqrMagnitude;
+                float distance = ( goA.transform.position - goB.transform.position ).sqrMagnitude;
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -96,7 +94,7 @@ public class FungalThread : MonoBehaviour
         {
             foreach (var goB in gridObjectsFromB)
             {
-                float distance = (goA.transform.position - goB.transform.position).sqrMagnitude;
+                float distance = ( goA.transform.position - goB.transform.position ).sqrMagnitude;
                 if (distance <= exactMinDistance + 0.0001f)
                 {
                     candidatesFromA.Add(goA);
@@ -130,7 +128,7 @@ public class FungalThread : MonoBehaviour
 
         foreach (var goA in candidatesFromA)
         {
-            float dist = (goA.transform.position - avgPosA).sqrMagnitude;
+            float dist = ( goA.transform.position - avgPosA ).sqrMagnitude;
             if (dist < closestDistA)
             {
                 closestDistA = dist;
@@ -140,7 +138,7 @@ public class FungalThread : MonoBehaviour
 
         foreach (var goB in candidatesFromB)
         {
-            float dist = (goB.transform.position - avgPosB).sqrMagnitude;
+            float dist = ( goB.transform.position - avgPosB ).sqrMagnitude;
             if (dist < closestDistB)
             {
                 closestDistB = dist;

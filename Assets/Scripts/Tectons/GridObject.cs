@@ -18,13 +18,14 @@ public class GridObject : MonoBehaviour
     public Tecton parentTecton { get; set; }
     public OccupantType occupantType { get; set; } = OccupantType.None;
     public bool IsOccupied => occupantType != OccupantType.None;
-    public GridObject ExternalNeighbor { get; set; }
+    public HashSet<GridObject> ExternalNeighbors { get; set; }
 
     private Renderer objectRenderer;
 
     private void Awake()
     {
         objectRenderer = GetComponent<Renderer>();
+        ExternalNeighbors = new HashSet<GridObject> { };
     }
 
     public void ChangeColor(Color newColor)
@@ -78,8 +79,10 @@ public class GridObject : MonoBehaviour
                 neighbors.Add(neighbor);
             }
         }
-        if (ExternalNeighbor != null)
-            neighbors.Add(ExternalNeighbor);
+        if (ExternalNeighbors != null)
+        {
+            neighbors.AddRange(ExternalNeighbors);
+        }
         return neighbors;
     }
 }
