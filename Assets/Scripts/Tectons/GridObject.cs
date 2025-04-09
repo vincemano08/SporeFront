@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum OccupantType
@@ -17,6 +18,7 @@ public class GridObject : MonoBehaviour
     public Tecton parentTecton { get; set; }
     public OccupantType occupantType { get; set; } = OccupantType.None;
     public bool IsOccupied => occupantType != OccupantType.None;
+    public GridObject ExternalNeighbor { get; set; }
 
     private Renderer objectRenderer;
 
@@ -76,6 +78,8 @@ public class GridObject : MonoBehaviour
                 neighbors.Add(neighbor);
             }
         }
+        if (ExternalNeighbor != null)
+            neighbors.Add(ExternalNeighbor);
         return neighbors;
     }
 }

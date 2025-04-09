@@ -46,9 +46,15 @@ public class FungalThread : MonoBehaviour
             lineRenderer.SetPosition(0, startPos);
             lineRenderer.SetPosition(1, endPos);
         }
+
+        if (closestPair.Item1.ExternalNeighbor == null)
+            closestPair.Item1.ExternalNeighbor = closestPair.Item2;
+
+        if (closestPair.Item2.ExternalNeighbor == null)
+            closestPair.Item2.ExternalNeighbor = closestPair.Item1;
     }
 
-    private (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
+    public (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
     {
         if(a == null || b == null)
         {

@@ -72,6 +72,13 @@ public class FungalThreadManager : MonoBehaviour
 
         if (threadToRemove != null)
         {
+            var (goA, goB) = threadToRemove.FindClosestGridObjectPair(threadToRemove.tectonA, threadToRemove.tectonB);
+
+            if (goA != null && goA.ExternalNeighbor == goB)
+                goA.ExternalNeighbor = null;
+            if (goB != null && goB.ExternalNeighbor == goA)
+                goB.ExternalNeighbor = null;
+
             fungalThreads.Remove(threadToRemove);
             Destroy(threadToRemove.gameObject);
             connections.Remove(key);
