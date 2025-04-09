@@ -5,19 +5,19 @@ using UnityEngine;
 public class FungalThreadManager : MonoBehaviour
 {
     public static FungalThreadManager Instance { get; private set; }
-    
+
     [SerializeField] private GameObject threadPrefab;
 
     private HashSet<(int, int)> connections = new HashSet<(int, int)>();
     private List<FungalThread> fungalThreads = new List<FungalThread>();
 
     private void Awake()
-     {
+    {
         if (Instance == null)
         {
             Instance = this;
 
-            if(threadPrefab == null)
+            if (threadPrefab == null)
             {
                 Debug.LogError("Thread prefab is not set in the FungalThreadManager.");
             }
@@ -68,10 +68,16 @@ public class FungalThreadManager : MonoBehaviour
 
         // find and remove the thread
         FungalThread threadToRemove = fungalThreads.FirstOrDefault(t =>
-            (t.tectonA == a && t.tectonB == b) || (t.tectonA == b && t.tectonB == a));
+            ( t.tectonA == a && t.tectonB == b ) || ( t.tectonA == b && t.tectonB == a ));
 
         if (threadToRemove != null)
         {
+            var (goA, goB) = threadToRemove.FindClosestGridObjectPair(threadToRemove.tectonA, threadToRemove.tectonB);
+
+            if (goA != null && goA.ExternalNeighbors.Contains(goB))
+                goA.ExternalNeighbors.Remove(goB);
+            if (goB != null && goB.ExternalNeighbors.Contains(goA))
+                goB.ExternalNeighbors.Remove(goA);
             fungalThreads.Remove(threadToRemove);
             Destroy(threadToRemove.gameObject);
             connections.Remove(key);

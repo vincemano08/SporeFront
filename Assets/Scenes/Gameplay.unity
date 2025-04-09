@@ -235,8 +235,8 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.56407976, g: 0.9727826, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -570,7 +570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bodyPrefab: {fileID: 8331824232130077502, guid: da835911d34de04488d757cc9d9da269, type: 3}
   dropHeight: 3
-  eventChannel: {fileID: 11400000, guid: 6bf5f1ad5b4e28e4789093b3b7a57d2e, type: 2}
+  eventChannel: {fileID: 0}
 --- !u!4 &560777813
 Transform:
   m_ObjectHideFlags: 0
@@ -1476,8 +1476,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eventChannel: {fileID: 11400000, guid: 6bf5f1ad5b4e28e4789093b3b7a57d2e, type: 2}
-  scoreText: {fileID: 990147876}
-  timerText: {fileID: 922270068}
+  scoreText: {fileID: 0}
+  timerText: {fileID: 0}
 --- !u!4 &1681894182
 Transform:
   m_ObjectHideFlags: 0
