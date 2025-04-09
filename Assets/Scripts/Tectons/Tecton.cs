@@ -17,7 +17,7 @@ public class Tecton : NetworkBehaviour
     
     private SporeManager sporeManager;
 
-    private FungusBody fungusBody;
+     private FungusBody fungusBody;
     public FungusBody FungusBody
     {
         get { return fungusBody; }

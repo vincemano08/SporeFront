@@ -31,7 +31,11 @@ public class FungusBody : NetworkBehaviour
 
     private void OnMouseDown()
     {
-        if (!HasInputAuthority) return;
+        if (!HasInputAuthority)
+        {
+            Debug.Log("player wich clicked on this fungusbody has no input authority");
+            return;
+        }
 
         if (GameManager.Instance.CurrentMode == ActionMode.ThreadGrowth)
         {
@@ -52,7 +56,12 @@ public class FungusBody : NetworkBehaviour
 
     public void TriggerSporeRelease()
     {
-        if (!HasStateAuthority) return;
+        if (!HasInputAuthority)
+        {
+            Debug.Log("player wich clicked on this fungusbody has no input authority so cant release spores");
+            return;
+        }
+           
 
         if (sporeCooldownTimer.IsRunning) {
             Debug.Log("Spore release is on cooldown.");
@@ -69,12 +78,14 @@ public class FungusBody : NetworkBehaviour
             }
             return;
         }
+        Debug.Log("Releasing spores...");
 
         currentProductionCount++;
         sporeCooldownTimer = TickTimer.CreateFromSeconds(Runner, sporeCooldown);
 
-        if (Tecton != null) {
-            SpreadSpores();
+        if (Tecton != null || true) //it should be correctted
+        {  
+            RPC_SpreadSpores();
             ChangeColor(Color.red);
             canRelease = false;
         }
@@ -94,13 +105,23 @@ public class FungusBody : NetworkBehaviour
     /// <summary>
     /// Method for spore spreading: spores are distributed to neighboring (or, in advanced cases, more distant) tektons.
     /// </summary>
-    private void SpreadSpores()
+    /// 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_SpreadSpores()
     {
+
+
+        if (Tecton == null || Tecton.Neighbors == null || Tecton.Neighbors.Count == 0)
+        {
+            Debug.LogWarning("Cannot spread spores: Tecton or neighbors are invalid");
+            return;
+        }
         if (!isAdvanced)
         {
             // Basic fungi spread spores to neighboring tektons only.
             for (int i = 0; i < sporeReleaseAmount; i++)
             {
+
                 Tecton neighbor = Tecton.Neighbors.ElementAt(Random.Range(0, Tecton.Neighbors.Count));
                 neighbor.AddSpores(1);
             }
