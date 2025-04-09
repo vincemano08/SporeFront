@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,15 +15,20 @@ public class MoveInsect : MonoBehaviour
 
     private GridObject currentGridObject;
     private Queue<GridObject> path;
+    private SporeManager sporeManager;
+    private bool isConsumingSpore = false;
 
     private void Awake()
     {
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
+        sporeManager = FindFirstObjectByType<SporeManager>();
         currentGridObject = GridObject.GetGridObjectAt(transform.position);
     }
 
     private void Update()
     {
+        if (isConsumingSpore) return;
+
         if (Input.GetMouseButtonDown(1) && Selected)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -59,7 +65,7 @@ public class MoveInsect : MonoBehaviour
                 currentGridObject = path.Dequeue();
             }
         }
-
+        HandleKeyboardInput();
     }
     private void OnMouseDown()
     {
@@ -87,5 +93,39 @@ public class MoveInsect : MonoBehaviour
         {
             renderer.material = material;
         }
+    }
+    
+    private void HandleKeyboardInput()
+    {
+        if(Selected && Input.GetKeyDown(KeyCode.C))
+        {
+            if (sporeManager == null)
+            {
+                Debug.LogError("SporeManager not found in scene. Spore consumption functionality will not work.");
+                return;
+            }
+            var neighbour = sporeManager.FindNearbySpore(currentGridObject);
+            if (neighbour != null)
+                StartCoroutine(ConsumeSporeAndContinue(neighbour));
+            else
+                Debug.Log("No spores nearby");
+        }
+    }
+
+    private IEnumerator ConsumeSporeAndContinue(GridObject sporeGridObject)
+    {
+        isConsumingSpore = true;
+
+        if (sporeManager == null)
+        {
+            Debug.LogError("Cannot consume spore: SporeManager not available");
+            isConsumingSpore = false;
+            yield break;
+        }
+
+        yield return StartCoroutine(sporeManager.ConsumeSporesCoroutine(sporeGridObject));
+
+        isConsumingSpore = false;
+        Debug.Log("Spore consumed, continuing path...");
     }
 }

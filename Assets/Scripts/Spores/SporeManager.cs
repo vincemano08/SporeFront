@@ -1,9 +1,13 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SporeManager : MonoBehaviour
 {
 
     [SerializeField] private GameObject sporePrefab;
+    [SerializeField] private float sporeConsumptionTime = 2f;
+    [SerializeField] private EventChannel eventChannel;
 
     public void SpawnSpore(GridObject gridObject)
     {
@@ -47,5 +51,46 @@ public class SporeManager : MonoBehaviour
         {
             Debug.LogWarning("No spore found to remove on grid object");
         }
+    }
+
+    public IEnumerator ConsumeSporesCoroutine(GridObject gridObject)
+    {
+        if (gridObject == null)
+            yield break;
+
+        Debug.Log("Spore consumption has begun...");
+
+        yield return new WaitForSeconds(sporeConsumptionTime);
+
+        if (eventChannel != null)
+        {
+            int scoreValue = 1; // later may vary depending on the type of spore
+            eventChannel.RaiseScoreChanged(scoreValue);
+        }
+        else
+            Debug.LogWarning("EventChannel is not assigned");
+
+        RemoveSpore(gridObject);
+
+        Debug.Log("Spore consumed");
+    }
+
+    public GridObject FindNearbySpore(GridObject gridObject)
+    {
+        if (gridObject == null)
+        {
+            Debug.LogWarning("FindNearbySpore received null gridObject");
+            return null;
+        }
+
+        var neighbourGridObjects = gridObject.GetNeighbors();
+        foreach (var neighbour in neighbourGridObjects)
+        {
+            if (neighbour.occupantType == OccupantType.Spore)
+            {
+                return neighbour;
+            }
+        }
+        return null;
     }
 }
