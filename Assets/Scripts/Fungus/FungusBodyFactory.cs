@@ -76,6 +76,8 @@ public class FungusBodyFactory : NetworkBehaviour
         fungusBody.Tecton = tecton;
         tecton.FungusBody = fungusBody;
 
+        fungusBody.TectonId = tecton.Id;
+
         return fungusBody;
     }
 }
