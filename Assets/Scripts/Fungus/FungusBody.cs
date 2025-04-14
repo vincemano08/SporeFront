@@ -18,7 +18,7 @@ public class FungusBody : NetworkBehaviour
     [SerializeField, Networked] private bool isAdvanced { get; set; } = false;
 
     public Tecton Tecton { get; set; }
-    [Networked]public int TectonId { get; set; } = -1; // Tecton ID for this fungus body
+
     [Networked] private bool canRelease { get; set; } = true;
     [Networked] private int currentProductionCount { get; set; } = 0;   // Number of emissions so far.
     [Networked] private TickTimer sporeCooldownTimer { get; set; }
@@ -83,17 +83,11 @@ public class FungusBody : NetworkBehaviour
         currentProductionCount++;
         sporeCooldownTimer = TickTimer.CreateFromSeconds(Runner, sporeCooldown);
 
-        if (TectonId!=-1) //it should be correctted
-        {
-            this.Tecton  = GetAssociatedTecton();
+        if (Tecton != null || true) //it should be correctted
+        {  
             RPC_SpreadSpores();
             ChangeColor(Color.red);
             canRelease = false;
-        }
-        else
-        {
-            Debug.LogWarning("TectonId is not set. Cannot release spores.");
-            return;
         }
     }
 
@@ -154,20 +148,5 @@ public class FungusBody : NetworkBehaviour
             objectRenderer.material.color = newColor;
         else
             Debug.LogWarning("Renderer not found on " + gameObject.name);
-    }
-
-    /// <summary>
-    /// Gets the Tecton reference associated with this FungusBody based on TectonId.
-    /// If the reference is missing but the ID is valid, it will find and set the reference.
-    /// </summary>
-    /// <returns>The associated Tecton or null if no valid Tecton exists</returns>
-    public Tecton GetAssociatedTecton()
-    {
-            this.Tecton = Tecton.GetById(TectonId);
-            if (Tecton == null)
-            {
-                Debug.LogWarning($"Could not find Tecton with ID {TectonId}");
-            }
-        return Tecton;
     }
 }
