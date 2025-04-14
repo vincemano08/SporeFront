@@ -54,7 +54,8 @@ public class FungalThreadManager : NetworkBehaviour
         NetworkObject threadNetworkObj = Runner.Spawn(threadPrefab, transform.position, transform.rotation);
         GameObject threadObj = threadNetworkObj.gameObject;
         FungalThread thread = threadObj.GetComponent<FungalThread>();
-        thread.SetTectons(a, b);
+
+        thread.SetTectons(a.gameObject.GetComponent<NetworkObject>(), b.gameObject.GetComponent<NetworkObject>());
         fungalThreads.Add(thread);
     }
 

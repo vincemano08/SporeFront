@@ -152,12 +152,9 @@ public class WorldGeneration : NetworkBehaviour
 
                 tectonObject.transform.SetParent(mapParent);
 
-                // Add Tecton component
-                if (tectonObject.GetComponent<Tecton>() == null)
-                {
-                    Tecton tectonComponent = tectonObject.AddComponent<Tecton>();
-                    tectonComponent.Init(tectonMap[x, z], mapParent);
-                }
+                // Init Tecton component
+                Tecton tectonComponent = tectonObject.GetComponent<Tecton>();
+                tectonComponent.Init(tectonMap[x, z], mapParent);
             }
         }
         // Not too efficient, but whatever

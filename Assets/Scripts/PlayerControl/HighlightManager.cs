@@ -18,6 +18,7 @@ public class HighlightManager : MonoBehaviour
 
     private void HandleHighlight()
     {
+        
         if (GameManager.Instance.CurrentMode == ActionMode.ThreadGrowth)
         {
             HighLightTecton();

@@ -39,6 +39,13 @@ public class Tecton : NetworkBehaviour
             Debug.LogError("SporeManager not found in the scene");
             return;
         }
+        // If client side, fill GridObjects with the grid objects of the tecton
+
+        //Runs too early, TODO
+        foreach (var gridObject in GetComponentsInChildren<GridObject>())
+        {
+            GridObjects.Add(gridObject);
+        }
     }
 
     // Not a beautiful solution, good for now

@@ -1,13 +1,28 @@
+using Fusion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class FungalThread : MonoBehaviour
+public class FungalThread : NetworkBehaviour
 {
     private LineRenderer lineRenderer;
-    public Tecton tectonA { get; set; }
-    public Tecton tectonB { get; set; }
+    private bool IsSpawned = false;
+    [Networked]
+    public NetworkObject tectonA { get; set; }
+    [Networked]
+    public NetworkObject tectonB { get; set; }
+
+    private NetworkObject  lastTectonA;
+    private NetworkObject lastTectonB;
+
+    public override void Spawned()
+    {
+        base.Spawned();
+        IsSpawned = true;
+    }
+
+
 
     private void Awake()
     {
@@ -21,11 +36,56 @@ public class FungalThread : MonoBehaviour
         lineRenderer.endWidth = 0.3f;
         lineRenderer.positionCount = 2;
     }
+    private void Update()
+    {
+        if (!IsSpawned)
+            return;
+        // Manuálisan ellenõrizzük, hogy megváltoztak-e a networked változók
+        if (tectonA != lastTectonA || tectonB != lastTectonB)
+        {
+            UpdateLineRenderer();
+            lastTectonA = tectonA;
+            lastTectonB = tectonB;
+        }
+    }
 
-    public void SetTectons(Tecton a, Tecton b)
+    public void SetTectons(NetworkObject a, NetworkObject b)
+    {
+        if (a == null || b == null)
+        {
+            Debug.LogError("SetTectons called with null tecton(s)");
+            return;
+        }
+        var netObjA = a.GetComponent<NetworkObject>();
+        var netObjB = b.GetComponent<NetworkObject>();
+
+        Debug.Log($"Tecton A has NetworkObject: {netObjA != null})");
+        Debug.Log($"Tecton B has NetworkObject: {netObjB != null})");
+
+        if (Object.HasStateAuthority)
+        {
+            tectonA = a;
+            tectonB = b;
+            //RPC_SetTectons(a, b);
+            UpdateLineRenderer();
+        }
+        else 
+        {
+            RPC_SetTectons(a, b);
+        }
+    }
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_SetTectons(NetworkObject a, NetworkObject b)
     {
         tectonA = a;
         tectonB = b;
+        UpdateLineRenderer();
+        RPC_UpdateLineRendererOnClients();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_UpdateLineRendererOnClients()
+    {
         UpdateLineRenderer();
     }
 
@@ -36,7 +96,7 @@ public class FungalThread : MonoBehaviour
             Debug.LogError("Tectons not set for the fungal thread.");
             return;
         }
-        var closestPair = FindClosestGridObjectPair(tectonA, tectonB);
+        var closestPair = FindClosestGridObjectPair(tectonA.gameObject.GetComponent<Tecton>(), tectonB.gameObject.GetComponent<Tecton>());
 
         if (closestPair.Item1 != null && closestPair.Item2 != null)
         {
