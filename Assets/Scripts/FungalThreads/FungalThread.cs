@@ -13,7 +13,7 @@ public class FungalThread : NetworkBehaviour
     [Networked]
     public NetworkObject tectonB { get; set; }
 
-    private NetworkObject  lastTectonA;
+    private NetworkObject lastTectonA;
     private NetworkObject lastTectonB;
 
     public override void Spawned()
@@ -27,7 +27,7 @@ public class FungalThread : NetworkBehaviour
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        if(lineRenderer == null)
+        if (lineRenderer == null)
         {
             Debug.LogError("LineRenderer component not found on the object.");
             return;
@@ -70,7 +70,7 @@ public class FungalThread : NetworkBehaviour
             //RPC_SetTectons(a, b);
             UpdateLineRenderer();
         }
-        else 
+        else
         {
             RPC_SetTectons(a, b);
         }
@@ -116,10 +116,13 @@ public class FungalThread : NetworkBehaviour
 
             lineRenderer.SetPosition(0, startPos);
             lineRenderer.SetPosition(1, endPos);
+
+            closestPair.Item1.AddExternalNeighbor(closestPair.Item2);
+            closestPair.Item2.AddExternalNeighbor(closestPair.Item1);
         }
     }
 
-    private (GridObject, GridObject) FindClosestGridObjectPair(NetworkObject netA, NetworkObject netB)
+    public (GridObject, GridObject) FindClosestGridObjectPair(NetworkObject netA, NetworkObject netB)
     {
         if (netA == null || netB == null)
         {
@@ -179,7 +182,7 @@ public class FungalThread : NetworkBehaviour
         {
             foreach (var goB in gridObjectsFromB)
             {
-                float distance = (goA.transform.position - goB.transform.position).sqrMagnitude;
+                float distance = ( goA.transform.position - goB.transform.position ).sqrMagnitude;
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -197,7 +200,7 @@ public class FungalThread : NetworkBehaviour
         {
             foreach (var goB in gridObjectsFromB)
             {
-                float distance = (goA.transform.position - goB.transform.position).sqrMagnitude;
+                float distance = ( goA.transform.position - goB.transform.position ).sqrMagnitude;
                 if (distance <= exactMinDistance + 0.0001f)
                 {
                     candidatesFromA.Add(goA);
@@ -231,7 +234,7 @@ public class FungalThread : NetworkBehaviour
 
         foreach (var goA in candidatesFromA)
         {
-            float dist = (goA.transform.position - avgPosA).sqrMagnitude;
+            float dist = ( goA.transform.position - avgPosA ).sqrMagnitude;
             if (dist < closestDistA)
             {
                 closestDistA = dist;
@@ -241,7 +244,7 @@ public class FungalThread : NetworkBehaviour
 
         foreach (var goB in candidatesFromB)
         {
-            float dist = (goB.transform.position - avgPosB).sqrMagnitude;
+            float dist = ( goB.transform.position - avgPosB ).sqrMagnitude;
             if (dist < closestDistB)
             {
                 closestDistB = dist;
