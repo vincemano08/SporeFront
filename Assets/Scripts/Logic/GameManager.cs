@@ -86,6 +86,10 @@ public class GameManager : MonoBehaviour
                 EnterThreadGrowthMode();
             else if (Input.GetKeyDown(KeyCode.Escape))
                 DeselectFungus();
+            else if(Input.GetKeyDown(KeyCode.C))
+            {
+                 
+            }
         }
     }
 

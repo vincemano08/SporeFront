@@ -19,9 +19,13 @@ public class MoveInsect : NetworkBehaviour {
 
     private Queue<GridObject> path;
 
+    private SporeManager sporeManager;
+
     public override void Spawned() {
         base.Spawned();
+
         path = new Queue<GridObject>();
+
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
         insectSpawner.insects = new HashSet<MoveInsect>();
         foreach (Transform insect in insectSpawner.gameObject.transform) {
@@ -29,6 +33,12 @@ public class MoveInsect : NetworkBehaviour {
             if (insectComponent != null) {
                 insectSpawner.insects.Add(insectComponent);
             }
+        }
+
+        sporeManager = FindFirstObjectByType<SporeManager>();
+        if (sporeManager == null)
+        {
+            Debug.LogError("SporeManager not found in the scene.");
         }
     }
 
@@ -92,6 +102,7 @@ public class MoveInsect : NetworkBehaviour {
                 }
             }
         }
+        HandleKeyboardInput();
     }
 
     public override void FixedUpdateNetwork() {
@@ -148,6 +159,19 @@ public class MoveInsect : NetworkBehaviour {
         Renderer renderer = obj.GetComponent<Renderer>();
         if (renderer != null) {
             renderer.material = material;
+        }
+    }
+    public void HandleKeyboardInput()
+    {
+        
+        if (Selected && Input.GetKeyDown(KeyCode.C))
+        {
+            Debug.LogError("removeinsect HandelkeyInput called");
+            var neighbour = sporeManager.IsSporeNearby(currentGridObject);
+            if (neighbour != null)
+                sporeManager.ConsumeSpores(neighbour);
+            else
+                Debug.Log("No spores nearby");
         }
     }
 }
