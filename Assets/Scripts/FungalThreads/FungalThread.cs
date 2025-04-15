@@ -66,6 +66,7 @@ public class FungalThread : NetworkBehaviour
         {
             tectonA = a;
             tectonB = b;
+            RPC_SetTectonNames(a.name, b.name);
             //RPC_SetTectons(a, b);
             UpdateLineRenderer();
         }
@@ -74,11 +75,20 @@ public class FungalThread : NetworkBehaviour
             RPC_SetTectons(a, b);
         }
     }
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_SetTectonNames(string nameA, string nameB)
+    {
+        tectonA.name = nameA;
+        tectonB.name = nameB;
+    }
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_SetTectons(NetworkObject a, NetworkObject b)
     {
         tectonA = a;
         tectonB = b;
+        tectonA.name = a.name;
+        tectonB.name = b.name;
+
         UpdateLineRenderer();
         RPC_UpdateLineRendererOnClients();
     }
@@ -96,7 +106,8 @@ public class FungalThread : NetworkBehaviour
             Debug.LogError("Tectons not set for the fungal thread.");
             return;
         }
-        var closestPair = FindClosestGridObjectPair(tectonA.gameObject.GetComponent<Tecton>(), tectonB.gameObject.GetComponent<Tecton>());
+        //The name of the Networkobjects are synchronized using RPC
+        var closestPair = FindClosestGridObjectPair(tectonA, tectonB);
 
         if (closestPair.Item1 != null && closestPair.Item2 != null)
         {
@@ -108,16 +119,46 @@ public class FungalThread : NetworkBehaviour
         }
     }
 
-    private (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
+    private (GridObject, GridObject) FindClosestGridObjectPair(NetworkObject netA, NetworkObject netB)
     {
-        if(a == null || b == null)
+        if (netA == null || netB == null)
         {
             Debug.LogError("One or both of the tectons are null.");
             return (null, null);
         }
+        string aName = netA.name;
+        string bName = netB.name;
+        GameObject gridParent = GameObject.Find("Grid Parent");
+        Tecton tectonA = null;
+        Tecton tectonB = null;
+        HashSet<GridObject> gridObjectsFromA = new HashSet<GridObject>();
+        HashSet<GridObject> gridObjectsFromB = new HashSet<GridObject>();
 
-        var gridObjectsFromA = a.GridObjects;
-        var gridObjectsFromB = b.GridObjects;
+        foreach (Transform child in gridParent.transform) // Changed from 'var' to 'Transform'
+        {
+            if (child.name == aName) // 'child' is now correctly typed as 'Transform'
+            {
+                tectonA = child.gameObject.GetComponent<Tecton>(); // Corrected method usage
+                if (tectonA != null)
+                {
+                    gridObjectsFromA = tectonA.GridObjects;
+                }
+            }
+            if (child.name == bName) // 'child' is now correctly typed as 'Transform'
+            {
+                tectonB = child.gameObject.GetComponent<Tecton>(); // Corrected method usage
+                if (tectonB != null)
+                {
+                    gridObjectsFromB = tectonB.GridObjects;
+                }
+            }
+        }
+
+        if (gridObjectsFromA == null || gridObjectsFromB == null) // Add a null check to ensure 'gridObjectsFromA' and 'gridObjectsFromB' are assigned
+        {
+            Debug.LogError("One or both of the tectons could not be found in the grid.");
+            return (null, null);
+        }
 
         if (gridObjectsFromA.Count == 0 || gridObjectsFromB.Count == 0)
         {
