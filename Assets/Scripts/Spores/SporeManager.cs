@@ -8,6 +8,10 @@ public class SporeManager : NetworkBehaviour
 
     [SerializeField] private GameObject sporePrefab;
 
+    [Networked, Capacity(50)]
+    private NetworkDictionary<NetworkId, NetworkId> SporeToGridMap { get; }
+
+
     public void SpawnSpore(GridObject gridObject)
     {
         if (gridObject == null)
@@ -26,23 +30,13 @@ public class SporeManager : NetworkBehaviour
         NetworkObject networkSpore = Runner.Spawn(sporePrefab, position, Quaternion.identity);
         GameObject spore = networkSpore.gameObject;
 
-        spore.transform.SetParent(gridObject.transform);
-        spore.name = "Spore";
-        if (Object.HasStateAuthority)
-        {
-            RPC_SetSporeParent(networkSpore, gridObject.Object);
-        }
+        networkSpore.transform.SetParent(gridObject.transform);
+        networkSpore.name = "Spore";
+
+        SporeToGridMap.Add(networkSpore.Id, gridObject.Object.Id);
         gridObject.occupantType = OccupantType.Spore;
     }
 
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    private void RPC_SetSporeParent(NetworkObject sporeObj, NetworkObject parentObj)
-    {
-        if (sporeObj != null && parentObj != null)
-        {
-            sporeObj.transform.SetParent(parentObj.transform);
-        }
-    }
 
     public void RemoveSpore(GridObject gridObject)
     {
@@ -57,7 +51,7 @@ public class SporeManager : NetworkBehaviour
         // If we have state authority, call the RPC directly
         if (Object.HasStateAuthority)
         {
-            RPC_RemoveSpore(gridObject.Object);
+            DespawnSporeAt(gridObject);
         }
         // Otherwise request the state authority to remove the spore
         else // (! Object.HasStateAuthority)
@@ -71,17 +65,79 @@ public class SporeManager : NetworkBehaviour
 
        
     }
-    
+
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_RequestRemoveSpore(NetworkObject gridObjectNetObj)
+    private void RPC_RequestRemoveSpore(NetworkId gridObjectId)
     {
-        if (gridObjectNetObj == null) return;
-
-        var gridObject = gridObjectNetObj.GetComponent<GridObject>();
-        if (gridObject != null)
+        if (Runner.TryFindObject(gridObjectId, out NetworkObject gridObj))
         {
-            RPC_RemoveSpore(gridObjectNetObj);
+            GridObject gridObject = gridObj.GetComponent<GridObject>();
+            if (gridObject != null)
+            {
+                DespawnSporeAt(gridObject);
+            }
+        }
+    }
+    private void DespawnSporeAt(GridObject gridObject)
+    {
+        if (!Object.HasStateAuthority) return;
+
+        // Get the associated spore from our dictionary
+        NetworkId sporeId = default;
+        foreach (var pair in SporeToGridMap)
+        {
+            if (pair.Value == gridObject.Object.Id)
+            {
+                sporeId = pair.Key;
+                break;
+            }
+        }
+
+        bool sporeFound = false;
+
+        // Try to despawn by dictionary first
+        if (sporeId != default && Runner.TryFindObject(sporeId, out NetworkObject sporeObj))
+        {
+            Runner.Despawn(sporeObj);
+            SporeToGridMap.Remove(sporeId);
+            sporeFound = true;
+        }
+        // Fallback to child search if needed
+        else if (gridObject.transform.childCount > 0)
+        {
+            Transform child = gridObject.transform.GetChild(0);
+            if (child != null && child.name == "Spore")
+            {
+                NetworkObject networkSpore = child.GetComponent<NetworkObject>();
+                if (networkSpore != null)
+                {
+                    Runner.Despawn(networkSpore);
+                    sporeFound = true;
+                }
+            }
+        }
+
+        // Update grid state if we found and removed a spore
+        if (sporeFound)
+        {
+            // Reset the grid state on all clients
+            RPC_UpdateGridState(gridObject.Object.Id, OccupantType.None);
+        }
+    }
+
+
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_UpdateGridState(NetworkId gridId, OccupantType newState)
+    {
+        if (Runner.TryFindObject(gridId, out NetworkObject gridObj))
+        {
+            GridObject gridObject = gridObj.GetComponent<GridObject>();
+            if (gridObject != null)
+            {
+                gridObject.occupantType = newState;
+            }
         }
     }
 

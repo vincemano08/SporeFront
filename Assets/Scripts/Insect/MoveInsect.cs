@@ -166,7 +166,7 @@ public class MoveInsect : NetworkBehaviour {
         
         if (Selected && Input.GetKeyDown(KeyCode.C))
         {
-            Debug.LogError("removeinsect HandelkeyInput called");
+            
             var neighbour = sporeManager.IsSporeNearby(currentGridObject);
             if (neighbour != null)
                 sporeManager.ConsumeSpores(neighbour);
