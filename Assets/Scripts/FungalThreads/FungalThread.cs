@@ -129,8 +129,6 @@ public class FungalThread : NetworkBehaviour
         string aName = netA.name;
         string bName = netB.name;
         GameObject gridParent = GameObject.Find("Grid Parent");
-        Tecton tectonA = null;
-        Tecton tectonB = null;
         HashSet<GridObject> gridObjectsFromA = new HashSet<GridObject>();
         HashSet<GridObject> gridObjectsFromB = new HashSet<GridObject>();
 
@@ -138,18 +136,26 @@ public class FungalThread : NetworkBehaviour
         {
             if (child.name == aName) // 'child' is now correctly typed as 'Transform'
             {
-                tectonA = child.gameObject.GetComponent<Tecton>(); // Corrected method usage
-                if (tectonA != null)
+                //loop through the children of the 'child' variable and fill the gridObjectsFroma Hashset with its children
+                foreach (Transform grandChild in child)
                 {
-                    gridObjectsFromA = tectonA.GridObjects;
+                    GridObject gridObject = grandChild.GetComponent<GridObject>();
+                    if (gridObject != null)
+                    {
+                        gridObjectsFromA.Add(gridObject);
+                    }
                 }
             }
             if (child.name == bName) // 'child' is now correctly typed as 'Transform'
             {
-                tectonB = child.gameObject.GetComponent<Tecton>(); // Corrected method usage
-                if (tectonB != null)
+                //loop through the children of the 'child' variable and fill the gridObjectsFroma Hashset with its children
+                foreach (Transform grandChild in child)
                 {
-                    gridObjectsFromB = tectonB.GridObjects;
+                    GridObject gridObject = grandChild.GetComponent<GridObject>();
+                    if (gridObject != null)
+                    {
+                        gridObjectsFromB.Add(gridObject);
+                    }
                 }
             }
         }
