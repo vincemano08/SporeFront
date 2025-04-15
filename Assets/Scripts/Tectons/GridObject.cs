@@ -68,7 +68,8 @@ public class GridObject : NetworkBehaviour
     {
         if (!HasStateAuthority)
         {
-            Debug.LogError("Cannot add external neighbor directly. Must be called on State Authority.");
+            RPC_RequestAddExternalNeighbor(neighbor.Object.Id); 
+            //Debug.LogError("Cannot add external neighbor directly. Must be called on State Authority.");
             return;
         }
 
@@ -182,7 +183,7 @@ public class GridObject : NetworkBehaviour
         return _cachedNeighbors;
     }
 
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPC_RequestAddExternalNeighbor(NetworkId neighborId)
     {
         if (Runner.TryFindObject(neighborId, out var networkObject))
