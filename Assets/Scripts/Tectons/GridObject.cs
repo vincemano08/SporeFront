@@ -68,8 +68,7 @@ public class GridObject : NetworkBehaviour
     {
         if (!HasStateAuthority)
         {
-            RPC_RequestAddExternalNeighbor(neighbor.Object.Id); 
-            //Debug.LogError("Cannot add external neighbor directly. Must be called on State Authority.");
+            RPC_RequestAddExternalNeighbor(neighbor.Object.Id);
             return;
         }
 
@@ -97,7 +96,7 @@ public class GridObject : NetworkBehaviour
     {
         if (!HasStateAuthority)
         {
-            Debug.LogError("Cannot remove external neighbor directly. Must be called on State Authority.");
+            RPC_RequestRemoveExternalNeighbor(neighbor.Object.Id);
             return;
         }
         if (neighbor == null || neighbor.Object == null || !neighbor.Object.Id.IsValid) return;
@@ -183,7 +182,7 @@ public class GridObject : NetworkBehaviour
         return _cachedNeighbors;
     }
 
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
     public void RPC_RequestAddExternalNeighbor(NetworkId neighborId)
     {
         if (Runner.TryFindObject(neighborId, out var networkObject))
@@ -192,6 +191,18 @@ public class GridObject : NetworkBehaviour
             if (neighborGridObject != null)
             {
                 AddExternalNeighbor(neighborGridObject);
+            }
+        }
+    }
+    [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
+    public void RPC_RequestRemoveExternalNeighbor(NetworkId neighborId)
+    {
+        if (Runner.TryFindObject(neighborId, out var networkObject))
+        {
+            var neighborGridObject = networkObject.GetComponent<GridObject>();
+            if (neighborGridObject != null)
+            {
+                RemoveExternalNeighbor(neighborGridObject);
             }
         }
     }
