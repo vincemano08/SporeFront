@@ -33,6 +33,10 @@ public class FungalThreadManager : NetworkBehaviour
     {
         if (source == target) return false;
 
+        //Debug.LogError($"FungalThreadManagger.CanConnect  ");
+        //Log the size of neighbours
+        Debug.LogError($"FungalThreadManagger.CanConnect source: {source.Id} target: {target.Id} neighbours: {source.Neighbors.Count}; {target.Neighbors.Count}");
+
         if (!source.Neighbors.Contains(target)) return false;
 
         var key = GetConnectionKey(source, target);
