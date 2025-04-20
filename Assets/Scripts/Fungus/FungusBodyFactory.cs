@@ -59,6 +59,10 @@ public class FungusBodyFactory : NetworkBehaviour
         Vector3 spawnPosition = spawnGridObject.transform.position + Vector3.up * dropHeight;
 
         NetworkObject newNetworkFungusBody = Runner.Spawn(bodyPrefab, spawnPosition, Quaternion.identity, player);
+
+        // set the networkid of this fungusbody for the tecton it resides on -- this is required for the syncronization
+        tecton.FungusId = newNetworkFungusBody.Id;
+
         GameObject newFungusBody = newNetworkFungusBody.gameObject;
         newFungusBody.name = $"FungusBody_{tecton.Id}";
         newFungusBody.transform.SetParent(gameObject.transform);

@@ -14,6 +14,12 @@ public class Tecton : NetworkBehaviour
     public HashSet<Tecton> Neighbors { get; set; }
     public IEnumerable<GridObject> Spores => GridObjects.Where(go => go.occupantType == OccupantType.Spore);
     
+    // this will store all child gridObject networkids. we will use this to reconstruct the hierarchy on the clients
+    [Networked, Capacity(1000)] public NetworkArray<NetworkId> GridObjectIds { get; }
+    // this will be used to sync the fungusbodies
+    [Networked] public NetworkId FungusId { get; set; }
+
+
     
     private SporeManager sporeManager;
 

@@ -33,7 +33,11 @@ public class FungalThreadManager : NetworkBehaviour
     {
         if (source == target) return false;
 
-        //Debug.LogError($"FungalThreadManagger.CanConnect  ");
+        // the source and target are now correctly synchronized. -- the problem is, that the neighbors are not
+        // Debug.Log($"Source == null {source == null}");
+        // Debug.Log($"target == null {target == null}");
+
+
         //Log the size of neighbours
         Debug.LogError($"FungalThreadManagger.CanConnect source: {source.Id} target: {target.Id} neighbours: {source.Neighbors.Count}; {target.Neighbors.Count}");
 
