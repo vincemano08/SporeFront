@@ -1,8 +1,6 @@
-using ExitGames.Client.Photon.StructWrapping;
 using Fusion;
 using System.Collections.Generic;
 using System.Linq;
-// using UnityEditor.Rendering;
 using UnityEngine;
 
 public class WorldGeneration : NetworkBehaviour
@@ -76,6 +74,18 @@ public class WorldGeneration : NetworkBehaviour
                     // set parentttecton for the fungus
                     fungusBody.Tecton = tecton;
                 }
+
+                foreach(var neighborTectonId in tecton.NeighborIds) {
+                    NetworkObject networkObjectNeighborTecton;
+                    Runner.TryFindObject(neighborTectonId, out networkObjectNeighborTecton);
+
+                    if (networkObjectNeighborTecton != null) {
+                        // extract the tecton component and add to the neihgbors hashset
+                        Tecton neighborTecton = networkObjectNeighborTecton.GetComponent<Tecton>();
+                        tecton.Neighbors.Add(neighborTecton);
+                    }
+                }
+
             }
         }
     }
@@ -221,8 +231,18 @@ public class WorldGeneration : NetworkBehaviour
         foreach (Transform tectonTransform in mapParent)
         {
             Tecton tecton = tectonTransform.GetComponent<Tecton>();
-            tecton.Neighbors = FindNeighboringTectons(tectonMap, tecton.Id)
+            var neighbors = FindNeighboringTectons(tectonMap, tecton.Id)
                 .Select(id => Tecton.GetById(id)).ToHashSet();
+            tecton.Neighbors = neighbors;
+
+            // init the networkarray that stores the ids of the neighbors of the current tecton
+            int indexForNetArray = 0;
+            foreach (var neighbor in neighbors) {
+                // extract the netobject
+                var networkObjectNeighbor = neighbor.gameObject.GetComponent<NetworkObject>();
+                tecton.NeighborIds.Set(indexForNetArray, networkObjectNeighbor.Id);
+                indexForNetArray++;
+            }
         }
     }
 
@@ -329,7 +349,7 @@ public class WorldGeneration : NetworkBehaviour
         gridObjectComponent.parentTecton = parentTecton;
 
         // fill the networkarray with the ids of gridobjects.
-        // the indexes seem to be fucked up, but it works anyway
+        // the indices seem to be fucked up, but it works anyway
         int index = parentTecton.GridObjects.Count - 1;
         parentTecton.GridObjectIds.Set(index, gridObject.GetComponent<NetworkObject>().Id); // could use the networkObject instead
         // Debug.Log($"Adding Id to networkArray at {index}: (value) {parentTecton.GridObjectIds.Get(index)}");
