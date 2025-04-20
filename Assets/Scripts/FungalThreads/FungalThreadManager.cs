@@ -33,11 +33,6 @@ public class FungalThreadManager : NetworkBehaviour
     {
         if (source == target) return false;
 
-        // the source and target are now correctly synchronized. -- the problem is, that the neighbors are not
-        // Debug.Log($"Source == null {source == null}");
-        // Debug.Log($"target == null {target == null}");
-
-
         //Log the size of neighbours
         // Debug.LogError($"FungalThreadManagger.CanConnect source: {source.Id} target: {target.Id} neighbours: {source.Neighbors.Count}; {target.Neighbors.Count}");
 
@@ -47,24 +42,48 @@ public class FungalThreadManager : NetworkBehaviour
         return !connections.Contains(key);
     }
 
-    public void Connect(Tecton a, Tecton b)
+    // the spawn method, that will be called only on the server
+    private void SpawnThread(Tecton a, Tecton b)
     {
-        if (!CanConnect(a, b))
-        {
-            Debug.LogWarning("Connection already exists between tectons.");
-            return;
-        }
-
         var key = GetConnectionKey(a, b);
         connections.Add(key);
-
 
         NetworkObject threadNetworkObj = Runner.Spawn(threadPrefab, transform.position, transform.rotation);
         GameObject threadObj = threadNetworkObj.gameObject;
         FungalThread thread = threadObj.GetComponent<FungalThread>();
-
         thread.SetTectons(a.gameObject.GetComponent<NetworkObject>(), b.gameObject.GetComponent<NetworkObject>());
         fungalThreads.Add(thread);
+        
+    }
+
+    public void Connect(Tecton a, Tecton b)
+    {
+        // only the server has the right to spaw threads, so if the caller is the client, send an rpc to the server
+        if (Runner.IsServer) 
+        {
+            if (!CanConnect(a, b))
+            {
+                Debug.LogWarning("Connection already exists between tectons.");
+                return;
+            }
+            SpawnThread(a, b);
+        } else 
+        {
+            RPC_RequestThreadSpawn(a.GetComponent<NetworkObject>().Id, b.GetComponent<NetworkObject>().Id);
+        }
+    }
+
+    // this will be sent by the client in order to have the server spawn a thread
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_RequestThreadSpawn(NetworkId aId, NetworkId bId)
+    {
+        Runner.TryFindObject(aId, out var aObj);
+        Runner.TryFindObject(bId, out var bObj);
+        
+        if (aObj != null && bObj != null)
+        {
+            SpawnThread(aObj.GetComponent<Tecton>(), bObj.GetComponent<Tecton>());
+        }
     }
 
     public bool Disconnect(Tecton a, Tecton b)
