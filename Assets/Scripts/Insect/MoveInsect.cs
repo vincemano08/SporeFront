@@ -1,5 +1,6 @@
 using Fusion;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using TMPro;
 using UnityEngine;
 
@@ -15,7 +16,25 @@ public class MoveInsect : NetworkBehaviour {
 
     private bool isMoving = false;
 
-    private GridObject currentGridObject;
+    private GridObject _currentGridObject;
+    private GridObject CurrentGridObject {
+        get {
+            // if the _currentGridObject is null, try to find it by its netid
+            if (_currentGridObject == null && Runner.TryFindObject(CurrentGridObjectId, out var netObj)) 
+                _currentGridObject = netObj.GetComponent<GridObject>();
+            return _currentGridObject;
+
+        }
+        set { 
+            _currentGridObject = value;
+            // update the netid field automatically
+            CurrentGridObjectId = _currentGridObject.GetComponent<NetworkObject>().Id;
+        }
+    }
+    
+    // this will be used to sync the currentGridObject, so we can pass it to the appropriate RPC
+    [Networked] private NetworkId CurrentGridObjectId { get; set; }
+
 
     private Queue<GridObject> path;
 
@@ -39,6 +58,34 @@ public class MoveInsect : NetworkBehaviour {
         if (sporeManager == null)
         {
             Debug.LogError("SporeManager not found in the scene.");
+        }
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_ConsumeSpore(NetworkId gridObjectId)
+    {
+        if (!Runner.TryFindObject(gridObjectId, out var netObj))
+        {
+            Debug.LogError($"GridObject with ID {gridObjectId} not found on the server.");
+            return;
+        }
+
+        GridObject gridObject = netObj.GetComponent<GridObject>();
+        if (gridObject == null)
+        {
+            Debug.LogError("GridObject component not found on the server.");
+            return;
+        }
+
+        var neighbour = sporeManager.IsSporeNearby(gridObject);
+        if (neighbour != null)
+        {
+            sporeManager.ConsumeSpores(neighbour);
+            Debug.Log("Spore consumed successfully.");
+        }
+        else
+        {
+            Debug.Log("No spores nearby to consume.");
         }
     }
 
@@ -124,11 +171,11 @@ public class MoveInsect : NetworkBehaviour {
 
             // If the insect is close to the target position, dequeue the next grid object
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f) {
-                if (currentGridObject == null) {
-                    currentGridObject = GridObject.GetGridObjectAt(transform.position);
+                if (CurrentGridObject == null) {
+                    CurrentGridObject = GridObject.GetGridObjectAt(transform.position);
                 }
-                currentGridObject.occupantType = OccupantType.None;
-                currentGridObject = path.Dequeue();
+                CurrentGridObject.occupantType = OccupantType.None;
+                CurrentGridObject = path.Dequeue();
             }
 
             // If the path is empty, stop moving
@@ -163,15 +210,17 @@ public class MoveInsect : NetworkBehaviour {
     }
     public void HandleKeyboardInput()
     {
-        
         if (Selected && Input.GetKeyDown(KeyCode.C))
         {
-            
-            var neighbour = sporeManager.IsSporeNearby(currentGridObject);
-            if (neighbour != null)
-                sporeManager.ConsumeSpores(neighbour);
+            if (CurrentGridObjectId.IsValid)
+            {
+                // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
+                RPC_ConsumeSpore(CurrentGridObjectId);  // xd
+            }
             else
-                Debug.Log("No spores nearby");
+            {
+                Debug.LogError("CurrentGridObjectId is invalid.");
+            }
         }
     }
 }

@@ -67,7 +67,7 @@ public class SporeManager : NetworkBehaviour
     }
 
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPC_RequestRemoveSpore(NetworkId gridObjectId)
     {
         if (Runner.TryFindObject(gridObjectId, out NetworkObject gridObj))
@@ -187,12 +187,16 @@ public class SporeManager : NetworkBehaviour
     {
         //szomsz�dos gridek ellen�rz�se, hogy van-e ott sp�ra
         var neighbourGridObjects = gridObject.GetNeighbors();
+        Debug.Log($"neighborGridObejcts == null {neighbourGridObjects == null}");
         
         foreach (var neighbour in neighbourGridObjects)
         {
+            Debug.Log($"neighbour.occupantType {neighbour.occupantType}");
             if (neighbour.occupantType == OccupantType.Spore)
             {
+                
                 return neighbour;
+                
             }
         }
         return null;
