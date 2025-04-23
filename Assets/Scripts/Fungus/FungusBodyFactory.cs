@@ -1,6 +1,7 @@
+using Fusion;
 using UnityEngine;
 
-public class FungusBodyFactory : MonoBehaviour
+public class FungusBodyFactory : NetworkBehaviour
 {
 
     // Singleton pattern - later could be DI instead
@@ -21,28 +22,29 @@ public class FungusBodyFactory : MonoBehaviour
             Destroy(gameObject);
     }
 
-    private void Start()
+    public FungusBody SpawnDefault(PlayerRef player) 
     {
-        // Spawn a few fungus bodies by default
-        for (int i = 0; i < 3; i++)
+
+        Tecton tecton = Tecton.ChooseRandom(x => !x.FungusBody);
+        if (tecton != null && tecton.FungusBody == null)
         {
-            Tecton tecton = Tecton.ChooseRandom();
-            if (tecton != null && tecton.FungusBody == null)
+            GridObject spawnGridObject = tecton.ChooseRandomEmptyGridObject();
+
+            if (spawnGridObject == null)
             {
-                GridObject spawnGridObject = tecton.ChooseRandomEmptyGridObject();
-
-                if (spawnGridObject == null)
-                {
-                    Debug.LogError("No empty grid objects found on the selected Tecton");
-                    return;
-                }
-
-                SpawnFungusBody(spawnGridObject);
+                Debug.LogError("No empty grid objects found on the selected Tecton");
+                return null;
             }
+            return SpawnFungusBody(spawnGridObject, player);
+        }
+        else
+        {
+            Debug.LogError("No tectons found to spawn fungus body on");
+            return null;
         }
     }
-
-    public FungusBody SpawnFungusBody(GridObject spawnGridObject)
+    
+    public FungusBody SpawnFungusBody(GridObject spawnGridObject, PlayerRef player)
     {
         Tecton tecton = spawnGridObject.parentTecton;
 
@@ -57,7 +59,12 @@ public class FungusBodyFactory : MonoBehaviour
         spawnGridObject.occupantType = OccupantType.FungusBody;
         Vector3 spawnPosition = spawnGridObject.transform.position + Vector3.up * dropHeight;
 
-        GameObject newFungusBody = Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
+        NetworkObject newNetworkFungusBody = Runner.Spawn(bodyPrefab, spawnPosition, Quaternion.identity, player);
+
+        // set the networkid of this fungusbody for the tecton it resides on -- this is required for the syncronization
+        tecton.FungusId = newNetworkFungusBody.Id;
+
+        GameObject newFungusBody = newNetworkFungusBody.gameObject;
         newFungusBody.name = $"FungusBody_{tecton.Id}";
         newFungusBody.transform.SetParent(gameObject.transform);
 

@@ -1,8 +1,9 @@
+using Fusion;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class WorldGeneration : MonoBehaviour
+public class WorldGeneration : NetworkBehaviour
 {
 
     public int tectonCount;
@@ -12,19 +13,91 @@ public class WorldGeneration : MonoBehaviour
     [SerializeField] private int relaxationIterations;
 
     [SerializeField] private Transform mapParent;
+    [SerializeField] private GameObject tectonPrefab;
     [SerializeField] private GameObject gridObjectPrefab;
 
+    // thsi will store all the tecton ids we have
+    [Networked, Capacity(1000)] public NetworkArray<NetworkId> TectonIds { get; }
     private GameObject[,] grid;
 
     public int Width { get => width; }
     public int Height { get => height; }
 
+    public override void Spawned() 
+    {
+        if (Runner.IsServer) {
+            ClearMap();
+            GenerateMap();
+        } else if (!Runner.IsServer) {
+            StartCoroutine(DelayedReconstruct());
+        }
+    }
 
+    private System.Collections.IEnumerator DelayedReconstruct()
+    {
+        // wait for 0.5s so the networkedarrays will be synced
+        yield return new WaitForSeconds(.5f);
+
+        // loop through all the tectons
+        foreach(var tectonId in TectonIds) {
+            NetworkObject networkObjectTecton;
+
+            // get the tectons as networkobjects
+            Runner.TryFindObject(tectonId, out networkObjectTecton);
+            if (networkObjectTecton != null) {
+                
+                // cast the networkobjects to tectons
+                Tecton tecton = networkObjectTecton.gameObject.GetComponent<Tecton>();
+                
+                // loop through all the gridobject ids that are associated with the current tecton
+                foreach(var gridObjId in tecton.GridObjectIds) {
+                    NetworkObject networkObjectGridObj;
+                    Runner.TryFindObject(gridObjId, out networkObjectGridObj);
+
+                    if (networkObjectGridObj != null) {
+                        // extract the gridobject component
+                        GridObject gridObject = networkObjectGridObj.gameObject.GetComponent<GridObject>();
+                        
+                        // set parenttecton
+                        gridObject.parentTecton = tecton;
+
+                        // add gridObject to tecton
+                        tecton.GridObjects.Add(gridObject);
+                    }
+                }
+
+                NetworkObject networkObjectFungus;
+                Runner.TryFindObject(tecton.FungusId, out networkObjectFungus);
+                if (networkObjectFungus != null) {
+                    // extract the fungus comp from the networkobj
+                    FungusBody fungusBody = networkObjectFungus.gameObject.GetComponent<FungusBody>();
+                    // set parentttecton for the fungus
+                    fungusBody.Tecton = tecton;
+                }
+
+                foreach(var neighborTectonId in tecton.NeighborIds) {
+                    NetworkObject networkObjectNeighborTecton;
+                    Runner.TryFindObject(neighborTectonId, out networkObjectNeighborTecton);
+
+                    if (networkObjectNeighborTecton != null) {
+                        // extract the tecton component and add to the neihgbors hashset
+                        Tecton neighborTecton = networkObjectNeighborTecton.GetComponent<Tecton>();
+                        tecton.Neighbors.Add(neighborTecton);
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    /*
     private void OnEnable()
     {
         ClearMap();
         GenerateMap();
     }
+    */
 
     private void OnDisable()
     {
@@ -121,6 +194,7 @@ public class WorldGeneration : MonoBehaviour
 
     private void CreateTectons(int[,] tectonMap)
     {
+        int index = 0;
         for (int x = 0; x < Width; x++)
         {
             for (int z = 0; z < Height; z++)
@@ -136,20 +210,39 @@ public class WorldGeneration : MonoBehaviour
                 }
                 if (tectonExists) continue;
 
-                GameObject tectonObject = new GameObject($"Tecton_{tectonMap[x, z]}");
+                // fill the neworked array of tectonIds - this works as intended
+                NetworkObject tectonNetworkObject = Runner.Spawn(tectonPrefab, Vector3.zero, Quaternion.identity);
+                TectonIds.Set(index, tectonNetworkObject.Id);
+                Debug.Log($"Tecton added to tectonIds at {index}: (value) {TectonIds.Get(index)}");
+                index++;
+
+
+                GameObject tectonObject = tectonNetworkObject.gameObject;
+                tectonObject.name = $"Tecton_{tectonMap[x, z]}";
+
                 tectonObject.transform.SetParent(mapParent);
 
-                // Add Tecton component
-                Tecton tectonComponent = tectonObject.AddComponent<Tecton>();
-                tectonComponent.Init(tectonMap[x, z]);
+                // Init Tecton component
+                Tecton tectonComponent = tectonObject.GetComponent<Tecton>();
+                tectonComponent.Init(tectonMap[x, z], mapParent);
             }
         }
         // Not too efficient, but whatever
         foreach (Transform tectonTransform in mapParent)
         {
             Tecton tecton = tectonTransform.GetComponent<Tecton>();
-            tecton.Neighbors = FindNeighboringTectons(tectonMap, tecton.Id)
+            var neighbors = FindNeighboringTectons(tectonMap, tecton.Id)
                 .Select(id => Tecton.GetById(id)).ToHashSet();
+            tecton.Neighbors = neighbors;
+
+            // init the networkarray that stores the ids of the neighbors of the current tecton
+            int indexForNetArray = 0;
+            foreach (var neighbor in neighbors) {
+                // extract the netobject
+                var networkObjectNeighbor = neighbor.gameObject.GetComponent<NetworkObject>();
+                tecton.NeighborIds.Set(indexForNetArray, networkObjectNeighbor.Id);
+                indexForNetArray++;
+            }
         }
     }
 
@@ -238,7 +331,8 @@ public class WorldGeneration : MonoBehaviour
 
     private void CreateGridObject(int x, int z, int tectonId)
     {
-        GameObject gridObject = Instantiate(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity);
+        NetworkObject networkObject = Runner.Spawn(gridObjectPrefab, new Vector3(x, 0, z), Quaternion.identity);
+        GameObject gridObject = networkObject.gameObject;
 
         Tecton parentTecton = Tecton.GetById(tectonId);
 
@@ -253,6 +347,12 @@ public class WorldGeneration : MonoBehaviour
         gridObjectComponent.X = x;
         gridObjectComponent.Z = z;
         gridObjectComponent.parentTecton = parentTecton;
+
+        // fill the networkarray with the ids of gridobjects.
+        // the indices seem to be fucked up, but it works anyway
+        int index = parentTecton.GridObjects.Count - 1;
+        parentTecton.GridObjectIds.Set(index, gridObject.GetComponent<NetworkObject>().Id); // could use the networkObject instead
+        // Debug.Log($"Adding Id to networkArray at {index}: (value) {parentTecton.GridObjectIds.Get(index)}");
 
         grid[x, z] = gridObject;
     }

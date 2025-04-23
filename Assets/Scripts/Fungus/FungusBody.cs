@@ -1,38 +1,42 @@
-using System.Collections;
 using UnityEngine;
-using System.Collections.Generic;
 using System.Linq;
+using Fusion;
 
-public class FungusBody : MonoBehaviour
+public class FungusBody : NetworkBehaviour
 {
 
     [Header("Spore Settings")]
-    [SerializeField] private float sporeCooldown = 5f;       // Time interval between spore releases.
-    [SerializeField] private int sporeReleaseAmount = 3;     // Number of spores released per emission.
-    [SerializeField] private int sporeProductionLimit = 2;   // Maximum number of emission attempts.
+    [Tooltip("Time interval between spore releases.")]
+    [SerializeField, Networked] private float sporeCooldown { get; set; } = 5f;
+    [Tooltip("Number of spores released per emission.")]
+    [SerializeField, Networked] private int sporeReleaseAmount { get; set; } = 3;
+    [Tooltip("Maximum number of emission attempts before the fungus body is destroyed.")]
+    [SerializeField, Networked] private int sporeProductionLimit { get; set; } = 2;
 
     [Header("Advanced Fungi Settings")]
-    [SerializeField] private bool isAdvanced = false;        // Advanced fungi with a larger spreading radius.
+    [Tooltip("Is this fungus body an advanced type with larger range?")]
+    [SerializeField, Networked] private bool isAdvanced { get; set; } = false;
 
     public Tecton Tecton { get; set; }
 
-    private bool canRelease = true;
-    private int currentProductionCount = 0;   // Number of emissions so far.
+    [Networked] private bool canRelease { get; set; } = true;
+    [Networked] private int currentProductionCount { get; set; } = 0;   // Number of emissions so far.
+    [Networked] private TickTimer sporeCooldownTimer { get; set; }
 
     private Renderer objectRenderer;
-    private WorldGeneration worldGen;
 
-    private void Awake()
-    {
-        worldGen = FindFirstObjectByType<WorldGeneration>();
-        if (worldGen == null)
-            Debug.LogError("GridManager not found in the scene!");
-
+    private void Awake() {
         objectRenderer = GetComponent<Renderer>();
     }
 
     private void OnMouseDown()
     {
+        if (!HasInputAuthority)
+        {
+            Debug.Log("player wich clicked on this fungusbody has no input authority");
+            return;
+        }
+
         if (GameManager.Instance.CurrentMode == ActionMode.ThreadGrowth)
         {
             // dont let the the fungusbody to get selected if the current mode is threadgrowth.
@@ -52,6 +56,18 @@ public class FungusBody : MonoBehaviour
 
     public void TriggerSporeRelease()
     {
+        if (!HasInputAuthority)
+        {
+            Debug.Log("player wich clicked on this fungusbody has no input authority so cant release spores");
+            return;
+        }
+           
+
+        if (sporeCooldownTimer.IsRunning) {
+            Debug.Log("Spore release is on cooldown.");
+            return;
+        }
+
         if (currentProductionCount >= sporeProductionLimit)
         {
             Debug.Log("The fungus body has reached the spore production limit.");
@@ -62,42 +78,50 @@ public class FungusBody : MonoBehaviour
             }
             return;
         }
-        if (!canRelease)
-        {
-            Debug.Log("Spore release in progress, please wait for the cooldown.");
-            return;
-        }
-        StartCoroutine(ReleaseSporesCoroutine());
-    }
-    private IEnumerator ReleaseSporesCoroutine()
-    {
-        canRelease = false;
+        Debug.Log("Releasing spores...");
+
         currentProductionCount++;
+        sporeCooldownTimer = TickTimer.CreateFromSeconds(Runner, sporeCooldown);
 
-        if (Tecton != null)
-            SpreadSpores();
-        else
-            Debug.LogError("Tecton not found for the fungus body!");
+        if (Tecton != null || true) //it should be correctted
+        {  
+            RPC_SpreadSpores();
+            ChangeColor(Color.red);
+            canRelease = false;
+        }
+    }
 
-        //Changing the color to show that cooldown is in progress
-        ChangeColor(Color.red);
+    public override void FixedUpdateNetwork() {
+        if (!HasStateAuthority) return;
 
-        yield return new WaitForSeconds(sporeCooldown);
-
-        ChangeColor(Color.white);
-        canRelease = true;
+        if (sporeCooldownTimer.Expired(Runner)) {
+            // Terrible soltuion but whatever
+            ChangeColor(Color.cyan);
+            sporeCooldownTimer = TickTimer.None;
+            canRelease = true;
+        }
     }
 
     /// <summary>
     /// Method for spore spreading: spores are distributed to neighboring (or, in advanced cases, more distant) tektons.
     /// </summary>
-    private void SpreadSpores()
+    /// 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_SpreadSpores()
     {
+
+
+        if (Tecton == null || Tecton.Neighbors == null || Tecton.Neighbors.Count == 0)
+        {
+            Debug.LogWarning("Cannot spread spores: Tecton or neighbors are invalid");
+            return;
+        }
         if (!isAdvanced)
         {
             // Basic fungi spread spores to neighboring tektons only.
             for (int i = 0; i < sporeReleaseAmount; i++)
             {
+
                 Tecton neighbor = Tecton.Neighbors.ElementAt(Random.Range(0, Tecton.Neighbors.Count));
                 neighbor.AddSpores(1);
             }

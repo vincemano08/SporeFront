@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            if(highlightManager == null)
+            if (highlightManager == null)
             {
                 highlightManager = FindFirstObjectByType<HighlightManager>();
             }
@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
 
     public void SelectFungusBody(FungusBody fungusBody)
     {
-        if(PrevFungusBody != null)
+        if (PrevFungusBody != null)
         {
             PrevFungusBody.ChangeColor(Color.white);
         }
@@ -50,19 +50,19 @@ public class GameManager : MonoBehaviour
 
     public void EnterThreadGrowthMode()
     {
-        if(SelectedFungusBody != null)
+        if (SelectedFungusBody != null)
         {
             CurrentMode = ActionMode.ThreadGrowth;
         }
     }
 
-    public void DeselectFungus() 
+    public void DeselectFungus()
     {
-        
+
         if (SelectedFungusBody != null)
         {
             SelectedFungusBody.ChangeColor(Color.white);
-            SelectedFungusBody = null;  
+            SelectedFungusBody = null;
         }
 
         CurrentMode = ActionMode.None;
@@ -86,6 +86,10 @@ public class GameManager : MonoBehaviour
                 EnterThreadGrowthMode();
             else if (Input.GetKeyDown(KeyCode.Escape))
                 DeselectFungus();
+            else if (Input.GetKeyDown(KeyCode.C))
+            {
+
+            }
         }
     }
 
@@ -99,6 +103,7 @@ public class GameManager : MonoBehaviour
                 GridObject gridObject = hit.collider.GetComponent<GridObject>();
                 if (gridObject != null)
                 {
+                    Debug.Log($"we have a gridobj {gridObject != null}, we have a fungusbody {SelectedFungusBody != null}");
                     Tecton targetTecton = gridObject.parentTecton;
                     if (CurrentMode == ActionMode.ThreadGrowth && SelectedFungusBody != null)
                     {
@@ -108,20 +113,6 @@ public class GameManager : MonoBehaviour
                             DeselectFungus();
                         }
                     }
-                    else if (SelectedFungusBody == null && CurrentMode == ActionMode.None)
-                    {
-                        // added quality of life feature you dont have to click the fungus itself to select it. yippieee
-                        if (targetTecton.FungusBody != null)
-                        {
-                            SelectFungusBody(targetTecton.FungusBody);
-                        }
-                        else
-                        {
-                            FungusBodyFactory.Instance.SpawnFungusBody(gridObject);
-                            if (eventChannel != null)
-                                eventChannel.RaiseScoreChanged(1);
-                        }
-                    }
                 }
             }
         }
@@ -129,7 +120,19 @@ public class GameManager : MonoBehaviour
 
     private bool CanGrowThread(Tecton source, Tecton target)
     {
+        if (source == null || target == null)
+        {
+            Debug.LogError("Source or target Tecton is null");
+            return false;
+        }
+
         if (source == target) return false;
+
+        if (source.Neighbors == null || source.Neighbors.Count == 0)
+        {
+            Debug.LogError("Tecton.Neighbours could not been synshronised");
+            return false;
+        }
 
         if (!source.Neighbors.Contains(target)) return false;
 

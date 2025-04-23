@@ -1,13 +1,28 @@
+using Fusion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class FungalThread : MonoBehaviour
+public class FungalThread : NetworkBehaviour
 {
     private LineRenderer lineRenderer;
-    public Tecton tectonA { get; set; }
-    public Tecton tectonB { get; set; }
+    private bool IsSpawned = false;
+    [Networked]
+    public NetworkObject tectonA { get; set; }
+    [Networked]
+    public NetworkObject tectonB { get; set; }
+
+    private NetworkObject lastTectonA;
+    private NetworkObject lastTectonB;
+
+    public override void Spawned()
+    {
+        base.Spawned();
+        IsSpawned = true;
+    }
+
+
 
     private void Awake()
     {
@@ -21,11 +36,66 @@ public class FungalThread : MonoBehaviour
         lineRenderer.endWidth = 0.3f;
         lineRenderer.positionCount = 2;
     }
+    private void Update()
+    {
+        if (!IsSpawned)
+            return;
+        // Manu�lisan ellen�rizz�k, hogy megv�ltoztak-e a networked v�ltoz�k
+        if (tectonA != lastTectonA || tectonB != lastTectonB)
+        {
+            UpdateLineRenderer();
+            lastTectonA = tectonA;
+            lastTectonB = tectonB;
+        }
+    }
 
-    public void SetTectons(Tecton a, Tecton b)
+    public void SetTectons(NetworkObject a, NetworkObject b)
+    {
+        if (a == null || b == null)
+        {
+            Debug.LogError("SetTectons called with null tecton(s)");
+            return;
+        }
+        var netObjA = a.GetComponent<NetworkObject>();
+        var netObjB = b.GetComponent<NetworkObject>();
+
+        Debug.Log($"Tecton A has NetworkObject: {netObjA != null})");
+        Debug.Log($"Tecton B has NetworkObject: {netObjB != null})");
+
+        if (Object.HasStateAuthority)
+        {
+            tectonA = a;
+            tectonB = b;
+            RPC_SetTectonNames(a.name, b.name);
+            //RPC_SetTectons(a, b);
+            UpdateLineRenderer();
+        }
+        else
+        {
+            RPC_SetTectons(a, b);
+        }
+    }
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_SetTectonNames(string nameA, string nameB)
+    {
+        tectonA.name = nameA;
+        tectonB.name = nameB;
+    }
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_SetTectons(NetworkObject a, NetworkObject b)
     {
         tectonA = a;
         tectonB = b;
+        tectonA.name = a.name;
+        tectonB.name = b.name;
+
+        UpdateLineRenderer();
+        RPC_UpdateLineRendererOnClients();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_UpdateLineRendererOnClients()
+    {
         UpdateLineRenderer();
     }
 
@@ -36,6 +106,7 @@ public class FungalThread : MonoBehaviour
             Debug.LogError("Tectons not set for the fungal thread.");
             return;
         }
+        //The name of the Networkobjects are synchronized using RPC
         var closestPair = FindClosestGridObjectPair(tectonA, tectonB);
 
         if (closestPair.Item1 != null && closestPair.Item2 != null)
@@ -45,6 +116,9 @@ public class FungalThread : MonoBehaviour
 
             lineRenderer.SetPosition(0, startPos);
             lineRenderer.SetPosition(1, endPos);
+
+            closestPair.Item1.AddExternalNeighbor(closestPair.Item2);
+            closestPair.Item2.AddExternalNeighbor(closestPair.Item1);
         }
 
         closestPair.Item1.ExternalNeighbors.Add(closestPair.Item2);
@@ -52,16 +126,53 @@ public class FungalThread : MonoBehaviour
         closestPair.Item2.ExternalNeighbors.Add(closestPair.Item1);
     }
 
-    public (GridObject, GridObject) FindClosestGridObjectPair(Tecton a, Tecton b)
+    public (GridObject, GridObject) FindClosestGridObjectPair(NetworkObject netA, NetworkObject netB)
     {
-        if (a == null || b == null)
+        if (netA == null || netB == null)
+
         {
             Debug.LogError("One or both of the tectons are null.");
             return (null, null);
         }
+        string aName = netA.name;
+        string bName = netB.name;
+        GameObject gridParent = GameObject.Find("Grid Parent");
+        HashSet<GridObject> gridObjectsFromA = new HashSet<GridObject>();
+        HashSet<GridObject> gridObjectsFromB = new HashSet<GridObject>();
 
-        var gridObjectsFromA = a.GridObjects;
-        var gridObjectsFromB = b.GridObjects;
+        foreach (Transform child in gridParent.transform) // Changed from 'var' to 'Transform'
+        {
+            if (child.name == aName) // 'child' is now correctly typed as 'Transform'
+            {
+                //loop through the children of the 'child' variable and fill the gridObjectsFroma Hashset with its children
+                foreach (Transform grandChild in child)
+                {
+                    GridObject gridObject = grandChild.GetComponent<GridObject>();
+                    if (gridObject != null)
+                    {
+                        gridObjectsFromA.Add(gridObject);
+                    }
+                }
+            }
+            if (child.name == bName) // 'child' is now correctly typed as 'Transform'
+            {
+                //loop through the children of the 'child' variable and fill the gridObjectsFroma Hashset with its children
+                foreach (Transform grandChild in child)
+                {
+                    GridObject gridObject = grandChild.GetComponent<GridObject>();
+                    if (gridObject != null)
+                    {
+                        gridObjectsFromB.Add(gridObject);
+                    }
+                }
+            }
+        }
+
+        if (gridObjectsFromA == null || gridObjectsFromB == null) // Add a null check to ensure 'gridObjectsFromA' and 'gridObjectsFromB' are assigned
+        {
+            Debug.LogError("One or both of the tectons could not be found in the grid.");
+            return (null, null);
+        }
 
         if (gridObjectsFromA.Count == 0 || gridObjectsFromB.Count == 0)
         {

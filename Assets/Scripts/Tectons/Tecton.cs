@@ -1,22 +1,32 @@
+using Fusion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Tecton : MonoBehaviour
+public class Tecton : NetworkBehaviour
 {
-
     public static Transform parent;
 
-    public int Id { get; private set; }
+    public new int Id { get; private set; }
     public int SporeThreshold { get; private set; }
     public HashSet<GridObject> GridObjects { get; private set; } = new HashSet<GridObject>();
-    public HashSet<Tecton> Neighbors { get; set; }
+    public HashSet<Tecton> Neighbors { get; set; } = new HashSet<Tecton>();
     public IEnumerable<GridObject> Spores => GridObjects.Where(go => go.occupantType == OccupantType.Spore);
+    
+    // this will store all child gridObject networkids. we will use this to reconstruct the hierarchy on the clients
+    [Networked, Capacity(1000)] public NetworkArray<NetworkId> GridObjectIds { get; }
+    // this will be used to sync the fungusbodies
+    [Networked] public NetworkId FungusId { get; set; }
 
+    // this will be used to sync the neighbors
+    [Networked, Capacity(1000)] public NetworkArray<NetworkId> NeighborIds { get; }
+
+
+    
     private SporeManager sporeManager;
 
-    private FungusBody fungusBody;
+     private FungusBody fungusBody;
     public FungusBody FungusBody
     {
         get { return fungusBody; }
@@ -31,25 +41,38 @@ public class Tecton : MonoBehaviour
         }
     }
 
-    private void Awake()
+    public override void Spawned()
     {
         sporeManager = FindFirstObjectByType<SporeManager>();
+        if (sporeManager == null) {
+            Debug.LogError("SporeManager not found in the scene");
+            return;
+        }
+        // If client side, fill GridObjects with the grid objects of the tecton
+
+        //Runs too early, TODO
+        foreach (var gridObject in GetComponentsInChildren<GridObject>())
+        {
+            GridObjects.Add(gridObject);
+        }
     }
 
     // Not a beautiful solution, good for now
-    public void Init(int id)
+    public void Init(int id, Transform parent)
     {
         this.Id = id;
         this.SporeThreshold = 5;
+        Tecton.parent = parent;
     }
 
     public static Tecton GetById(int id)
     {
         foreach (Transform child in parent)
         {
-            if (child.GetComponent<Tecton>().Id == id)
+            Tecton tectonComponent = child.GetComponent<Tecton>();
+            if (tectonComponent.Id == id)
             {
-                return child.GetComponent<Tecton>();
+                return tectonComponent;
             }
         }
         return null;
@@ -58,6 +81,12 @@ public class Tecton : MonoBehaviour
     public static HashSet<Tecton> GetAll()
     {
         HashSet<Tecton> tectons = new HashSet<Tecton>();
+        if (parent == null)
+        {
+            Debug.LogError("parent is null");
+            return null;
+        }
+        
         foreach (Transform child in parent)
         {
             tectons.Add(child.GetComponent<Tecton>());
@@ -67,7 +96,9 @@ public class Tecton : MonoBehaviour
 
     public static Tecton ChooseRandom(Func<Tecton, bool> predicate = null)
     {
-        var tectons = GetAll().ToList();
+        var tectons = GetAll()?.ToList();
+        if (tectons == null)
+            return null;
         if (predicate != null)
         {
             tectons = tectons.Where(predicate).ToList();
@@ -85,9 +116,14 @@ public class Tecton : MonoBehaviour
     /// <param name="amount">Number of spores to be added.</param>
     public void AddSpores(int amount)
     {
+        if (sporeManager == null) {
+            sporeManager = FindFirstObjectByType<SporeManager>();
+        }
+
         for (int i = 0; i < amount; i++)
         {
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();
+
             sporeManager.SpawnSpore(spawnGridObject);
         }
 
@@ -102,7 +138,10 @@ public class Tecton : MonoBehaviour
                 return;
             }
 
-            FungusBodyFactory.Instance.SpawnFungusBody(spawnGridObject);
+            // Get current tecton's fungus body's player
+            PlayerRef player = FungusBody != null ? FungusBody.GetComponent<NetworkObject>().InputAuthority : default;
+
+            FungusBodyFactory.Instance.SpawnFungusBody(spawnGridObject, player);
             // Despawn spores
             foreach (var gridObject in Spores)
             {

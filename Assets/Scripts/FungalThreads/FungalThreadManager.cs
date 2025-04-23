@@ -1,8 +1,9 @@
+using Fusion;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class FungalThreadManager : MonoBehaviour
+public class FungalThreadManager : NetworkBehaviour
 {
     public static FungalThreadManager Instance { get; private set; }
 
@@ -32,27 +33,57 @@ public class FungalThreadManager : MonoBehaviour
     {
         if (source == target) return false;
 
+        //Log the size of neighbours
+        // Debug.LogError($"FungalThreadManagger.CanConnect source: {source.Id} target: {target.Id} neighbours: {source.Neighbors.Count}; {target.Neighbors.Count}");
+
         if (!source.Neighbors.Contains(target)) return false;
 
         var key = GetConnectionKey(source, target);
         return !connections.Contains(key);
     }
 
-    public void Connect(Tecton a, Tecton b)
+    // the spawn method, that will be called only on the server
+    private void SpawnThread(Tecton a, Tecton b)
     {
-        if (!CanConnect(a, b))
-        {
-            Debug.LogWarning("Connection already exists between tectons.");
-            return;
-        }
-
         var key = GetConnectionKey(a, b);
         connections.Add(key);
 
-        GameObject threadObj = Instantiate(threadPrefab, transform);
+        NetworkObject threadNetworkObj = Runner.Spawn(threadPrefab, transform.position, transform.rotation);
+        GameObject threadObj = threadNetworkObj.gameObject;
         FungalThread thread = threadObj.GetComponent<FungalThread>();
-        thread.SetTectons(a, b);
+        thread.SetTectons(a.gameObject.GetComponent<NetworkObject>(), b.gameObject.GetComponent<NetworkObject>());
         fungalThreads.Add(thread);
+        
+    }
+
+    public void Connect(Tecton a, Tecton b)
+    {
+        // only the server has the right to spaw threads, so if the caller is the client, send an rpc to the server
+        if (Runner.IsServer) 
+        {
+            if (!CanConnect(a, b))
+            {
+                Debug.LogWarning("Connection already exists between tectons.");
+                return;
+            }
+            SpawnThread(a, b);
+        } else 
+        {
+            RPC_RequestThreadSpawn(a.GetComponent<NetworkObject>().Id, b.GetComponent<NetworkObject>().Id);
+        }
+    }
+
+    // this will be sent by the client in order to have the server spawn a thread
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_RequestThreadSpawn(NetworkId aId, NetworkId bId)
+    {
+        Runner.TryFindObject(aId, out var aObj);
+        Runner.TryFindObject(bId, out var bObj);
+        
+        if (aObj != null && bObj != null)
+        {
+            SpawnThread(aObj.GetComponent<Tecton>(), bObj.GetComponent<Tecton>());
+        }
     }
 
     public bool Disconnect(Tecton a, Tecton b)
@@ -73,11 +104,11 @@ public class FungalThreadManager : MonoBehaviour
         if (threadToRemove != null)
         {
             var (goA, goB) = threadToRemove.FindClosestGridObjectPair(threadToRemove.tectonA, threadToRemove.tectonB);
+            goA.RemoveExternalNeighbor(goB);
 
-            if (goA != null && goA.ExternalNeighbors.Contains(goB))
-                goA.ExternalNeighbors.Remove(goB);
-            if (goB != null && goB.ExternalNeighbors.Contains(goA))
-                goB.ExternalNeighbors.Remove(goA);
+            goB.RemoveExternalNeighbor(goA);
+
+
             fungalThreads.Remove(threadToRemove);
             Destroy(threadToRemove.gameObject);
             connections.Remove(key);
