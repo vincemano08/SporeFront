@@ -1,4 +1,5 @@
 using Fusion;
+
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using TMPro;
@@ -37,6 +38,8 @@ public class MoveInsect : NetworkBehaviour {
 
 
     private Queue<GridObject> path;
+    private SporeManager sporeManager;
+    private bool isConsumingSpore = false;
 
     private SporeManager sporeManager;
 

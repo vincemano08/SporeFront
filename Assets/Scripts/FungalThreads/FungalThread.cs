@@ -40,7 +40,7 @@ public class FungalThread : NetworkBehaviour
     {
         if (!IsSpawned)
             return;
-        // Manuálisan ellenõrizzük, hogy megváltoztak-e a networked változók
+        // Manuï¿½lisan ellenï¿½rizzï¿½k, hogy megvï¿½ltoztak-e a networked vï¿½ltozï¿½k
         if (tectonA != lastTectonA || tectonB != lastTectonB)
         {
             UpdateLineRenderer();
@@ -120,11 +120,16 @@ public class FungalThread : NetworkBehaviour
             closestPair.Item1.AddExternalNeighbor(closestPair.Item2);
             closestPair.Item2.AddExternalNeighbor(closestPair.Item1);
         }
+
+        closestPair.Item1.ExternalNeighbors.Add(closestPair.Item2);
+
+        closestPair.Item2.ExternalNeighbors.Add(closestPair.Item1);
     }
 
     public (GridObject, GridObject) FindClosestGridObjectPair(NetworkObject netA, NetworkObject netB)
     {
         if (netA == null || netB == null)
+
         {
             Debug.LogError("One or both of the tectons are null.");
             return (null, null);

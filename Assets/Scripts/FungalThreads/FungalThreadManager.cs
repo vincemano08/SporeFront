@@ -104,10 +104,10 @@ public class FungalThreadManager : NetworkBehaviour
         if (threadToRemove != null)
         {
             var (goA, goB) = threadToRemove.FindClosestGridObjectPair(threadToRemove.tectonA, threadToRemove.tectonB);
-
             goA.RemoveExternalNeighbor(goB);
 
             goB.RemoveExternalNeighbor(goA);
+
 
             fungalThreads.Remove(threadToRemove);
             Destroy(threadToRemove.gameObject);

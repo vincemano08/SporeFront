@@ -12,7 +12,8 @@ public class FungusBodyFactory : NetworkBehaviour
     [Tooltip("How high above the tekton the fungus body should spawn")]
     [SerializeField] private float dropHeight = 3f;
 
- 
+    [SerializeField] private EventChannel eventChannel;
+
     private void Awake() {
         if (Instance == null)
             Instance = this;

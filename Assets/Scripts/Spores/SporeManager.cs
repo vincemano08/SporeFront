@@ -1,12 +1,15 @@
-﻿using Fusion;
+using Fusion;
 using UnityEngine;
 using static Fusion.TickRate;
 using UnityEngine.UIElements;
+
 
 public class SporeManager : NetworkBehaviour
 {
 
     [SerializeField] private GameObject sporePrefab;
+    [SerializeField] private float sporeConsumptionTime = 2f;
+    [SerializeField] private EventChannel eventChannel;
 
     [Networked, Capacity(50)]
     private NetworkDictionary<NetworkId, NetworkId> SporeToGridMap { get; }
@@ -175,7 +178,7 @@ public class SporeManager : NetworkBehaviour
             Debug.LogWarning("No spore found to remove on grid object");
         }
     }
-
+    
     public void ConsumeSpores(GridObject gridObject)
     {
         //el�re defini�lt id�be telik az elfogyaszt�s
@@ -201,6 +204,5 @@ public class SporeManager : NetworkBehaviour
         }
         return null;
     }
-
 
 }

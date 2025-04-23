@@ -1,5 +1,6 @@
 using Fusion;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum OccupantType
@@ -18,6 +19,7 @@ public class GridObject : NetworkBehaviour
     public Tecton parentTecton { get; set; }
     [Networked] public OccupantType occupantType { get; set; } = OccupantType.None;
     public bool IsOccupied => occupantType != OccupantType.None;
+    public HashSet<GridObject> ExternalNeighbors { get; set; }
 
     [Networked, Capacity(4)] // Initial capacity
     private NetworkLinkedList<NetworkId> ExternalNeighborIds => default;
@@ -29,6 +31,7 @@ public class GridObject : NetworkBehaviour
     private void Awake()
     {
         objectRenderer = GetComponent<Renderer>();
+        ExternalNeighbors = new HashSet<GridObject> { };
     }
 
 
@@ -132,7 +135,7 @@ public class GridObject : NetworkBehaviour
         // Use the cached neighbors
         _cachedNeighbors.Clear();
 
-        // 1. Közvetlen (Adjacent) szomszédok
+        // 1. Kï¿½zvetlen (Adjacent) szomszï¿½dok
         var directions = new Vector2Int[] {
             new Vector2Int(0, 1), // Fel
             new Vector2Int(1, 0), // Jobbra
@@ -142,40 +145,40 @@ public class GridObject : NetworkBehaviour
 
         foreach (var direction in directions)
         {
-            // A GetGridObjectAt használata helyett hatékonyabb lehet, ha van egy központi
-            // rendszer (pl. GridManager), ami ismeri az összes GridObject-et X, Z alapján.
-            // Itt most maradunk a Raycast-os megoldásnál a példa kedvéért.
+            // A GetGridObjectAt hasznï¿½lata helyett hatï¿½konyabb lehet, ha van egy kï¿½zponti
+            // rendszer (pl. GridManager), ami ismeri az ï¿½sszes GridObject-et X, Z alapjï¿½n.
+            // Itt most maradunk a Raycast-os megoldï¿½snï¿½l a pï¿½lda kedvï¿½ï¿½rt.
             var neighbor = GetGridObjectAt(new Vector3(X + direction.x, 0, Z + direction.y));
 
-            // Gyõzõdjünk meg róla, hogy a talált szomszéd érvényes a hálózaton
+            // Gyï¿½zï¿½djï¿½nk meg rï¿½la, hogy a talï¿½lt szomszï¿½d ï¿½rvï¿½nyes a hï¿½lï¿½zaton
             if (neighbor != null && neighbor.Object != null && neighbor.Object.IsValid)
             {
                 _cachedNeighbors.Add(neighbor);
             }
         }
 
-        // 2. Külsõ (External) szomszédok hozzáadása a szinkronizált listából
-        if (Runner != null && ExternalNeighborIds.Count > 0) // Runner ellenõrzése fontos
+        // 2. Kï¿½lsï¿½ (External) szomszï¿½dok hozzï¿½adï¿½sa a szinkronizï¿½lt listï¿½bï¿½l
+        if (Runner != null && ExternalNeighborIds.Count > 0) // Runner ellenï¿½rzï¿½se fontos
         {
             foreach (NetworkId neighborId in ExternalNeighborIds)
             {
-                // Próbáljuk megkeresni a NetworkObject-et az ID alapján
+                // Prï¿½bï¿½ljuk megkeresni a NetworkObject-et az ID alapjï¿½n
                 if (Runner.TryFindObject(neighborId, out NetworkObject networkObject))
                 {
-                    // Sikeresen megtaláltuk, próbáljuk GridObject-té alakítani
+                    // Sikeresen megtalï¿½ltuk, prï¿½bï¿½ljuk GridObject-tï¿½ alakï¿½tani
                     GridObject externalNeighbor = networkObject.GetComponent<GridObject>();
-                    if (externalNeighbor != null && externalNeighbor != this) // Ne adjuk hozzá önmagát
+                    if (externalNeighbor != null && externalNeighbor != this) // Ne adjuk hozzï¿½ ï¿½nmagï¿½t
                     {
-                        // Opcionális: Ellenõrizzük, hogy a közvetlen szomszédok között nem szerepel-e már
-                        // (HashSet helyett List-et használunk, így Contains lassabb lehet)
+                        // Opcionï¿½lis: Ellenï¿½rizzï¿½k, hogy a kï¿½zvetlen szomszï¿½dok kï¿½zï¿½tt nem szerepel-e mï¿½r
+                        // (HashSet helyett List-et hasznï¿½lunk, ï¿½gy Contains lassabb lehet)
                         if (!_cachedNeighbors.Contains(externalNeighbor))
                         {
                             _cachedNeighbors.Add(externalNeighbor);
                         }
                     }
                 }
-                // Ha nem találtuk (pl. az objektum már megszûnt), akkor nem csinálunk semmit.
-                // Fontos lehet egy mechanizmus, ami eltávolítja az érvénytelen ID-kat a listából idõnként.
+                // Ha nem talï¿½ltuk (pl. az objektum mï¿½r megszï¿½nt), akkor nem csinï¿½lunk semmit.
+                // Fontos lehet egy mechanizmus, ami eltï¿½volï¿½tja az ï¿½rvï¿½nytelen ID-kat a listï¿½bï¿½l idï¿½nkï¿½nt.
             }
         }
 
