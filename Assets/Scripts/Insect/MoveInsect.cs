@@ -3,6 +3,7 @@ using Fusion;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 
 public class MoveInsect : NetworkBehaviour {
@@ -40,8 +41,6 @@ public class MoveInsect : NetworkBehaviour {
     private Queue<GridObject> path;
     private SporeManager sporeManager;
     private bool isConsumingSpore = false;
-
-    private SporeManager sporeManager;
 
     public override void Spawned() {
         base.Spawned();
@@ -213,17 +212,96 @@ public class MoveInsect : NetworkBehaviour {
     }
     public void HandleKeyboardInput()
     {
-        if (Selected && Input.GetKeyDown(KeyCode.C))
+
+        if (Selected)
         {
-            if (CurrentGridObjectId.IsValid)
+            if (Input.GetKeyDown(KeyCode.C))
             {
-                // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
-                RPC_ConsumeSpore(CurrentGridObjectId);  // xd
+                if (CurrentGridObjectId.IsValid)
+                {
+                    // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
+                    RPC_ConsumeSpore(CurrentGridObjectId);  // xd
+                }
+                else
+                {
+                    Debug.LogError("CurrentGridObjectId is invalid.");
+                }
             }
-            else
+
+            // Press X to disconnect any fungal threads connected to the current grid object's tecton
+            if (Input.GetKeyDown(KeyCode.X))
             {
-                Debug.LogError("CurrentGridObjectId is invalid.");
+                if (CurrentGridObject == null)
+                {
+                    Debug.LogError("CurrentGridObject is null. Cannot check nearby threads.");
+                    return;
+                }
+
+                var nearbyThreads = GetNearbyThreads(CurrentGridObject);
+                if (nearbyThreads.Count > 0)
+                {
+                    foreach (var thread in nearbyThreads)
+                    {
+                        // Request the server to disconnect each thread
+                        RPC_RequestThreadDisconnect(thread.Object.Id);
+                    }
+                    Debug.Log($"{nearbyThreads.Count} threads were disconnected.");
+                }
+                else
+                {
+                    Debug.Log("No fungal threads found nearby.");
+                }
             }
+
         }
+
+    }
+
+    private List<FungalThread> GetNearbyThreads(GridObject neighbor)
+    {
+        var nearbyThreads = new List<FungalThread>();
+
+        if (neighbor?.ExternalNeighbors == null)
+            return nearbyThreads;
+
+        foreach (var thread in FungalThreadManager.Instance.FungalThreads)
+        {
+            if (thread.gridObjectA == neighbor || thread.gridObjectB == neighbor)
+                nearbyThreads.Add(thread);
+        }
+
+        return nearbyThreads;
+    }
+
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestThreadDisconnect(NetworkId threadId)
+    {
+        // Attempt to locate the thread object by ID
+        if (!Runner.TryFindObject(threadId, out var netObj))
+        {
+            Debug.LogError("Thread object not found.");
+            return;
+        }
+
+        var thread = netObj.GetComponent<FungalThread>();
+        if (thread == null)
+        {
+            Debug.LogError("Thread component not found.");
+            return;
+        }
+
+        var tectonA = thread.tectonA?.GetComponent<Tecton>();
+        var tectonB = thread.tectonB?.GetComponent<Tecton>();
+
+        if (tectonA == null || tectonB == null)
+        {
+            Debug.LogError("Tectons not found.");
+            return;
+        }
+
+        // Use the manager to properly disconnect the fungal connection between two tectons
+        FungalThreadManager.Instance.Disconnect(tectonA, tectonB);
     }
 }

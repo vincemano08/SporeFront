@@ -16,6 +16,9 @@ public class FungalThread : NetworkBehaviour
     private NetworkObject lastTectonA;
     private NetworkObject lastTectonB;
 
+    public GridObject gridObjectA { get; private set; }
+    public GridObject gridObjectB { get; private set; }
+
     public override void Spawned()
     {
         base.Spawned();
@@ -116,15 +119,15 @@ public class FungalThread : NetworkBehaviour
 
             lineRenderer.SetPosition(0, startPos);
             lineRenderer.SetPosition(1, endPos);
-
-            closestPair.Item1.AddExternalNeighbor(closestPair.Item2);
-            closestPair.Item2.AddExternalNeighbor(closestPair.Item1);
         }
-
-        closestPair.Item1.ExternalNeighbors.Add(closestPair.Item2);
-
-        closestPair.Item2.ExternalNeighbors.Add(closestPair.Item1);
+        else
+        {
+            Debug.LogWarning("Closest grid object pair not found for rendering.");
+        }
+        gridObjectA = closestPair.Item1;
+        gridObjectB = closestPair.Item2;
     }
+
 
     public (GridObject, GridObject) FindClosestGridObjectPair(NetworkObject netA, NetworkObject netB)
     {

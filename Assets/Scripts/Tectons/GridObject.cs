@@ -91,6 +91,9 @@ public class GridObject : NetworkBehaviour
         if (!found)
         {
             ExternalNeighborIds.Add(neighbor.Object.Id);
+
+            // Clear neighbor cache to ensure GetNeighbors() returns fresh data
+            _cachedNeighbors.Clear();
             Debug.Log($"Added external neighbor {neighbor.Object.Id} to {this.Object.Id}");
         }
     }
@@ -121,6 +124,9 @@ public class GridObject : NetworkBehaviour
         }
 
         ExternalNeighborIds.Remove(neighbor.Object.Id);
+
+        // Clear cached neighbors so GetNeighbors() will rebuild the list next time
+        _cachedNeighbors.Clear();
     }
 
     public IEnumerable<GridObject> GetNeighbors()
