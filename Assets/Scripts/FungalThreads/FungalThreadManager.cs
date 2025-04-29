@@ -11,6 +11,7 @@ public class FungalThreadManager : NetworkBehaviour
 
     private HashSet<(int, int)> connections = new HashSet<(int, int)>();
     private List<FungalThread> fungalThreads = new List<FungalThread>();
+    public List<FungalThread> FungalThreads => fungalThreads;
 
     private void Awake()
     {
@@ -51,9 +52,42 @@ public class FungalThreadManager : NetworkBehaviour
         NetworkObject threadNetworkObj = Runner.Spawn(threadPrefab, transform.position, transform.rotation);
         GameObject threadObj = threadNetworkObj.gameObject;
         FungalThread thread = threadObj.GetComponent<FungalThread>();
-        thread.SetTectons(a.gameObject.GetComponent<NetworkObject>(), b.gameObject.GetComponent<NetworkObject>());
+
+        NetworkObject netA = a.GetComponent<NetworkObject>();
+        NetworkObject netB = b.GetComponent<NetworkObject>();
+
+        thread.SetTectons(netA, netB);
         fungalThreads.Add(thread);
-        
+
+        // Set logical connection
+        var (goA, goB) = thread.FindClosestGridObjectPair(netA, netB);
+        if (goA != null && goB != null)
+        {
+            goA.AddExternalNeighbor(goB);
+            goB.AddExternalNeighbor(goA);
+        }
+        else
+        {
+            Debug.LogWarning("Could not find grid objects to establish logical connection.");
+        }
+
+        RPC_EstablishLogicalConnection(threadNetworkObj.Id);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_EstablishLogicalConnection(NetworkId threadId)
+    {
+        Runner.TryFindObject(threadId, out var threadObj);
+        if (threadObj != null)
+        {
+            var thread = threadObj.GetComponent<FungalThread>();
+            var (goA, goB) = thread.FindClosestGridObjectPair(thread.tectonA, thread.tectonB);
+            if (goA != null && goB != null)
+            {
+                goA.AddExternalNeighbor(goB);
+                goB.AddExternalNeighbor(goA);
+            }
+        }
     }
 
     public void Connect(Tecton a, Tecton b)
@@ -86,6 +120,36 @@ public class FungalThreadManager : NetworkBehaviour
         }
     }
 
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_RequestThreadDisconnect(NetworkId threadId)
+    {
+        // Attempt to locate the thread object by ID
+        if (!Runner.TryFindObject(threadId, out var netObj))
+        {
+            Debug.LogError("Thread object not found.");
+            return;
+        }
+
+        var thread = netObj.GetComponent<FungalThread>();
+        if (thread == null)
+        {
+            Debug.LogError("Thread component not found.");
+            return;
+        }
+
+        var tectonA = thread.tectonA?.GetComponent<Tecton>();
+        var tectonB = thread.tectonB?.GetComponent<Tecton>();
+
+        if (tectonA == null || tectonB == null)
+        {
+            Debug.LogError("Tectons not found.");
+            return;
+        }
+
+        // Use the manager to properly disconnect the fungal connection between two tectons
+        Disconnect(tectonA, tectonB);
+    }
+
     public bool Disconnect(Tecton a, Tecton b)
     {
         var key = GetConnectionKey(a, b);
@@ -98,16 +162,25 @@ public class FungalThreadManager : NetworkBehaviour
         }
 
         // find and remove the thread
+        var netA = a.GetComponent<NetworkObject>();
+        var netB = b.GetComponent<NetworkObject>();
+
         FungalThread threadToRemove = fungalThreads.FirstOrDefault(t =>
-            ( t.tectonA == a && t.tectonB == b ) || ( t.tectonA == b && t.tectonB == a ));
+            (t.tectonA == netA && t.tectonB == netB) || (t.tectonA == netB && t.tectonB == netA));
 
         if (threadToRemove != null)
         {
             var (goA, goB) = threadToRemove.FindClosestGridObjectPair(threadToRemove.tectonA, threadToRemove.tectonB);
 
-            goA.RemoveExternalNeighbor(goB);
-
-            goB.RemoveExternalNeighbor(goA);
+            if (goA != null && goB != null)
+            {
+                goA.RemoveExternalNeighbor(goB);
+                goB.RemoveExternalNeighbor(goA);
+            }
+            else
+            {
+                Debug.LogWarning("GridObject pair not found during disconnect.");
+            }
 
             fungalThreads.Remove(threadToRemove);
             Destroy(threadToRemove.gameObject);
