@@ -212,30 +212,18 @@ public class MoveInsect : NetworkBehaviour {
     {
         if (Selected)
         {
-            if (Input.GetKeyDown(KeyCode.C))
+            if(CurrentGridObjectId.IsValid)
+                Debug.LogError("CurrentGridObjectId is invalid.");
+            else if (Input.GetKeyDown(KeyCode.C))
             {
-                if (CurrentGridObjectId.IsValid)
-                {
-                    // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
-                    RPC_ConsumeSpore(CurrentGridObjectId);  // xd
-                }
-                else
-                {
-                    Debug.LogError("CurrentGridObjectId is invalid.");
-                }
+                // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
+                RPC_ConsumeSpore(CurrentGridObjectId); // xd
             }
 
-            if (Input.GetKeyDown(KeyCode.X))
+            else if (Input.GetKeyDown(KeyCode.X))
             {
-                if (CurrentGridObjectId.IsValid)
-                {
-                    // Invoke the RPC on the server to request nearby fungal threads
-                    RPC_RequestNearbyThreads(CurrentGridObjectId);
-                }
-                else
-                {
-                    Debug.LogError("CurrentGridObjectId is invalid.");
-                }
+                // Invoke the RPC on the server to request nearby fungal threads
+                RPC_RequestNearbyThreads(CurrentGridObjectId);
             }
         }
     }
@@ -253,6 +241,12 @@ public class MoveInsect : NetworkBehaviour {
         if (gridObject == null)
         {
             Debug.LogError("The GridObject component was not found.");
+            return;
+        }
+
+        if (FungalThreadManager.Instance == null)
+        {
+            Debug.LogError("FungalThreadManager instance not available on server.");
             return;
         }
 

@@ -11,7 +11,7 @@ public class FungalThreadManager : NetworkBehaviour
 
     private HashSet<(int, int)> connections = new HashSet<(int, int)>();
     private List<FungalThread> fungalThreads = new List<FungalThread>();
-    public List<FungalThread> FungalThreads => fungalThreads;
+    public IReadOnlyList<FungalThread> FungalThreads => fungalThreads;
 
     private void Awake()
     {
@@ -65,29 +65,29 @@ public class FungalThreadManager : NetworkBehaviour
         {
             goA.AddExternalNeighbor(goB);
             goB.AddExternalNeighbor(goA);
+            RPC_EstablishLogicalConnection(goA.GetComponent<NetworkObject>().Id, goB.GetComponent<NetworkObject>().Id);
         }
         else
         {
             Debug.LogWarning("Could not find grid objects to establish logical connection.");
         }
-
-        RPC_EstablishLogicalConnection(threadNetworkObj.Id);
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    private void RPC_EstablishLogicalConnection(NetworkId threadId)
+    private void RPC_EstablishLogicalConnection(NetworkId goAId, NetworkId goBId)
     {
-        Runner.TryFindObject(threadId, out var threadObj);
-        if (threadObj != null)
-        {
-            var thread = threadObj.GetComponent<FungalThread>();
-            var (goA, goB) = thread.FindClosestGridObjectPair(thread.tectonA, thread.tectonB);
-            if (goA != null && goB != null)
-            {
-                goA.AddExternalNeighbor(goB);
-                goB.AddExternalNeighbor(goA);
-            }
-        }
+        if (!HasStateAuthority)
+            return;
+
+        if (!Runner.TryFindObject(goAId, out var aObj) ||
+            !Runner.TryFindObject(goBId, out var bObj))
+            return;
+
+        var goA = aObj.GetComponent<GridObject>();
+        var goB = bObj.GetComponent<GridObject>();
+
+        goA?.AddExternalNeighbor(goB);
+        goB?.AddExternalNeighbor(goA);
     }
 
     public void Connect(Tecton a, Tecton b)
@@ -120,7 +120,7 @@ public class FungalThreadManager : NetworkBehaviour
         }
     }
 
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_RequestThreadDisconnect(NetworkId threadId)
     {
         // Attempt to locate the thread object by ID
@@ -170,7 +170,8 @@ public class FungalThreadManager : NetworkBehaviour
 
         if (threadToRemove != null)
         {
-            var (goA, goB) = threadToRemove.FindClosestGridObjectPair(threadToRemove.tectonA, threadToRemove.tectonB);
+            var goA = threadToRemove.gridObjectA;
+            var goB = threadToRemove.gridObjectB;
 
             if (goA != null && goB != null)
             {
