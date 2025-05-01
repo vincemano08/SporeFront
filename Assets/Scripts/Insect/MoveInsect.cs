@@ -212,18 +212,23 @@ public class MoveInsect : NetworkBehaviour {
     {
         if (Selected)
         {
-            if(CurrentGridObjectId.IsValid)
+            if (!CurrentGridObjectId.IsValid)
+            {
                 Debug.LogError("CurrentGridObjectId is invalid.");
-            else if (Input.GetKeyDown(KeyCode.C))
-            {
-                // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
-                RPC_ConsumeSpore(CurrentGridObjectId); // xd
             }
-
-            else if (Input.GetKeyDown(KeyCode.X))
+            else
             {
-                // Invoke the RPC on the server to request nearby fungal threads
-                RPC_RequestNearbyThreads(CurrentGridObjectId);
+                if (Input.GetKeyDown(KeyCode.C))
+                {
+                    // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
+                    RPC_ConsumeSpore(CurrentGridObjectId); // xd
+                }
+
+                else if (Input.GetKeyDown(KeyCode.X))
+                {
+                    // Invoke the RPC on the server to request nearby fungal threads
+                    RPC_RequestNearbyThreads(CurrentGridObjectId);
+                }
             }
         }
     }
