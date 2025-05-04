@@ -76,7 +76,17 @@ public class FungusBody : NetworkBehaviour
             Debug.Log("The fungus body has reached the spore production limit.");
             if (Tecton != null)
             {
-                Destroy(gameObject);
+                if (Object.HasStateAuthority)
+                {
+                    Runner.Despawn(Object);
+                }
+                else
+                {
+                    //This client does NOT have state authority over the FungusBody, RPC is necessarry
+                    RPC_RequestDespawn();
+
+                }
+                
                 Tecton.FungusBody = null;
             }
             return;
@@ -92,6 +102,12 @@ public class FungusBody : NetworkBehaviour
             ChangeColor(Color.red);
             canRelease = false;
         }
+    }
+    //Write the RPC_RequestDespawn method
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestDespawn()
+    {
+        Runner.Despawn(Object);
     }
 
     public override void FixedUpdateNetwork() {
