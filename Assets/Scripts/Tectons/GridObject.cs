@@ -69,6 +69,7 @@ public class GridObject : NetworkBehaviour
         if (!HasStateAuthority)
         {
             RPC_RequestAddExternalNeighbor(neighbor.Object.Id);
+            _cachedNeighbors.Clear();
             return;
         }
 
@@ -88,6 +89,9 @@ public class GridObject : NetworkBehaviour
         if (!found)
         {
             ExternalNeighborIds.Add(neighbor.Object.Id);
+
+            // Clear neighbor cache to ensure GetNeighbors() returns fresh data
+            _cachedNeighbors.Clear();
             Debug.Log($"Added external neighbor {neighbor.Object.Id} to {this.Object.Id}");
         }
     }
@@ -97,6 +101,7 @@ public class GridObject : NetworkBehaviour
         if (!HasStateAuthority)
         {
             RPC_RequestRemoveExternalNeighbor(neighbor.Object.Id);
+            _cachedNeighbors.Clear();
             return;
         }
         if (neighbor == null || neighbor.Object == null || !neighbor.Object.Id.IsValid) return;
@@ -118,6 +123,9 @@ public class GridObject : NetworkBehaviour
         }
 
         ExternalNeighborIds.Remove(neighbor.Object.Id);
+
+        // Clear cached neighbors so GetNeighbors() will rebuild the list next time
+        _cachedNeighbors.Clear();
     }
 
     public IEnumerable<GridObject> GetNeighbors()

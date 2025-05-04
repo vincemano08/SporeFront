@@ -210,17 +210,71 @@ public class MoveInsect : NetworkBehaviour {
     }
     public void HandleKeyboardInput()
     {
-        if (Selected && Input.GetKeyDown(KeyCode.C))
+        if (Selected)
         {
-            if (CurrentGridObjectId.IsValid)
-            {
-                // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
-                RPC_ConsumeSpore(CurrentGridObjectId);  // xd
-            }
-            else
+            if (!CurrentGridObjectId.IsValid)
             {
                 Debug.LogError("CurrentGridObjectId is invalid.");
             }
+            else
+            {
+                if (Input.GetKeyDown(KeyCode.C))
+                {
+                    // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
+                    RPC_ConsumeSpore(CurrentGridObjectId); // xd
+                }
+
+                else if (Input.GetKeyDown(KeyCode.X))
+                {
+                    // Invoke the RPC on the server to request nearby fungal threads
+                    RPC_RequestNearbyThreads(CurrentGridObjectId);
+                }
+            }
+        }
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestNearbyThreads(NetworkId gridObjectId)
+    {
+        if (!Runner.TryFindObject(gridObjectId, out var netObj))
+        {
+            Debug.LogError($"The GridObject was not found on the server: {gridObjectId}");
+            return;
+        }
+
+        var gridObject = netObj.GetComponent<GridObject>();
+        if (gridObject == null)
+        {
+            Debug.LogError("The GridObject component was not found.");
+            return;
+        }
+
+        if (FungalThreadManager.Instance == null)
+        {
+            Debug.LogError("FungalThreadManager instance not available on server.");
+            return;
+        }
+
+        var nearbyThreads = new List<FungalThread>();
+
+        foreach (var thread in FungalThreadManager.Instance.FungalThreads)
+        {
+            if (thread.gridObjectA == gridObject || thread.gridObjectB == gridObject)
+                nearbyThreads.Add(thread);
+        }
+
+        if (nearbyThreads.Count > 0)
+        {
+            foreach (var thread in nearbyThreads)
+            {
+                // Request the server to disconnect each thread
+                FungalThreadManager.Instance.RPC_RequestThreadDisconnect(thread.Object.Id);
+            }
+            Debug.Log($"{nearbyThreads.Count} threads were disconnected.");
+        }
+        else
+        {
+            Debug.Log("No fungal threads found nearby.");
         }
     }
 }
