@@ -10,6 +10,11 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     {
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
         fungusBodyFactory = FindFirstObjectByType<FungusBodyFactory>();
+        timerManager = FindFirstObjectByType<TimerManager>();
+        if (timerManager == null)
+        {
+            Debug.LogWarning("TimerManager cannot be found!");
+        }
         if (insectSpawner == null)
         {
             Debug.LogWarning("InsectSpawner cannot be found!");
