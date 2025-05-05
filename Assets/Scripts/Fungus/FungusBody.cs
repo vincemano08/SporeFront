@@ -19,9 +19,9 @@ public class FungusBody : NetworkBehaviour
 
     public Tecton Tecton { get; set; }
 
-    [Networked] private bool canRelease { get; set; } = true;
-    [Networked] private int currentProductionCount { get; set; } = 0;   // Number of emissions so far.
-    [Networked] private TickTimer sporeCooldownTimer { get; set; }
+    private bool canRelease { get; set; } = true; //Why was this Networked??
+    private int currentProductionCount { get; set; } = 0;   // Number of emissions so far.
+    private TickTimer sporeCooldownTimer { get; set; } //Why was this Networked??
 
     private Renderer objectRenderer;
 
@@ -58,10 +58,13 @@ public class FungusBody : NetworkBehaviour
     {
         if (!HasInputAuthority)
         {
-            Debug.Log("player wich clicked on this fungusbody has no input authority so cant release spores");
+            Debug.Log("player which clicked on this fungusbody has no input authority so cant release spores");
             return;
         }
-           
+        if (!canRelease) {
+            Debug.Log("Cannot release spores: cooldown is active.");
+            return;
+        }
 
         if (sporeCooldownTimer.IsRunning) {
             Debug.Log("Spore release is on cooldown.");
@@ -73,7 +76,17 @@ public class FungusBody : NetworkBehaviour
             Debug.Log("The fungus body has reached the spore production limit.");
             if (Tecton != null)
             {
-                Destroy(gameObject);
+                if (Object.HasStateAuthority)
+                {
+                    Runner.Despawn(Object);
+                }
+                else
+                {
+                    //This client does NOT have state authority over the FungusBody, RPC is necessarry
+                    RPC_RequestDespawn();
+
+                }
+                
                 Tecton.FungusBody = null;
             }
             return;
@@ -90,9 +103,15 @@ public class FungusBody : NetworkBehaviour
             canRelease = false;
         }
     }
+    //Write the RPC_RequestDespawn method
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestDespawn()
+    {
+        Runner.Despawn(Object);
+    }
 
     public override void FixedUpdateNetwork() {
-        if (!HasStateAuthority) return;
+        //if (!HasStateAuthority) return; This line is not necessarry, since every user manages their own Fungusbody and spore releases
 
         if (sporeCooldownTimer.Expired(Runner)) {
             // Terrible soltuion but whatever
