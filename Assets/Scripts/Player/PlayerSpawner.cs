@@ -5,6 +5,7 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 {
     public InsectSpawner insectSpawner;
     public FungusBodyFactory fungusBodyFactory;
+    public TimerManager timerManager;
     void Awake()
     {
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
@@ -27,6 +28,10 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 
             // Spawn insects near the fungus body
             insectSpawner.SpawnInsectsNearBody(player, fungusBody);
+            timerManager.StartTimer(60f); // Start the timer for 60 seconds
+            timerManager.RpcStartTimer(60f);
+            // RpcStartTimer(60f); // Start the timer for 60 seconds
         }
     }
+
 }

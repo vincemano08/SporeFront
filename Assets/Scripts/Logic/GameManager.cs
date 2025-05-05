@@ -88,7 +88,7 @@ public class GameManager : MonoBehaviour
                 DeselectFungus();
             else if (Input.GetKeyDown(KeyCode.C))
             {
-
+                // eventChannel.RaiseScoreChanged(1);
             }
         }
     }
