@@ -4,7 +4,6 @@ using UnityEngine;
 public class TimerManager : NetworkBehaviour
 {
     [SerializeField] private EventChannel eventChannel;
-    [SerializeField] private float startTime = 60f;
 
     // [Networked]
     public float TimeRemaining { get; set; }
@@ -17,6 +16,7 @@ public class TimerManager : NetworkBehaviour
 
     public void StartTimer(float duration)
     {
+        Debug.Log("Start Timer called.");
         TimeRemaining = duration;
         isRunning = true;
         eventChannel?.RaiseTimerUpdated(TimeRemaining);
