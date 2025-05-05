@@ -51,6 +51,7 @@ public class TimerManager : NetworkBehaviour
 
     private void TimerEnded()
     {
+        eventChannel?.RaiseGameOver();
         Debug.Log("Timer finished!");
         // Trigger a game over or win condition here
     }
