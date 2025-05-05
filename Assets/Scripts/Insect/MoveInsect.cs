@@ -11,6 +11,7 @@ public class MoveInsect : NetworkBehaviour {
 
     [SerializeField] private Material defaultMaterial;
     [SerializeField] private Material selectedMaterial;
+    [SerializeField] private EventChannel eventChannel;
 
     public bool Selected { get; set; } = false;
 
@@ -220,6 +221,16 @@ public class MoveInsect : NetworkBehaviour {
             {
                 if (Input.GetKeyDown(KeyCode.C))
                 {
+                    if(eventChannel != null)
+                    {
+                        eventChannel.RaiseScoreChanged(1);
+                        Debug.Log("Score changed by 1");
+                    }
+                    else
+                    {
+                        Debug.LogError("EventChannel is null, score not updated");
+
+                    }
                     // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
                     RPC_ConsumeSpore(CurrentGridObjectId); // xd
                 }

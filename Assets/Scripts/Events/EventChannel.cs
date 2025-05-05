@@ -9,6 +9,10 @@ public class EventChannel : ScriptableObject
     public event Action<int> OnScoreChanged;
     // This event should be called, whenever the hud should be updated -- called by the ScoreManager
     public event Action<int> OnUpdateHud;
+    
+    public event Action<float> OnTimerUpdated;
+
+    public event Action OnGameOver;    // this event should be called, whenever the game is over -- called by the TimerManager
 
     /// <param name="score">The value that should be added to the current scores of the player</param>
     public void RaiseScoreChanged(int score)
@@ -18,6 +22,18 @@ public class EventChannel : ScriptableObject
 
     public void RaiseUpdateHud(int currentScore) {
         OnUpdateHud?.Invoke(currentScore);
+    }
+
+    public void RaiseTimerUpdated(float timeRemaining)
+    {
+        OnTimerUpdated?.Invoke(timeRemaining);
+    }
+
+    public void RaiseGameOver()
+    {
+        Debug.Log("Game Over Event Triggered");
+        // This will be called to notify subs that the game is over
+        OnGameOver?.Invoke();
     }
 
 

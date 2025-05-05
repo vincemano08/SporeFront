@@ -5,10 +5,16 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 {
     public InsectSpawner insectSpawner;
     public FungusBodyFactory fungusBodyFactory;
+    public TimerManager timerManager;
     void Awake()
     {
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
         fungusBodyFactory = FindFirstObjectByType<FungusBodyFactory>();
+        timerManager = FindFirstObjectByType<TimerManager>();
+        if (timerManager == null)
+        {
+            Debug.LogWarning("TimerManager cannot be found!");
+        }
         if (insectSpawner == null)
         {
             Debug.LogWarning("InsectSpawner cannot be found!");
@@ -27,6 +33,10 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 
             // Spawn insects near the fungus body
             insectSpawner.SpawnInsectsNearBody(player, fungusBody);
+            // timerManager.StartTimer(60f); // Start the timer for 60 seconds
+            timerManager.RpcStartTimer(60f);
+            // RpcStartTimer(60f); // Start the timer for 60 seconds
         }
     }
+
 }
