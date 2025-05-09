@@ -1,4 +1,5 @@
 using Fusion;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -37,10 +38,31 @@ public class FungalThreadManager : NetworkBehaviour
         //Log the size of neighbours
         // Debug.LogError($"FungalThreadManagger.CanConnect source: {source.Id} target: {target.Id} neighbours: {source.Neighbors.Count}; {target.Neighbors.Count}");
 
+        // Check if the source and target are neighbors
         if (!source.Neighbors.Contains(target)) return false;
 
+        // Check if the connection already exists
         var key = GetConnectionKey(source, target);
-        return !connections.Contains(key);
+        if(connections.Contains(key))
+        {
+            Debug.LogWarning($"Connection already exists between {source.Id} and {target.Id}");
+            return false;
+        }
+        if ((source.TectonType == TectonType.SingleThreadOnly && HasThread(source)) ||
+            (target.TectonType == TectonType.SingleThreadOnly && HasThread(target)))
+        {
+            Debug.LogWarning($"Cannot connect Thread({source.Id}) and Thread({target.Id}): one of them has a single thread restriction.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool HasThread(Tecton source)
+    {
+        //Check if the source has any threads, with the fungalThreads list
+        return fungalThreads.Any(thread => thread.tectonA == source.GetComponent<NetworkObject>() 
+                                        || thread.tectonB == source.GetComponent<NetworkObject>());
     }
 
     // the spawn method, that will be called only on the server

@@ -10,10 +10,9 @@ public enum TectonType
     ThreadGrowthBoost,           // Speeds up FungalThread growth
     ThreadDecay,                 // FungalThreads disappear over time
     SingleThreadOnly,            // Only one FungalThread can grow here
-    MultiThreadAllowed,          // Multiple FungalThreads can grow here
     NoFungusBodyAllowed,         // FungusBody cannot grow here
     InsectEffectZone,            // Material affects insects (general placeholder)
-    Breakable                    // Tecton can split, severing FungalThreads
+    //Breakable                    // Tecton can split, severing FungalThreads
 }
 public class Tecton : NetworkBehaviour
 {
