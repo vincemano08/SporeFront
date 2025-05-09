@@ -4,8 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum TectonType
+{
+    Default,                     // No special effect
+    ThreadGrowthBoost,           // Speeds up FungalThread growth
+    ThreadDecay,                 // FungalThreads disappear over time
+    SingleThreadOnly,            // Only one FungalThread can grow here
+    MultiThreadAllowed,          // Multiple FungalThreads can grow here
+    NoFungusBodyAllowed,         // FungusBody cannot grow here
+    InsectEffectZone,            // Material affects insects (general placeholder)
+    Breakable                    // Tecton can split, severing FungalThreads
+}
 public class Tecton : NetworkBehaviour
 {
+    public TectonType TectonType { get; set; }
+
     public static Transform parent;
 
     public new int Id { get; private set; }
