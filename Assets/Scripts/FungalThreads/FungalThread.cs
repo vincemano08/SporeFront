@@ -1,5 +1,7 @@
 using Fusion;
 using NUnit.Framework;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,16 +18,23 @@ public class FungalThread : NetworkBehaviour
     private NetworkObject lastTectonA;
     private NetworkObject lastTectonB;
 
+    //This variable is used when the insect tries to cross the fungal thread
+    //The insect can only cross the fungal thread if it is fully developed
+    private bool isFullyDeveloped = false;
+    public bool IsFullyDeveloped => isFullyDeveloped;
+
+    [Networked]
+    private float GrowthProgress { get; set; }
+
     public GridObject gridObjectA { get; private set; }
     public GridObject gridObjectB { get; private set; }
 
+    private Coroutine growthCoroutine;
     public override void Spawned()
     {
         base.Spawned();
         IsSpawned = true;
     }
-
-
 
     private void Awake()
     {
@@ -43,6 +52,21 @@ public class FungalThread : NetworkBehaviour
     {
         if (!IsSpawned)
             return;
+
+        // Update the line renderer based on GrowthProgress
+        if (GrowthProgress > 0f && GrowthProgress < 1f)
+        {
+            if (gridObjectA != null && gridObjectB != null)
+            {
+                Vector3 startPos = gridObjectA.transform.position;
+                Vector3 endPos = gridObjectB.transform.position;
+                Vector3 currentEndPos = Vector3.Lerp(startPos, endPos, GrowthProgress);
+
+                lineRenderer.SetPosition(0, startPos);
+                lineRenderer.SetPosition(1, currentEndPos);
+            }
+        }
+
         // Manuálisan ellenõrizzük, hogy megváltoztak-e a networked változók
         if (tectonA != lastTectonA || tectonB != lastTectonB)
         {
@@ -72,12 +96,64 @@ public class FungalThread : NetworkBehaviour
             RPC_SetTectonNames(a.name, b.name);
             //RPC_SetTectons(a, b);
             UpdateLineRenderer();
+            if(growthCoroutine != null)
+            {
+                StopCoroutine(growthCoroutine);
+            }
+            growthCoroutine = StartCoroutine(GrowThreadOverTime(8f));
         }
         else
         {
             RPC_SetTectons(a, b);
         }
     }
+
+    private IEnumerator GrowThreadOverTime(float duration)
+    {
+        if (tectonA == null || tectonB == null) 
+        {
+            Debug.LogError("Tectons not set for the fungal thread.");
+            yield break;
+        }
+
+        // Find the closest grid objects for the line endpoints
+        var closestPair = FindClosestGridObjectPair(tectonA, tectonB);
+        if (closestPair.Item1 == null || closestPair.Item2 == null)
+        {
+            Debug.LogError("Closest grid object pair not found for rendering.");
+            yield break;
+        }
+
+        gridObjectA = closestPair.Item1;
+        gridObjectB = closestPair.Item2;
+
+        Vector3 startPos = gridObjectA.transform.position;
+        Vector3 endPos = gridObjectB.transform.position;
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            //Note: Here we dont use Runner.DeltaTime!! The elapsedTime will still be the same on all clients
+            elapsedTime += Time.deltaTime;
+            GrowthProgress = elapsedTime / duration;
+
+            // Interpolate the second endpoint of the line
+            Vector3 currentEndPos = Vector3.Lerp(startPos, endPos, GrowthProgress);
+
+            lineRenderer.SetPosition(0, startPos); // Start position remains fixed
+            lineRenderer.SetPosition(1, currentEndPos); // Gradually move the end position
+
+            yield return null;
+        }
+
+        // Ensure the line fully reaches the endpoint
+        lineRenderer.SetPosition(0, startPos);
+        lineRenderer.SetPosition(1, endPos);
+
+        isFullyDeveloped = true;
+    }
+
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     private void RPC_SetTectonNames(string nameA, string nameB)
     {
@@ -91,6 +167,14 @@ public class FungalThread : NetworkBehaviour
         tectonB = b;
         tectonA.name = a.name;
         tectonB.name = b.name;
+
+        // Start the growth coroutine on all clients
+        if (growthCoroutine != null)
+        {
+            StopCoroutine(growthCoroutine);
+        }
+        
+        growthCoroutine = StartCoroutine(GrowThreadOverTime(10f));
 
         UpdateLineRenderer();
         RPC_UpdateLineRendererOnClients();
@@ -117,8 +201,10 @@ public class FungalThread : NetworkBehaviour
             Vector3 startPos = closestPair.Item1.transform.position;
             Vector3 endPos = closestPair.Item2.transform.position;
 
+            Vector3 currentEndPos = Vector3.Lerp(startPos, endPos, GrowthProgress);
+
             lineRenderer.SetPosition(0, startPos);
-            lineRenderer.SetPosition(1, endPos);
+            lineRenderer.SetPosition(1, currentEndPos);
         }
         else
         {

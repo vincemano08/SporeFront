@@ -12,7 +12,7 @@ public enum TectonType
     SingleThreadOnly,            // Only one FungalThread can grow here
     NoFungusBodyAllowed,         // FungusBody cannot grow here
     InsectEffectZone,            // Material affects insects (speed up)
-    //Breakable                    // Tecton can split, severing FungalThreads
+    //Breakable                    // TODO Tecton can split, severing FungalThreads
 }
 public class Tecton : NetworkBehaviour
 {
