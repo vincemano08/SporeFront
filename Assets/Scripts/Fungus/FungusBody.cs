@@ -11,7 +11,7 @@ public class FungusBody : NetworkBehaviour
     [Tooltip("Number of spores released per emission.")]
     [SerializeField, Networked] private int sporeReleaseAmount { get; set; } = 3;
     [Tooltip("Maximum number of emission attempts before the fungus body is destroyed.")]
-    [SerializeField, Networked] private int sporeProductionLimit { get; set; } = 2;
+    [SerializeField, Networked] private int sporeProductionLimit { get; set; } = 5;
 
     [Header("Advanced Fungi Settings")]
     [Tooltip("Is this fungus body an advanced type with larger range?")]

@@ -151,6 +151,17 @@ public class Tecton : NetworkBehaviour
                 return;
             }
 
+            // Save the selected Tecton into a variable
+            Tecton tecton = spawnGridObject.parentTecton;
+
+            //Check if the selected Tecton has Types that allow fungus body growth
+            if (tecton.TectonType == TectonType.NoFungusBodyAllowed)
+            {
+                // If the Tecton is of type NoFungusBodyAllowed, do not allow fungus body growth
+                Debug.Log("Fungus body cannot grow on this Tecton (TectonType: NoFungusBodyAllowed)");
+                return;
+            }
+
             // Get current tecton's fungus body's player
             PlayerRef player = FungusBody != null ? FungusBody.GetComponent<NetworkObject>().InputAuthority : default;
 
