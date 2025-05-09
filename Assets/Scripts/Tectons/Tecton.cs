@@ -123,6 +123,27 @@ public class Tecton : NetworkBehaviour
         int index = UnityEngine.Random.Range(0, tectons.Count);
         return tectons[index];
     }
+    private bool HasFullyDevelopedThread()
+    {
+        if (FungalThreadManager.Instance == null)
+        {
+            Debug.LogError("FungalThreadManager instance is not available.");
+            return false;
+        }
+
+        // Check if any thread in the manager is connected to this Tecton and is fully developed
+        foreach (var thread in FungalThreadManager.Instance.FungalThreads)
+        {
+            if ((thread.tectonA == GetComponent<NetworkObject>() || thread.tectonB == GetComponent<NetworkObject>()) &&
+                thread.IsFullyDeveloped)
+            {
+                return true; // Found a fully developed thread
+            }
+        }
+
+        Debug.Log($"No fully developed thread found for Tecton {Id}.");
+        return false;
+    }
 
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
     /// <param name="amount">Number of spores to be added.</param>
@@ -142,6 +163,12 @@ public class Tecton : NetworkBehaviour
         // If the spore count reaches the threshold and there is no fungus body yet, initiate the growth of a new fungus body.
         if (Spores.Count() >= SporeThreshold && FungusBody == null)
         {
+            // Check if the Tecton has a fully developed thread
+            if (!HasFullyDevelopedThread())
+            {
+                Debug.LogError($"Cannot spawn FungusBody: No fully developed thread on Tecton {Id}.");
+                return;
+            }
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();
 
             if (spawnGridObject == null)
