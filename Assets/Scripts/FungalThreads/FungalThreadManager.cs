@@ -93,6 +93,31 @@ public class FungalThreadManager : NetworkBehaviour
         {
             Debug.LogWarning("Could not find grid objects to establish logical connection.");
         }
+        if (a.TectonType == TectonType.ThreadDecay || b.TectonType == TectonType.ThreadDecay)
+        {
+            StartThreadDecayTimer(thread);
+        }
+    }
+
+    private void StartThreadDecayTimer(FungalThread thread)
+    {
+        // Generate a random duration between 10 and 30 seconds
+        float decayTime = UnityEngine.Random.Range(10f, 30f);
+
+        // Start a coroutine to destroy the thread after the decay time
+        StartCoroutine(ThreadDecayCoroutine(thread, decayTime));
+
+    }
+
+    private System.Collections.IEnumerator ThreadDecayCoroutine(FungalThread thread, float decayTime)
+    {
+        yield return new WaitForSeconds(decayTime);
+
+        if (thread != null)
+        {
+            Debug.Log($"Thread between {thread.tectonA.name} and {thread.tectonB.name} has decayed after {decayTime} seconds.");
+            RPC_RequestThreadDisconnect(thread.Object.Id);
+        }
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
