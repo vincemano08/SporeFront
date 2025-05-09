@@ -48,9 +48,16 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
             // Check if we've reached the required player count
             if (!timerStarted && joinedPlayers.Count >= requiredPlayerCount)
             {
-                timerManager.RpcStartTimer(60f);
-                timerStarted = true;
-                Debug.Log($"Timer started with {joinedPlayers.Count} players connected");
+                if (timerManager != null)
+                {
+                    timerManager.RpcStartTimer(60f);
+                    timerStarted = true;
+                    Debug.Log($"Timer started with {joinedPlayers.Count} players connected");
+                }
+                else
+                {
+                    Debug.LogWarning("TimerManager is null, cannot start timer.");
+                }
             }
             else
             {

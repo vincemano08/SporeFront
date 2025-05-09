@@ -19,24 +19,45 @@ public class NetworkMenuManager : MonoBehaviour
 
     [Header("Fusion Bootstrap")]
     private FusionBootstrap fusionBootstrap;
+
+    private const string PLAYER_NAME_KEY = "PlayerName";
     
     private void Awake()
     {
         // Find the FusionBootstrap component
-        fusionBootstrap = FindFirstObjectByType<FusionBootstrap>();
         if (fusionBootstrap == null)
         {
+            // Try to find it as fallback
+            fusionBootstrap = FindFirstObjectByType<FusionBootstrap>();
+            if (fusionBootstrap == null)
+            {
             Debug.LogError("FusionBootstrap not found in the scene!");
             return;
+            }
         }
         
         // Hook up the button events
-        joinAsHostButton.onClick.AddListener(StartAsHost);
-        joinAsClientButton.onClick.AddListener(StartAsClient);
+
+        if (joinAsHostButton != null)
+            joinAsHostButton.onClick.AddListener(StartAsHost);
+        else
+            Debug.LogWarning("Join As Host Button reference is missing!");
+            
+        if (joinAsClientButton != null)
+            joinAsClientButton.onClick.AddListener(StartAsClient);
+        else
+            Debug.LogWarning("Join As Client Button reference is missing!");
 
         // Hook up username button events
-        saveUsernameButton.onClick.AddListener(SaveUsername);
-        clearUsernameButton.onClick.AddListener(ClearUsername);
+        if (saveUsernameButton != null)
+            saveUsernameButton.onClick.AddListener(SaveUsername);
+        else
+            Debug.LogWarning("Save Username Button reference is missing!");
+            
+        if (clearUsernameButton != null)
+            clearUsernameButton.onClick.AddListener(ClearUsername);
+        else
+            Debug.LogWarning("Clear Username Button reference is missing!");
 
         // Load saved username if exists
         LoadSavedUsername();
@@ -51,7 +72,7 @@ public class NetworkMenuManager : MonoBehaviour
     {
         if (usernameInput != null && !string.IsNullOrEmpty(usernameInput.text))
         {
-            PlayerPrefs.SetString("PlayerName", usernameInput.text);
+            PlayerPrefs.SetString(PLAYER_NAME_KEY, usernameInput.text);
             PlayerPrefs.Save();
             Debug.Log($"Username saved: {usernameInput.text}");
         }
@@ -62,7 +83,7 @@ public class NetworkMenuManager : MonoBehaviour
         if (usernameInput != null)
         {
             usernameInput.text = "";
-            PlayerPrefs.DeleteKey("PlayerName");
+            PlayerPrefs.DeleteKey(PLAYER_NAME_KEY);
             PlayerPrefs.Save();
             Debug.Log("Username cleared");
         }
@@ -70,9 +91,9 @@ public class NetworkMenuManager : MonoBehaviour
     
     private void LoadSavedUsername()
     {
-        if (usernameInput != null && PlayerPrefs.HasKey("PlayerName"))
+        if (usernameInput != null && PlayerPrefs.HasKey(PLAYER_NAME_KEY))
         {
-            usernameInput.text = PlayerPrefs.GetString("PlayerName");
+            usernameInput.text = PlayerPrefs.GetString(PLAYER_NAME_KEY);
             Debug.Log($"Loaded saved username: {usernameInput.text}");
         }
     }
@@ -80,11 +101,7 @@ public class NetworkMenuManager : MonoBehaviour
     private void StartAsHost()
     {
         // Save username if needed
-        if (usernameInput != null && !string.IsNullOrEmpty(usernameInput.text))
-        {
-            PlayerPrefs.SetString("PlayerName", usernameInput.text);
-            PlayerPrefs.Save();
-        }
+        SaveUsername();
         
         // Start as Host
         fusionBootstrap.StartHost();
@@ -96,11 +113,7 @@ public class NetworkMenuManager : MonoBehaviour
     private void StartAsClient()
     {
         // Save username if needed
-        if (usernameInput != null && !string.IsNullOrEmpty(usernameInput.text))
-        {
-            PlayerPrefs.SetString("PlayerName", usernameInput.text);
-            PlayerPrefs.Save();
-        }
+        SaveUsername();
         
         // Start as Client
         fusionBootstrap.StartClient();
