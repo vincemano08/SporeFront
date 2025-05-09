@@ -168,7 +168,17 @@ public class MoveInsect : NetworkBehaviour {
             nextGridObject.occupantType = OccupantType.Insect;
 
             Vector3 targetPosition = nextGridObject.transform.position + new Vector3(0, 1f, 0);
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime);
+            if(CurrentGridObject != null && CurrentGridObject.parentTecton != null)
+            {
+                if (CurrentGridObject.parentTecton.TectonType == TectonType.InsectEffectZone)
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime * 2f);
+                }
+                else 
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime);
+                }
+            }
 
             // If the insect is close to the target position, dequeue the next grid object
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f) {

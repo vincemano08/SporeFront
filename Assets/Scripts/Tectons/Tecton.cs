@@ -7,11 +7,11 @@ using UnityEngine;
 public enum TectonType
 {
     Default,                     // No special effect
-    ThreadGrowthBoost,           // Speeds up FungalThread growth
+    ThreadGrowthBoost,           // Speeds up FungalThread growth (when there are spores)
     ThreadDecay,                 // FungalThreads disappear over time
     SingleThreadOnly,            // Only one FungalThread can grow here
     NoFungusBodyAllowed,         // FungusBody cannot grow here
-    InsectEffectZone,            // Material affects insects (general placeholder)
+    InsectEffectZone,            // Material affects insects (speed up)
     //Breakable                    // Tecton can split, severing FungalThreads
 }
 public class Tecton : NetworkBehaviour
