@@ -130,6 +130,16 @@ public class FungalThread : NetworkBehaviour
         Vector3 startPos = gridObjectA.transform.position;
         Vector3 endPos = gridObjectB.transform.position;
 
+        var tectonAComponent = tectonA.GetComponent<Tecton>();
+        var tectonBComponent = tectonB.GetComponent<Tecton>();
+
+        if ((tectonAComponent != null && tectonAComponent.TectonType == TectonType.ThreadGrowthBoost) ||
+        (tectonBComponent != null && tectonBComponent.TectonType == TectonType.ThreadGrowthBoost))
+        {
+            duration /= 2f; // Grow twice as fast
+            Debug.Log("ThreadGrowthBoost detected. Growth duration halved.");
+        }
+
         float elapsedTime = 0f;
 
         while (elapsedTime < duration)
