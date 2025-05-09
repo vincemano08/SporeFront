@@ -16,6 +16,7 @@ public enum TectonType
 }
 public class Tecton : NetworkBehaviour
 {
+    [Networked]
     public TectonType TectonType { get; set; }
 
     public static Transform parent;
