@@ -225,6 +225,9 @@ public class WorldGeneration : NetworkBehaviour
                 // Init Tecton component
                 Tecton tectonComponent = tectonObject.GetComponent<Tecton>();
                 tectonComponent.Init(tectonMap[x, z], mapParent);
+
+                // Assign a random TectonType (or use specific logic)
+                tectonComponent.TectonType = (TectonType)Random.Range(0, System.Enum.GetValues(typeof(TectonType)).Length);
             }
         }
         // Not too efficient, but whatever

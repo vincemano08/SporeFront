@@ -1,5 +1,7 @@
 using Fusion;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using TMPro;
 using UnityEngine;
@@ -59,6 +61,17 @@ public class MoveInsect : NetworkBehaviour {
         if (sporeManager == null)
         {
             Debug.LogError("SporeManager not found in the scene.");
+        }
+        // Wait 0.5 seconds, than Initialize CurrentGridObject
+        Invoke(nameof(InitializeCurrentGridObject), 0.5f);
+    }
+
+    private void InitializeCurrentGridObject()
+    {
+        CurrentGridObject = GridObject.GetGridObjectAt(transform.position);
+        if (CurrentGridObject == null)
+        {
+            Debug.LogError("Failed to initialize CurrentGridObject at the insect's starting position.");
         }
     }
 
@@ -152,7 +165,33 @@ public class MoveInsect : NetworkBehaviour {
         }
         HandleKeyboardInput();
     }
+    private bool CanCrossThread(GridObject current, GridObject next)
+    {
+        if (current == null || next == null)
+        {
+            Debug.LogError("Current or next GridObject is null.");
+            return false;
+        }
 
+        // Find the thread connecting the two GridObjects
+        var thread = FungalThreadManager.Instance.FungalThreads.FirstOrDefault(t =>
+            (t.gridObjectA == current && t.gridObjectB == next) ||
+            (t.gridObjectA == next && t.gridObjectB == current));
+
+        if (thread == null)
+        {
+            //Debug.Log("No thread found between the current and next GridObjects.");
+            return true; // Allow movement if no thread exists
+        }
+
+        if (!thread.IsFullyDeveloped)
+        {
+            Debug.Log("Insect cannot cross the thread because it is not fully developed.");
+            return false;
+        }
+
+        return true;
+    }
     public override void FixedUpdateNetwork() {
         // Only run on server
         if (!HasStateAuthority) return;
@@ -163,12 +202,31 @@ public class MoveInsect : NetworkBehaviour {
         // Move towards the target position
         if (path != null && path.Count > 0) {
             var nextGridObject = path.Peek();
+            if (CurrentGridObject == null)
+            {
+                CurrentGridObject = GridObject.GetGridObjectAt(transform.position);
+            }
+            if (!CanCrossThread(CurrentGridObject, nextGridObject))
+            {
+                Debug.Log("Insect cannot cross the thread.");
+                return;
+            }
 
             // Reserving the next grid object
             nextGridObject.occupantType = OccupantType.Insect;
 
             Vector3 targetPosition = nextGridObject.transform.position + new Vector3(0, 1f, 0);
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime);
+            if(CurrentGridObject != null && CurrentGridObject.parentTecton != null)
+            {
+                if (CurrentGridObject.parentTecton.TectonType == TectonType.InsectEffectZone)
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime * 2f);
+                }
+                else 
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime);
+                }
+            }
 
             // If the insect is close to the target position, dequeue the next grid object
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f) {

@@ -4,8 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum TectonType
+{
+    Default,                     // No special effect
+    ThreadGrowthBoost,           // Speeds up FungalThread growth (when there are spores)
+    ThreadDecay,                 // FungalThreads disappear over time
+    SingleThreadOnly,            // Only one FungalThread can grow here
+    NoFungusBodyAllowed,         // FungusBody cannot grow here
+    InsectEffectZone,            // Material affects insects (speed up)
+    //Breakable                    // TODO Tecton can split, severing FungalThreads
+}
 public class Tecton : NetworkBehaviour
 {
+    [Networked]
+    public TectonType TectonType { get; set; }
+
     public static Transform parent;
 
     public new int Id { get; private set; }
@@ -111,6 +124,27 @@ public class Tecton : NetworkBehaviour
         int index = UnityEngine.Random.Range(0, tectons.Count);
         return tectons[index];
     }
+    private bool HasFullyDevelopedThread()
+    {
+        if (FungalThreadManager.Instance == null)
+        {
+            Debug.LogError("FungalThreadManager instance is not available.");
+            return false;
+        }
+
+        // Check if any thread in the manager is connected to this Tecton and is fully developed
+        foreach (var thread in FungalThreadManager.Instance.FungalThreads)
+        {
+            if ((thread.tectonA == GetComponent<NetworkObject>() || thread.tectonB == GetComponent<NetworkObject>()) &&
+                thread.IsFullyDeveloped)
+            {
+                return true; // Found a fully developed thread
+            }
+        }
+
+        Debug.Log($"No fully developed thread found for Tecton {Id}.");
+        return false;
+    }
 
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
     /// <param name="amount">Number of spores to be added.</param>
@@ -130,11 +164,28 @@ public class Tecton : NetworkBehaviour
         // If the spore count reaches the threshold and there is no fungus body yet, initiate the growth of a new fungus body.
         if (Spores.Count() >= SporeThreshold && FungusBody == null)
         {
+            // Check if the Tecton has a fully developed thread
+            if (!HasFullyDevelopedThread())
+            {
+                Debug.LogError($"Cannot spawn FungusBody: No fully developed thread on Tecton {Id}.");
+                return;
+            }
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();
 
             if (spawnGridObject == null)
             {
                 Debug.LogError("No empty grid objects found on the selected Tecton");
+                return;
+            }
+
+            // Save the selected Tecton into a variable
+            Tecton tecton = spawnGridObject.parentTecton;
+
+            //Check if the selected Tecton has Types that allow fungus body growth
+            if (tecton.TectonType == TectonType.NoFungusBodyAllowed)
+            {
+                // If the Tecton is of type NoFungusBodyAllowed, do not allow fungus body growth
+                Debug.Log("Fungus body cannot grow on this Tecton (TectonType: NoFungusBodyAllowed)");
                 return;
             }
 
