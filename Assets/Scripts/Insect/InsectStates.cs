@@ -39,12 +39,22 @@ public class FastState : InsectState
 {
     public FastState(MoveInsect insect) : base(insect) { }
 
+    public override void Enter()
+    {
+        Debug.Log("Entered Fast State");
+    }
+
     public override float GetSpeedMultiplier() => 2f;
 }
 
 public class SlowState : InsectState
 {
     public SlowState(MoveInsect insect) : base(insect) { }
+
+    public override void Enter()
+    {
+        Debug.Log("Entered Slow State");
+    }
 
     public override float GetSpeedMultiplier() => 0.5f;
 }
@@ -56,7 +66,11 @@ public class ParalyzedState : InsectState
 
     public ParalyzedState(MoveInsect insect) : base(insect) { }
 
-    public override void Enter() => timer = duration;
+    public override void Enter()
+    {
+        timer = duration;
+        Debug.Log("Entered Paralyzed State");
+    }
 
     public override void Update()
     {
@@ -77,7 +91,11 @@ public class CannotCutThreadState : InsectState
 
     public CannotCutThreadState(MoveInsect insect) : base(insect) { }
 
-    public override void Enter() => timer = duration;
+    public override void Enter()
+    {
+        timer = duration;
+        Debug.Log("Entered Cannot Cut Thread State");
+    }
 
     public override void Update()
     {
