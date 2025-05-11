@@ -81,6 +81,8 @@ public class ParalyzedState : InsectState
 
     public override bool IsParalised() => true;
 
+    public override bool CanCutThread() => false;
+
     public override float GetSpeedMultiplier() => 0f;
 }
 
