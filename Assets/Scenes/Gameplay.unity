@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 6fac735d79e01ed4298e73c8d0da2981, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1332,8 +1332,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 974976b5ed8c53a4f9c76243e53b23b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bodyPrefab: {fileID: 8331824232130077502, guid: da835911d34de04488d757cc9d9da269, type: 3}
-  dropHeight: 3
+  bodyPrefab: {fileID: 1260749280442910302, guid: 1a298f1f9f70fd04e9e7eb444b3b4348, type: 3}
+  dropHeight: 0.5
 --- !u!4 &560777813
 Transform:
   m_ObjectHideFlags: 0
@@ -1914,10 +1914,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 501224555}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.0019989, y: -0.10043}
-  m_SizeDelta: {x: 1920, y: 1080}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &754752651
 MonoBehaviour:
@@ -2172,7 +2172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed9e1308ab3a9134bb69e364458a2388, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sporePrefab: {fileID: 2200365787857225258, guid: 3ad90d5e9f03ff74db59b851208f6285, type: 3}
+  sporePrefab: {fileID: 6102527351585451487, guid: 119dfa151f29f40498f474e233853413, type: 3}
 --- !u!4 &909358390
 Transform:
   m_ObjectHideFlags: 0
@@ -2877,6 +2877,115 @@ MonoBehaviour:
     Time: 0
     Smoothing: 0
     IgnoreY: 0
+--- !u!1 &1424697879
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1424697883}
+  - component: {fileID: 1424697882}
+  - component: {fileID: 1424697881}
+  - component: {fileID: 1424697880}
+  m_Layer: 0
+  m_Name: Plane
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!64 &1424697880
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424697879}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &1424697881
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424697879}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a8ed554223410d34bb35b2957fe24761, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1424697882
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424697879}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1424697883
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424697879}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.2, z: 0}
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1472504365
 GameObject:
   m_ObjectHideFlags: 0
@@ -3224,9 +3333,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85649e4f30829044fa797030082c14aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  insectPrefab: {fileID: 6643351019230072743, guid: a0ff0c0feb267f64eb0ff7a944686ea8, type: 3}
+  insectPrefab: {fileID: 6864052658815184643, guid: f79b9c36f009036419b9ff24fd44901b, type: 3}
   numberOfInsects: 3
-  heightOffset: 1
+  heightOffset: 0.5
   worldGen: {fileID: 1843253590}
 --- !u!4 &1656574423
 Transform:
@@ -3595,9 +3704,11 @@ MonoBehaviour:
   width: 50
   height: 50
   relaxationIterations: 4
+  obstacleSpawnChance: 1
   mapParent: {fileID: 1662312091}
   tectonPrefab: {fileID: 8998479281897931918, guid: 4bb8b9a85ae01f8488aea03c1ca2ddf8, type: 3}
   gridObjectPrefab: {fileID: 8998479281897931918, guid: a076406a21351924d91eb31df70d4bac, type: 3}
+  obstaclePrefab: {fileID: 8482470759075915642, guid: b32ff297c4c2817428e7bb082bac3c2f, type: 3}
   _TectonIds: []
 --- !u!114 &1843253591
 MonoBehaviour:
@@ -3961,3 +4072,4 @@ SceneRoots:
   - {fileID: 1062985366}
   - {fileID: 239995627}
   - {fileID: 687342068}
+  - {fileID: 1424697883}

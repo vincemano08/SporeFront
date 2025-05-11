@@ -29,6 +29,8 @@ public class FungalThread : NetworkBehaviour
     public GridObject gridObjectA { get; private set; }
     public GridObject gridObjectB { get; private set; }
 
+    [SerializeField] private AnimationCurve widthCurve;
+
     private Coroutine growthCoroutine;
     public override void Spawned()
     {
@@ -44,9 +46,8 @@ public class FungalThread : NetworkBehaviour
             Debug.LogError("LineRenderer component not found on the object.");
             return;
         }
-        lineRenderer.startWidth = 0.3f;
-        lineRenderer.endWidth = 0.3f;
         lineRenderer.positionCount = 2;
+        lineRenderer.widthCurve = widthCurve;
     }
     private void Update()
     {

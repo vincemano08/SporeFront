@@ -7,7 +7,8 @@ public enum OccupantType
     None,
     FungusBody,
     Insect,
-    Spore
+    Spore,
+    Obstacle
 }
 
 public class GridObject : NetworkBehaviour

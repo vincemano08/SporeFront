@@ -1,5 +1,8 @@
 {
   "name": "com.exitgames.photonfusion",
   "version": "1.1.0",
-  "displayName": "Photon Fusion"
+  "displayName": "Photon Fusion",
+  "dependencies": {
+    "com.exitgames.photonfusion": "file:"
+  }
 }

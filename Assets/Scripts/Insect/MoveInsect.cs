@@ -9,15 +9,30 @@ using UnityEngine;
 public class MoveInsect : NetworkBehaviour {
 
     [SerializeField] private float speed;
+    [SerializeField] private float rotationSpeed;
     [SerializeField] private InsectSpawner insectSpawner;
 
     [SerializeField] private Material defaultMaterial;
     [SerializeField] private Material selectedMaterial;
     [SerializeField] private EventChannel eventChannel;
+    [SerializeField] private Animator animator;
 
-    public bool Selected { get; set; } = false;
+    private bool selected = false;
+    public bool Selected { 
+        get => selected;
+        set {
+            selected = value;
+            this.GetComponent<Outline>().enabled = value;
+        }
+    }
 
-    private bool isMoving = false;
+    [Networked] private bool IsMoving { get; set; }
+    [Networked] private float AnimationSpeed { get; set; }
+    [Networked] private int NetworkedBiteTrigger { get; set; }
+
+    // Local tracker for the networked trigger
+    private int _lastProcessedBiteTrigger;
+
 
     private GridObject _currentGridObject;
     private GridObject CurrentGridObject {
@@ -45,6 +60,8 @@ public class MoveInsect : NetworkBehaviour {
 
     public override void Spawned() {
         base.Spawned();
+
+        _lastProcessedBiteTrigger = NetworkedBiteTrigger;
 
         path = new Queue<GridObject>();
 
@@ -94,6 +111,7 @@ public class MoveInsect : NetworkBehaviour {
         var neighbour = sporeManager.IsSporeNearby(gridObject);
         if (neighbour != null)
         {
+            NetworkedBiteTrigger++;
             sporeManager.ConsumeSpores(neighbour);
             Debug.Log("Spore consumed successfully.");
         }
@@ -116,7 +134,7 @@ public class MoveInsect : NetworkBehaviour {
         // TODO: validate client input
 
         // If the insect is already moving, and we get a new target, we need to mark the previous path unoccupied
-        if (path.Count > 0 || isMoving) {
+        if (path.Count > 0 || IsMoving) {
             foreach (var gridObject in path) {
                 gridObject.occupantType = OccupantType.None;
             }
@@ -143,7 +161,8 @@ public class MoveInsect : NetworkBehaviour {
         // Reserve target position.
         targetGridObject.occupantType = OccupantType.Insect;
 
-        isMoving = true;
+        IsMoving = true;
+        animator.SetBool("isMoving", true);
         Debug.Log($"Server received a move request with a path length of {path.Count}");
     }
 
@@ -197,7 +216,7 @@ public class MoveInsect : NetworkBehaviour {
         if (!HasStateAuthority) return;
 
         // If the insect is not moving, return
-        if (!isMoving) return;
+        if (!IsMoving) return;
 
         // Move towards the target position
         if (path != null && path.Count > 0) {
@@ -215,17 +234,31 @@ public class MoveInsect : NetworkBehaviour {
             // Reserving the next grid object
             nextGridObject.occupantType = OccupantType.Insect;
 
-            Vector3 targetPosition = nextGridObject.transform.position + new Vector3(0, 1f, 0);
-            if(CurrentGridObject != null && CurrentGridObject.parentTecton != null)
+            Vector3 targetPosition = nextGridObject.transform.position + new Vector3(0, 0.5f, 0);
+
+            Vector3 moveDirection = targetPosition - transform.position;
+
+            // Only rotate if there is a significant movement direction (not standing still)
+            if (moveDirection.sqrMagnitude > Mathf.Epsilon)
             {
+                Quaternion targetRotation = Quaternion.LookRotation(-moveDirection);
+
+                // Smoothly interpolate the current rotation towards the target rotation
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Runner.DeltaTime);
+            }
+
+
+            if (CurrentGridObject != null && CurrentGridObject.parentTecton != null)
+            {
+                float currentSpeed = speed;
                 if (CurrentGridObject.parentTecton.TectonType == TectonType.InsectEffectZone)
                 {
-                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime * 2f);
+                    currentSpeed = speed * 2f; // Speed up
                 }
-                else 
-                {
-                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Runner.DeltaTime);
-                }
+
+                AnimationSpeed = currentSpeed;
+                animator.SetFloat("speed", currentSpeed);
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition, currentSpeed * Runner.DeltaTime);
             }
 
             // If the insect is close to the target position, dequeue the next grid object
@@ -239,10 +272,28 @@ public class MoveInsect : NetworkBehaviour {
 
             // If the path is empty, stop moving
             if (path.Count == 0) {
-                isMoving = false;
+                IsMoving = false;
                 Debug.Log("Insect has reached the target position");
             }
         }
+    }
+
+    // Render runs every frame on all clients for visual updates
+    public override void Render() {
+        if (animator == null) return;
+
+        // Apply networked state to the local Animator
+        animator.SetBool("isMoving", IsMoving);
+        animator.SetFloat("speed", AnimationSpeed);
+
+        // Trigger bite animation based on networked trigger changes
+        if (NetworkedBiteTrigger != _lastProcessedBiteTrigger) {
+            animator.SetTrigger("bite");
+            _lastProcessedBiteTrigger = NetworkedBiteTrigger;
+        }
+        // --- End Animation Updates ---
+
+        // Fusion automatically handles transform interpolation/extrapolation here
     }
 
     private void OnMouseDown() {
@@ -269,35 +320,35 @@ public class MoveInsect : NetworkBehaviour {
     }
     public void HandleKeyboardInput()
     {
-        if (Selected)
+        if (!Selected) return;
+
+        if (!CurrentGridObjectId.IsValid)
         {
-            if (!CurrentGridObjectId.IsValid)
+            Debug.LogError("CurrentGridObjectId is invalid.");
+        }
+        else
+        {
+            if (Input.GetKeyDown(KeyCode.C))
             {
-                Debug.LogError("CurrentGridObjectId is invalid.");
+                if(eventChannel != null)
+                {
+                    eventChannel.RaiseScoreChanged(1);
+                    Debug.Log("Score changed by 1");
+                }
+                else
+                {
+                    Debug.LogError("EventChannel is null, score not updated");
+
+                }
+
+                // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
+                RPC_ConsumeSpore(CurrentGridObjectId); // xd
             }
-            else
+
+            else if (Input.GetKeyDown(KeyCode.X))
             {
-                if (Input.GetKeyDown(KeyCode.C))
-                {
-                    if(eventChannel != null)
-                    {
-                        eventChannel.RaiseScoreChanged(1);
-                        Debug.Log("Score changed by 1");
-                    }
-                    else
-                    {
-                        Debug.LogError("EventChannel is null, score not updated");
-
-                    }
-                    // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
-                    RPC_ConsumeSpore(CurrentGridObjectId); // xd
-                }
-
-                else if (Input.GetKeyDown(KeyCode.X))
-                {
-                    // Invoke the RPC on the server to request nearby fungal threads
-                    RPC_RequestNearbyThreads(CurrentGridObjectId);
-                }
+                // Invoke the RPC on the server to request nearby fungal threads
+                RPC_RequestNearbyThreads(CurrentGridObjectId);
             }
         }
     }
@@ -334,6 +385,9 @@ public class MoveInsect : NetworkBehaviour {
 
         if (nearbyThreads.Count > 0)
         {
+            // Play bite animation
+            NetworkedBiteTrigger++;
+
             foreach (var thread in nearbyThreads)
             {
                 // Request the server to disconnect each thread

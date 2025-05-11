@@ -12,9 +12,12 @@ public class WorldGeneration : NetworkBehaviour
     [SerializeField] private int height;
     [SerializeField] private int relaxationIterations;
 
+    [SerializeField] private float obstacleSpawnChance;
+
     [SerializeField] private Transform mapParent;
     [SerializeField] private GameObject tectonPrefab;
     [SerializeField] private GameObject gridObjectPrefab;
+    [SerializeField] private GameObject obstaclePrefab;
 
     // thsi will store all the tecton ids we have
     [Networked, Capacity(1000)] public NetworkArray<NetworkId> TectonIds { get; }
@@ -358,6 +361,11 @@ public class WorldGeneration : NetworkBehaviour
         // Debug.Log($"Adding Id to networkArray at {index}: (value) {parentTecton.GridObjectIds.Get(index)}");
 
         grid[x, z] = gridObject;
+
+        // Randomly spawn obstacles
+        if (Random.value * 100 < obstacleSpawnChance) {
+            SpawnObstacle(gridObjectComponent);
+        }
     }
 
 
@@ -386,5 +394,18 @@ public class WorldGeneration : NetworkBehaviour
             return null;
         }
         return grid[x, z];
+    }
+
+    void SpawnObstacle(GridObject gridObject) {
+        if (gridObject == null) return;
+
+        gridObject.occupantType = OccupantType.Obstacle;
+        Vector3 spawnPosition = gridObject.transform.position + new Vector3(0, 0.5f, 0);
+
+        // Spawn obstacle
+        NetworkObject obstacleNetworkObject = Runner.Spawn(obstaclePrefab, spawnPosition, Quaternion.identity);
+        GameObject obstacle = obstacleNetworkObject.gameObject;
+
+        obstacle.transform.SetParent(gridObject.transform);
     }
 }
