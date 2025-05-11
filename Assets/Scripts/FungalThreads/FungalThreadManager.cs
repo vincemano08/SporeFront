@@ -37,7 +37,11 @@ public class FungalThreadManager : NetworkBehaviour
 
         //Log the size of neighbours
         // Debug.LogError($"FungalThreadManagger.CanConnect source: {source.Id} target: {target.Id} neighbours: {source.Neighbors.Count}; {target.Neighbors.Count}");
-
+        if (source == null || target == null)
+        {
+            Debug.LogError("Source or target is null.");
+            return false;
+        }
         // Check if the source and target are neighbors
         if (!source.Neighbors.Contains(target)) return false;
 
