@@ -197,6 +197,8 @@ public class SporeManager : NetworkBehaviour
         SetStateForInsect(insect);
     }
 
+
+    //It's not a good practice, but it was faster this way. Feel free to change it.
     private void SetStateForInsect(MoveInsect insect)
     {
         switch (sporeType)
@@ -218,6 +220,7 @@ public class SporeManager : NetworkBehaviour
                 break;
             default:
                 Debug.LogError("Unknown spore type");
+                insect.State = new NormalState(insect);
                 break;
         }
     }

@@ -45,7 +45,6 @@ public class MoveInsect : NetworkBehaviour
     [Networked] private bool IsMoving { get; set; }
     [Networked] private float AnimationSpeed { get; set; }
     [Networked] private int NetworkedBiteTrigger { get; set; }
-    [Networked] private InsectStateType CurrentStateType { get; set; }
 
     // Local tracker for the networked trigger
     private int _lastProcessedBiteTrigger;
@@ -138,7 +137,7 @@ public class MoveInsect : NetworkBehaviour
         if (neighbour != null)
         {
             // Check if the insect is not paralysed before consuming spores
-            if (State.IsParalised() == false)
+            if (State?.IsParalised() == false)
             {
                 NetworkedBiteTrigger++;
                 sporeManager.ConsumeSpores(neighbour, insect);
@@ -301,7 +300,7 @@ public class MoveInsect : NetworkBehaviour
             if (CurrentGridObject != null && CurrentGridObject.parentTecton != null)
             {
                 // Calculate the speed based on the state of the insect
-                float currentSpeed = speed * State.GetSpeedMultiplier();
+                float currentSpeed = speed * State?.GetSpeedMultiplier() ?? speed;
                 if (CurrentGridObject.parentTecton.TectonType == TectonType.InsectEffectZone)
                 {
                     currentSpeed = speed * 2f; // Speed up
@@ -413,7 +412,7 @@ public class MoveInsect : NetworkBehaviour
             else if (Input.GetKeyDown(KeyCode.X))
             {
                 // Invoke the RPC on the server to request nearby fungal threads
-                if (state.CanCutThread())
+                if (state?.CanCutThread() ?? false)
                 {
                     // Call the RPC to request nearby threads
                     RPC_RequestNearbyThreads(CurrentGridObjectId);
