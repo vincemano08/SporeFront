@@ -6,7 +6,8 @@ using System.Net.WebSockets;
 using TMPro;
 using UnityEngine;
 
-public class MoveInsect : NetworkBehaviour {
+public class MoveInsect : NetworkBehaviour
+{
 
     [SerializeField] private float speed;
     [SerializeField] private float rotationSpeed;
@@ -17,10 +18,25 @@ public class MoveInsect : NetworkBehaviour {
     [SerializeField] private EventChannel eventChannel;
     [SerializeField] private Animator animator;
 
+
+    [SerializeField] private InsectState state;
+    public InsectState State
+    {
+        get => state;
+        set
+        {
+            state?.Exit();
+            state = value;
+            state?.Enter();
+        }
+    }
+
     private bool selected = false;
-    public bool Selected { 
+    public bool Selected
+    {
         get => selected;
-        set {
+        set
+        {
             selected = value;
             this.GetComponent<Outline>().enabled = value;
         }
@@ -29,27 +45,31 @@ public class MoveInsect : NetworkBehaviour {
     [Networked] private bool IsMoving { get; set; }
     [Networked] private float AnimationSpeed { get; set; }
     [Networked] private int NetworkedBiteTrigger { get; set; }
+    [Networked] private InsectStateType CurrentStateType { get; set; }
 
     // Local tracker for the networked trigger
     private int _lastProcessedBiteTrigger;
 
 
     private GridObject _currentGridObject;
-    private GridObject CurrentGridObject {
-        get {
+    private GridObject CurrentGridObject
+    {
+        get
+        {
             // if the _currentGridObject is null, try to find it by its netid
-            if (_currentGridObject == null && Runner.TryFindObject(CurrentGridObjectId, out var netObj)) 
+            if (_currentGridObject == null && Runner.TryFindObject(CurrentGridObjectId, out var netObj))
                 _currentGridObject = netObj.GetComponent<GridObject>();
             return _currentGridObject;
 
         }
-        set { 
+        set
+        {
             _currentGridObject = value;
             // update the netid field automatically
             CurrentGridObjectId = _currentGridObject.GetComponent<NetworkObject>().Id;
         }
     }
-    
+
     // this will be used to sync the currentGridObject, so we can pass it to the appropriate RPC
     [Networked] private NetworkId CurrentGridObjectId { get; set; }
 
@@ -58,7 +78,8 @@ public class MoveInsect : NetworkBehaviour {
 
     private SporeManager sporeManager;
 
-    public override void Spawned() {
+    public override void Spawned()
+    {
         base.Spawned();
 
         _lastProcessedBiteTrigger = NetworkedBiteTrigger;
@@ -67,12 +88,17 @@ public class MoveInsect : NetworkBehaviour {
 
         insectSpawner = FindFirstObjectByType<InsectSpawner>();
         insectSpawner.insects = new HashSet<MoveInsect>();
-        foreach (Transform insect in insectSpawner.gameObject.transform) {
+        foreach (Transform insect in insectSpawner.gameObject.transform)
+        {
             var insectComponent = insect.GetComponent<MoveInsect>();
-            if (insectComponent != null) {
+            if (insectComponent != null)
+            {
                 insectSpawner.insects.Add(insectComponent);
             }
         }
+
+        // Set the default state
+        State = new NormalState(this);
 
         sporeManager = FindFirstObjectByType<SporeManager>();
         if (sporeManager == null)
@@ -111,9 +137,17 @@ public class MoveInsect : NetworkBehaviour {
         var neighbour = sporeManager.IsSporeNearby(gridObject);
         if (neighbour != null)
         {
-            NetworkedBiteTrigger++;
-            sporeManager.ConsumeSpores(neighbour);
-            Debug.Log("Spore consumed successfully.");
+            // Check if the insect is not paralysed before consuming spores
+            if (State.IsParalised() == false) 
+            { 
+                NetworkedBiteTrigger++;
+                sporeManager.ConsumeSpores(neighbour);
+                Debug.Log("Spore consumed successfully."); 
+            }
+            else
+            {
+                Debug.Log("Insect is paralysed and cannot consume spores.");
+            }
         }
         else
         {
@@ -123,10 +157,12 @@ public class MoveInsect : NetworkBehaviour {
 
     // This RPC will be called by the client (input authority) and executed on the server (state authority)
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_RequestMoveToTarget(NetworkObject targetGridObjectRef) {
+    public void RPC_RequestMoveToTarget(NetworkObject targetGridObjectRef)
+    {
         // Find the target GridObject via its network reference.
         GridObject targetGridObject = targetGridObjectRef.GetComponent<GridObject>();
-        if (targetGridObject == null) {
+        if (targetGridObject == null)
+        {
             Debug.LogError("Invalid target grid object reference");
             return;
         }
@@ -134,15 +170,18 @@ public class MoveInsect : NetworkBehaviour {
         // TODO: validate client input
 
         // If the insect is already moving, and we get a new target, we need to mark the previous path unoccupied
-        if (path.Count > 0 || IsMoving) {
-            foreach (var gridObject in path) {
+        if (path.Count > 0 || IsMoving)
+        {
+            foreach (var gridObject in path)
+            {
                 gridObject.occupantType = OccupantType.None;
             }
             path.Clear();
         }
 
         // Set the target grid object as occupied if it is not already
-        if (targetGridObject.IsOccupied) {
+        if (targetGridObject.IsOccupied)
+        {
             Debug.Log("Target grid object is already occupied");
             return;
         }
@@ -150,7 +189,8 @@ public class MoveInsect : NetworkBehaviour {
         GridObject startGridObject = GridObject.GetGridObjectAt(transform.position);
         List<GridObject> computedPath = AStarPathFinder.FindPath(startGridObject, targetGridObject);
 
-        if (computedPath == null || computedPath.Count == 0) {
+        if (computedPath == null || computedPath.Count == 0)
+        {
             Debug.Log("No path found on server");
             return;
         }
@@ -166,23 +206,31 @@ public class MoveInsect : NetworkBehaviour {
         Debug.Log($"Server received a move request with a path length of {path.Count}");
     }
 
-    private void Update() {
+    private void Update()
+    {
         if (!HasInputAuthority) return;
-        if (Input.GetMouseButtonDown(1) && Selected) {
+        if (Input.GetMouseButtonDown(1) && Selected)
+        {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit)) {
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
                 var targetGridObject = GridObject.GetGridObjectAt(hit.point);
-                if (targetGridObject != null && !targetGridObject.IsOccupied) {
+                if (targetGridObject != null && !targetGridObject.IsOccupied)
+                {
                     NetworkObject targetNetObj = targetGridObject.GetComponent<NetworkObject>();
-                    if (targetNetObj != null) {
+                    if (targetNetObj != null)
+                    {
                         RPC_RequestMoveToTarget(targetNetObj);
-                    } else {
+                    }
+                    else
+                    {
                         Debug.LogError("Target GridObject does not have a NetworkObject component.");
                     }
                 }
             }
         }
         HandleKeyboardInput();
+        State?.Update();
     }
     private bool CanCrossThread(GridObject current, GridObject next)
     {
@@ -194,8 +242,8 @@ public class MoveInsect : NetworkBehaviour {
 
         // Find the thread connecting the two GridObjects
         var thread = FungalThreadManager.Instance.FungalThreads.FirstOrDefault(t =>
-            (t.gridObjectA == current && t.gridObjectB == next) ||
-            (t.gridObjectA == next && t.gridObjectB == current));
+            ( t.gridObjectA == current && t.gridObjectB == next ) ||
+            ( t.gridObjectA == next && t.gridObjectB == current ));
 
         if (thread == null)
         {
@@ -211,7 +259,8 @@ public class MoveInsect : NetworkBehaviour {
 
         return true;
     }
-    public override void FixedUpdateNetwork() {
+    public override void FixedUpdateNetwork()
+    {
         // Only run on server
         if (!HasStateAuthority) return;
 
@@ -219,7 +268,8 @@ public class MoveInsect : NetworkBehaviour {
         if (!IsMoving) return;
 
         // Move towards the target position
-        if (path != null && path.Count > 0) {
+        if (path != null && path.Count > 0)
+        {
             var nextGridObject = path.Peek();
             if (CurrentGridObject == null)
             {
@@ -250,7 +300,8 @@ public class MoveInsect : NetworkBehaviour {
 
             if (CurrentGridObject != null && CurrentGridObject.parentTecton != null)
             {
-                float currentSpeed = speed;
+                // Calculate the speed based on the state of the insect
+                float currentSpeed = speed * State.GetSpeedMultiplier();
                 if (CurrentGridObject.parentTecton.TectonType == TectonType.InsectEffectZone)
                 {
                     currentSpeed = speed * 2f; // Speed up
@@ -262,8 +313,10 @@ public class MoveInsect : NetworkBehaviour {
             }
 
             // If the insect is close to the target position, dequeue the next grid object
-            if (Vector3.Distance(transform.position, targetPosition) < 0.01f) {
-                if (CurrentGridObject == null) {
+            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
+            {
+                if (CurrentGridObject == null)
+                {
                     CurrentGridObject = GridObject.GetGridObjectAt(transform.position);
                 }
                 CurrentGridObject.occupantType = OccupantType.None;
@@ -271,15 +324,19 @@ public class MoveInsect : NetworkBehaviour {
             }
 
             // If the path is empty, stop moving
-            if (path.Count == 0) {
+            if (path.Count == 0)
+            {
                 IsMoving = false;
                 Debug.Log("Insect has reached the target position");
             }
         }
+
+        State?.FixedUpdateNetwork();
     }
 
     // Render runs every frame on all clients for visual updates
-    public override void Render() {
+    public override void Render()
+    {
         if (animator == null) return;
 
         // Apply networked state to the local Animator
@@ -287,7 +344,8 @@ public class MoveInsect : NetworkBehaviour {
         animator.SetFloat("speed", AnimationSpeed);
 
         // Trigger bite animation based on networked trigger changes
-        if (NetworkedBiteTrigger != _lastProcessedBiteTrigger) {
+        if (NetworkedBiteTrigger != _lastProcessedBiteTrigger)
+        {
             animator.SetTrigger("bite");
             _lastProcessedBiteTrigger = NetworkedBiteTrigger;
         }
@@ -296,25 +354,32 @@ public class MoveInsect : NetworkBehaviour {
         // Fusion automatically handles transform interpolation/extrapolation here
     }
 
-    private void OnMouseDown() {
+    private void OnMouseDown()
+    {
         if (!HasInputAuthority) return;
 
         Selected = !Selected;
 
-        foreach (var insect in insectSpawner.insects) {
-            if (insect != this) {
+        foreach (var insect in insectSpawner.insects)
+        {
+            if (insect != this)
+            {
                 if (!insect.HasInputAuthority) continue;
                 insect.Selected = false;
                 insect.SetObjectMaterial(insect.gameObject, defaultMaterial);
-            } else {
+            }
+            else
+            {
                 SetObjectMaterial(this.gameObject, Selected ? selectedMaterial : defaultMaterial);
             }
         }
 
     }
-    private void SetObjectMaterial(GameObject obj, Material material) {
+    private void SetObjectMaterial(GameObject obj, Material material)
+    {
         Renderer renderer = obj.GetComponent<Renderer>();
-        if (renderer != null) {
+        if (renderer != null)
+        {
             renderer.material = material;
         }
     }
@@ -330,7 +395,7 @@ public class MoveInsect : NetworkBehaviour {
         {
             if (Input.GetKeyDown(KeyCode.C))
             {
-                if(eventChannel != null)
+                if (eventChannel != null)
                 {
                     eventChannel.RaiseScoreChanged(1);
                     Debug.Log("Score changed by 1");
@@ -400,4 +465,6 @@ public class MoveInsect : NetworkBehaviour {
             Debug.Log("No fungal threads found nearby.");
         }
     }
+
+
 }
