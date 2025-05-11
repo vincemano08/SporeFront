@@ -2,6 +2,16 @@
 using UnityEngine;
 using static Fusion.TickRate;
 using UnityEngine.UIElements;
+using System;
+
+public enum SporeType
+{
+    Normal,
+    Slow,
+    Fast,
+    Paralyze,
+    DisableCutting
+}
 
 public class SporeManager : NetworkBehaviour
 {
@@ -10,6 +20,8 @@ public class SporeManager : NetworkBehaviour
 
     [Networked, Capacity(50)]
     private NetworkDictionary<NetworkId, NetworkId> SporeToGridMap { get; }
+
+    [Networked] public SporeType sporeType { get; set; }
 
 
     public void SpawnSpore(GridObject gridObject)
@@ -35,6 +47,12 @@ public class SporeManager : NetworkBehaviour
 
         SporeToGridMap.Add(networkSpore.Id, gridObject.Object.Id);
         gridObject.occupantType = OccupantType.Spore;
+
+        // Set a random spore type
+        Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint) Environment.TickCount);    //Get a random number generator
+        int rand1 = rng.NextInt(Enum.GetNames(typeof(SporeType)).Length); //Get a random number between 0 and the number of spore types
+
+        sporeType = (SporeType) rand1;                                    //Set the spore type to the random number
     }
 
 
@@ -46,7 +64,7 @@ public class SporeManager : NetworkBehaviour
             return;
         }
 
-       
+
 
         // If we have state authority, call the RPC directly
         if (Object.HasStateAuthority)
@@ -58,12 +76,6 @@ public class SporeManager : NetworkBehaviour
         {
             RPC_RequestRemoveSpore(gridObject.Object);
         }
-        
-        
-
-
-
-       
     }
 
 
@@ -176,27 +188,57 @@ public class SporeManager : NetworkBehaviour
         }
     }
 
-    public void ConsumeSpores(GridObject gridObject)
+    public void ConsumeSpores(GridObject gridObject, MoveInsect insect)
     {
         //el�re defini�lt id�be telik az elfogyaszt�s
         //ut�na a sp�r�t t�r�lj�k
         //StartCoroutine(ConsumeSporesCoroutine());
         RemoveSpore(gridObject);
+        SetStateForInsect(insect);
     }
+
+
+    //It's not a good practice, but it was faster this way. Feel free to change it.
+    private void SetStateForInsect(MoveInsect insect)
+    {
+        switch (sporeType)
+        {
+            case SporeType.Normal:
+                insect.State = new NormalState(insect);
+                break;
+            case SporeType.Slow:
+                insect.State = new SlowState(insect);
+                break;
+            case SporeType.Fast:
+                insect.State = new FastState(insect);
+                break;
+            case SporeType.Paralyze:
+                insect.State = new ParalyzedState(insect);
+                break;
+            case SporeType.DisableCutting:
+                insect.State = new CannotCutThreadState(insect);
+                break;
+            default:
+                Debug.LogError("Unknown spore type");
+                insect.State = new NormalState(insect);
+                break;
+        }
+    }
+
     public GridObject IsSporeNearby(GridObject gridObject)
     {
         //szomsz�dos gridek ellen�rz�se, hogy van-e ott sp�ra
         var neighbourGridObjects = gridObject.GetNeighbors();
         Debug.Log($"neighborGridObejcts == null {neighbourGridObjects == null}");
-        
+
         foreach (var neighbour in neighbourGridObjects)
         {
             Debug.Log($"neighbour.occupantType {neighbour.occupantType}");
             if (neighbour.occupantType == OccupantType.Spore)
             {
-                
+
                 return neighbour;
-                
+
             }
         }
         return null;
