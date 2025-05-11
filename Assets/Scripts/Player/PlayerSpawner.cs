@@ -14,7 +14,7 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 
     [Tooltip("Number of players required to start the timer")]
     [SerializeField] private int requiredPlayerCount = 3;
-    
+
     // Track joined players
     private HashSet<PlayerRef> joinedPlayers = new HashSet<PlayerRef>();
 
@@ -28,7 +28,7 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     };
     private int nextColorIndex = 0;
 
-    public object Instance { get; private set; }
+    public static PlayerSpawner Instance { get; private set; }
 
     void Awake()
     {
@@ -52,12 +52,12 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
         {
             Debug.LogWarning("InsectSpawner cannot be found!");
         }
-        if (fungusBodyFactory == null) 
+        if (fungusBodyFactory == null)
         {
             Debug.LogWarning("FungusBodyFactory cannot be found!");
         }
     }
-    
+
     public void PlayerJoined(PlayerRef player)
     {
         if (Runner.IsServer)
@@ -79,15 +79,15 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
 
 
             }
-                // Spawn one fungus body for the player
-                var fungusBody = fungusBodyFactory.SpawnDefault(player);
-            
+            // Spawn one fungus body for the player
+            var fungusBody = fungusBodyFactory.SpawnDefault(player);
+
             // Spawn insects near the fungus body
             insectSpawner.SpawnInsectsNearBody(player, fungusBody);
-            
+
             // Add player to our tracking collection
             joinedPlayers.Add(player);
-            
+
             // Check if we've reached the required player count
             if (!timerStarted && joinedPlayers.Count >= requiredPlayerCount)
             {

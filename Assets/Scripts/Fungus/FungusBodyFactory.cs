@@ -81,6 +81,8 @@ public class FungusBodyFactory : NetworkBehaviour
         fungusBody.Tecton = tecton;
         tecton.FungusBody = fungusBody;
 
+        fungusBody.GetComponent<Renderer>().material.color = PlayerSpawner.Instance.GetPlayerColor(player);
+
         // Set the player reference for the fungus body
         fungusBody.PlayerReference = player;
 

@@ -161,6 +161,12 @@ public class Tecton : NetworkBehaviour
         {
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();
 
+            if (spawnGridObject == null)
+            {
+                Debug.LogError("No empty grid objects found on the selected Tecton");
+                return;
+            }
+
             sporeManager.SpawnSpore(spawnGridObject);
         }
 
