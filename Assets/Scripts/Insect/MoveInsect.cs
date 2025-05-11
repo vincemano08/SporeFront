@@ -424,54 +424,54 @@ public class MoveInsect : NetworkBehaviour
                 }
             }
         }
-
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        private void RPC_RequestNearbyThreads(NetworkId gridObjectId)
+    }
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestNearbyThreads(NetworkId gridObjectId)
+    {
+        if (!Runner.TryFindObject(gridObjectId, out var netObj))
         {
-            if (!Runner.TryFindObject(gridObjectId, out var netObj))
-            {
-                Debug.LogError($"The GridObject was not found on the server: {gridObjectId}");
-                return;
-            }
-
-            var gridObject = netObj.GetComponent<GridObject>();
-            if (gridObject == null)
-            {
-                Debug.LogError("The GridObject component was not found.");
-                return;
-            }
-
-            if (FungalThreadManager.Instance == null)
-            {
-                Debug.LogError("FungalThreadManager instance not available on server.");
-                return;
-            }
-
-            var nearbyThreads = new List<FungalThread>();
-
-            foreach (var thread in FungalThreadManager.Instance.FungalThreads)
-            {
-                if (thread.gridObjectA == gridObject || thread.gridObjectB == gridObject)
-                    nearbyThreads.Add(thread);
-            }
-
-            if (nearbyThreads.Count > 0)
-            {
-                // Play bite animation
-                NetworkedBiteTrigger++;
-
-                foreach (var thread in nearbyThreads)
-                {
-                    // Request the server to disconnect each thread
-                    FungalThreadManager.Instance.RPC_RequestThreadDisconnect(thread.Object.Id);
-                }
-                Debug.Log($"{nearbyThreads.Count} threads were disconnected.");
-            }
-            else
-            {
-                Debug.Log("No fungal threads found nearby.");
-            }
+            Debug.LogError($"The GridObject was not found on the server: {gridObjectId}");
+            return;
         }
 
+        var gridObject = netObj.GetComponent<GridObject>();
+        if (gridObject == null)
+        {
+            Debug.LogError("The GridObject component was not found.");
+            return;
+        }
 
+        if (FungalThreadManager.Instance == null)
+        {
+            Debug.LogError("FungalThreadManager instance not available on server.");
+            return;
+        }
+
+        var nearbyThreads = new List<FungalThread>();
+
+        foreach (var thread in FungalThreadManager.Instance.FungalThreads)
+        {
+            if (thread.gridObjectA == gridObject || thread.gridObjectB == gridObject)
+                nearbyThreads.Add(thread);
+        }
+
+        if (nearbyThreads.Count > 0)
+        {
+            // Play bite animation
+            NetworkedBiteTrigger++;
+
+            foreach (var thread in nearbyThreads)
+            {
+                // Request the server to disconnect each thread
+                FungalThreadManager.Instance.RPC_RequestThreadDisconnect(thread.Object.Id);
+            }
+            Debug.Log($"{nearbyThreads.Count} threads were disconnected.");
+        }
+        else
+        {
+            Debug.Log("No fungal threads found nearby.");
+        }
     }
+
+
+}
