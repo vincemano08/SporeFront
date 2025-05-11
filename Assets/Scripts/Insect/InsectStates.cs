@@ -1,9 +1,6 @@
 using Fusion;
 using UnityEngine;
 
-// These are the states that the insect can be in
-public enum InsectStateType { Normal, Fast, Slow, Paralyzed, CannotCut }
-
 public abstract class InsectState
 {
     [SerializeField] protected MoveInsect insect;
@@ -74,7 +71,7 @@ public class ParalyzedState : InsectState
 
     public override void Update()
     {
-        timer -= Time.deltaTime;
+        timer -= insect.Runner.DeltaTime;
         if (timer <= 0f)
             insect.State = new NormalState(insect);
     }
@@ -101,7 +98,7 @@ public class CannotCutThreadState : InsectState
 
     public override void Update()
     {
-        timer -= Time.deltaTime;
+        timer -= insect.Runner.DeltaTime;
         if (timer <= 0f)
             insect.State = new NormalState(insect);
     }
