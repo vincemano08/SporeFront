@@ -138,11 +138,11 @@ public class MoveInsect : NetworkBehaviour
         if (neighbour != null)
         {
             // Check if the insect is not paralysed before consuming spores
-            if (State.IsParalised() == false) 
-            { 
+            if (State.IsParalised() == false)
+            {
                 NetworkedBiteTrigger++;
                 sporeManager.ConsumeSpores(neighbour, insect);
-                Debug.Log("Spore consumed successfully."); 
+                Debug.Log("Spore consumed successfully.");
             }
             else
             {
@@ -413,58 +413,65 @@ public class MoveInsect : NetworkBehaviour
             else if (Input.GetKeyDown(KeyCode.X))
             {
                 // Invoke the RPC on the server to request nearby fungal threads
-                RPC_RequestNearbyThreads(CurrentGridObjectId);
+                if (state.CanCutThread())
+                {
+                    // Call the RPC to request nearby threads
+                    RPC_RequestNearbyThreads(CurrentGridObjectId);
+                }
+                else
+                {
+                    Debug.Log("Insect is paralysed and cannot cut threads.");
+                }
             }
         }
-    }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    private void RPC_RequestNearbyThreads(NetworkId gridObjectId)
-    {
-        if (!Runner.TryFindObject(gridObjectId, out var netObj))
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_RequestNearbyThreads(NetworkId gridObjectId)
         {
-            Debug.LogError($"The GridObject was not found on the server: {gridObjectId}");
-            return;
-        }
-
-        var gridObject = netObj.GetComponent<GridObject>();
-        if (gridObject == null)
-        {
-            Debug.LogError("The GridObject component was not found.");
-            return;
-        }
-
-        if (FungalThreadManager.Instance == null)
-        {
-            Debug.LogError("FungalThreadManager instance not available on server.");
-            return;
-        }
-
-        var nearbyThreads = new List<FungalThread>();
-
-        foreach (var thread in FungalThreadManager.Instance.FungalThreads)
-        {
-            if (thread.gridObjectA == gridObject || thread.gridObjectB == gridObject)
-                nearbyThreads.Add(thread);
-        }
-
-        if (nearbyThreads.Count > 0)
-        {
-            // Play bite animation
-            NetworkedBiteTrigger++;
-
-            foreach (var thread in nearbyThreads)
+            if (!Runner.TryFindObject(gridObjectId, out var netObj))
             {
-                // Request the server to disconnect each thread
-                FungalThreadManager.Instance.RPC_RequestThreadDisconnect(thread.Object.Id);
+                Debug.LogError($"The GridObject was not found on the server: {gridObjectId}");
+                return;
             }
-            Debug.Log($"{nearbyThreads.Count} threads were disconnected.");
+
+            var gridObject = netObj.GetComponent<GridObject>();
+            if (gridObject == null)
+            {
+                Debug.LogError("The GridObject component was not found.");
+                return;
+            }
+
+            if (FungalThreadManager.Instance == null)
+            {
+                Debug.LogError("FungalThreadManager instance not available on server.");
+                return;
+            }
+
+            var nearbyThreads = new List<FungalThread>();
+
+            foreach (var thread in FungalThreadManager.Instance.FungalThreads)
+            {
+                if (thread.gridObjectA == gridObject || thread.gridObjectB == gridObject)
+                    nearbyThreads.Add(thread);
+            }
+
+            if (nearbyThreads.Count > 0)
+            {
+                // Play bite animation
+                NetworkedBiteTrigger++;
+
+                foreach (var thread in nearbyThreads)
+                {
+                    // Request the server to disconnect each thread
+                    FungalThreadManager.Instance.RPC_RequestThreadDisconnect(thread.Object.Id);
+                }
+                Debug.Log($"{nearbyThreads.Count} threads were disconnected.");
+            }
+            else
+            {
+                Debug.Log("No fungal threads found nearby.");
+            }
         }
-        else
-        {
-            Debug.Log("No fungal threads found nearby.");
-        }
+
+
     }
-
-
-}
