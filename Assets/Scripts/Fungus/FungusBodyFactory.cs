@@ -12,8 +12,9 @@ public class FungusBodyFactory : NetworkBehaviour
     [Tooltip("How high above the tekton the fungus body should spawn")]
     [SerializeField] private float dropHeight = 3f;
 
- 
-    private void Awake() {
+
+    private void Awake()
+    {
         if (Instance == null)
             Instance = this;
         else
@@ -21,7 +22,7 @@ public class FungusBodyFactory : NetworkBehaviour
             Destroy(gameObject);
     }
 
-    public FungusBody SpawnDefault(PlayerRef player) 
+    public FungusBody SpawnDefault(PlayerRef player)
     {
 
         Tecton tecton = Tecton.ChooseRandom(x => !x.FungusBody);
@@ -42,7 +43,7 @@ public class FungusBodyFactory : NetworkBehaviour
             return null;
         }
     }
-    
+
     public FungusBody SpawnFungusBody(GridObject spawnGridObject, PlayerRef player)
     {
         Tecton tecton = spawnGridObject.parentTecton;
@@ -79,6 +80,9 @@ public class FungusBodyFactory : NetworkBehaviour
         // Assign the fungus body to the tekton and vice versa
         fungusBody.Tecton = tecton;
         tecton.FungusBody = fungusBody;
+
+        // Set the player reference for the fungus body
+        fungusBody.PlayerReference = player;
 
         return fungusBody;
     }
