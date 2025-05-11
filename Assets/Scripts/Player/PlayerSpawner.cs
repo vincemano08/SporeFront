@@ -78,7 +78,7 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
                 Debug.Log($"Player {player.PlayerId} joined. Assigned color: {newPlayerColor}.");
 
 
-
+            }
                 // Spawn one fungus body for the player
                 var fungusBody = fungusBodyFactory.SpawnDefault(player);
             
