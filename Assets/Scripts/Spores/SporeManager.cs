@@ -3,6 +3,15 @@ using UnityEngine;
 using static Fusion.TickRate;
 using UnityEngine.UIElements;
 
+public enum SporeType
+{
+    Normal,
+    Slow,
+    Fast,
+    Paralyze,
+    DisableCutting
+}
+
 public class SporeManager : NetworkBehaviour
 {
 
@@ -46,7 +55,7 @@ public class SporeManager : NetworkBehaviour
             return;
         }
 
-       
+
 
         // If we have state authority, call the RPC directly
         if (Object.HasStateAuthority)
@@ -58,12 +67,12 @@ public class SporeManager : NetworkBehaviour
         {
             RPC_RequestRemoveSpore(gridObject.Object);
         }
-        
-        
 
 
 
-       
+
+
+
     }
 
 
@@ -188,15 +197,15 @@ public class SporeManager : NetworkBehaviour
         //szomsz�dos gridek ellen�rz�se, hogy van-e ott sp�ra
         var neighbourGridObjects = gridObject.GetNeighbors();
         Debug.Log($"neighborGridObejcts == null {neighbourGridObjects == null}");
-        
+
         foreach (var neighbour in neighbourGridObjects)
         {
             Debug.Log($"neighbour.occupantType {neighbour.occupantType}");
             if (neighbour.occupantType == OccupantType.Spore)
             {
-                
+
                 return neighbour;
-                
+
             }
         }
         return null;
