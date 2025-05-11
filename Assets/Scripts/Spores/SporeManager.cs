@@ -26,7 +26,7 @@ public class SporeManager : NetworkBehaviour
             return;
         }
 
-        Vector3 position = gridObject.transform.position + Vector3.up;
+        Vector3 position = gridObject.transform.position + 0.8f * Vector3.up;
         NetworkObject networkSpore = Runner.Spawn(sporePrefab, position, Quaternion.identity);
         GameObject spore = networkSpore.gameObject;
 

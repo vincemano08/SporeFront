@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     public FungusBody SelectedFungusBody { get; private set; }
-    public FungusBody PrevFungusBody { get; private set; } = null;
 
     [SerializeField] private HighlightManager highlightManager;
     [SerializeField] private EventChannel eventChannel;
@@ -38,13 +37,12 @@ public class GameManager : MonoBehaviour
 
     public void SelectFungusBody(FungusBody fungusBody)
     {
-        if (PrevFungusBody != null)
+        if (SelectedFungusBody != null && SelectedFungusBody != fungusBody)
         {
-            PrevFungusBody.ChangeColor(Color.white);
+            SelectedFungusBody.GetComponent<Outline>().enabled = false;
         }
         SelectedFungusBody = fungusBody;
-        PrevFungusBody = fungusBody;
-        fungusBody.ChangeColor(Color.cyan);
+        fungusBody.GetComponent<Outline>().enabled = true;
         CurrentMode = ActionMode.None;
     }
 
@@ -61,7 +59,7 @@ public class GameManager : MonoBehaviour
 
         if (SelectedFungusBody != null)
         {
-            SelectedFungusBody.ChangeColor(Color.white);
+            SelectedFungusBody.GetComponent<Outline>().enabled = false;
             SelectedFungusBody = null;
         }
 
