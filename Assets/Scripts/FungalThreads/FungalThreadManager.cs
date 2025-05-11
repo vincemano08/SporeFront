@@ -43,13 +43,13 @@ public class FungalThreadManager : NetworkBehaviour
 
         // Check if the connection already exists
         var key = GetConnectionKey(source, target);
-        if(connections.Contains(key))
+        if (connections.Contains(key))
         {
             Debug.LogWarning($"Connection already exists between {source.Id} and {target.Id}");
             return false;
         }
-        if ((source.TectonType == TectonType.SingleThreadOnly && HasThread(source)) ||
-            (target.TectonType == TectonType.SingleThreadOnly && HasThread(target)))
+        if (( source.TectonType == TectonType.SingleThreadOnly && HasThread(source) ) ||
+            ( target.TectonType == TectonType.SingleThreadOnly && HasThread(target) ))
         {
             Debug.LogWarning($"Cannot connect Thread({source.Id}) and Thread({target.Id}): one of them has a single thread restriction.");
             return false;
@@ -61,12 +61,12 @@ public class FungalThreadManager : NetworkBehaviour
     private bool HasThread(Tecton source)
     {
         //Check if the source has any threads, with the fungalThreads list
-        return fungalThreads.Any(thread => thread.tectonA == source.GetComponent<NetworkObject>() 
+        return fungalThreads.Any(thread => thread.tectonA == source.GetComponent<NetworkObject>()
                                         || thread.tectonB == source.GetComponent<NetworkObject>());
     }
 
     // the spawn method, that will be called only on the server
-    private void SpawnThread(Tecton a, Tecton b)
+    private void SpawnThread(Tecton a, Tecton b, PlayerRef player)
     {
         var key = GetConnectionKey(a, b);
         connections.Add(key);
@@ -79,6 +79,7 @@ public class FungalThreadManager : NetworkBehaviour
         NetworkObject netB = b.GetComponent<NetworkObject>();
 
         thread.SetTectons(netA, netB);
+        thread.PlayerReference = player;
         fungalThreads.Add(thread);
 
         // Set logical connection
@@ -137,33 +138,34 @@ public class FungalThreadManager : NetworkBehaviour
         goB?.AddExternalNeighbor(goA);
     }
 
-    public void Connect(Tecton a, Tecton b)
+    public void Connect(Tecton a, Tecton b, PlayerRef player)
     {
         // only the server has the right to spaw threads, so if the caller is the client, send an rpc to the server
-        if (Runner.IsServer) 
+        if (Runner.IsServer)
         {
             if (!CanConnect(a, b))
             {
                 Debug.LogWarning("Connection already exists between tectons.");
                 return;
             }
-            SpawnThread(a, b);
-        } else 
+            SpawnThread(a, b, player);
+        }
+        else
         {
-            RPC_RequestThreadSpawn(a.GetComponent<NetworkObject>().Id, b.GetComponent<NetworkObject>().Id);
+            RPC_RequestThreadSpawn(a.GetComponent<NetworkObject>().Id, b.GetComponent<NetworkObject>().Id, player);
         }
     }
 
     // this will be sent by the client in order to have the server spawn a thread
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    private void RPC_RequestThreadSpawn(NetworkId aId, NetworkId bId)
+    private void RPC_RequestThreadSpawn(NetworkId aId, NetworkId bId, PlayerRef player)
     {
         Runner.TryFindObject(aId, out var aObj);
         Runner.TryFindObject(bId, out var bObj);
-        
+
         if (aObj != null && bObj != null)
         {
-            SpawnThread(aObj.GetComponent<Tecton>(), bObj.GetComponent<Tecton>());
+            SpawnThread(aObj.GetComponent<Tecton>(), bObj.GetComponent<Tecton>(), player);
         }
     }
 
@@ -213,7 +215,7 @@ public class FungalThreadManager : NetworkBehaviour
         var netB = b.GetComponent<NetworkObject>();
 
         FungalThread threadToRemove = fungalThreads.FirstOrDefault(t =>
-            (t.tectonA == netA && t.tectonB == netB) || (t.tectonA == netB && t.tectonB == netA));
+            ( t.tectonA == netA && t.tectonB == netB ) || ( t.tectonA == netB && t.tectonB == netA ));
 
         if (threadToRemove != null)
         {

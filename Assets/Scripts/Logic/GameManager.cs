@@ -1,3 +1,4 @@
+using Fusion;
 using System.Diagnostics.Tracing;
 using UnityEngine;
 
@@ -107,7 +108,7 @@ public class GameManager : MonoBehaviour
                     {
                         if (CanGrowThread(SelectedFungusBody.Tecton, targetTecton))
                         {
-                            FungalThreadManager.Instance.Connect(SelectedFungusBody.Tecton, targetTecton);
+                            FungalThreadManager.Instance.Connect(SelectedFungusBody.Tecton, targetTecton, SelectedFungusBody.PlayerReference);
                             DeselectFungus();
                         }
                     }

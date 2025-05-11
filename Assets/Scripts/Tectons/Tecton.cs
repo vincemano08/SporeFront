@@ -2,6 +2,7 @@ using Fusion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 public enum TectonType
@@ -26,7 +27,7 @@ public class Tecton : NetworkBehaviour
     public HashSet<GridObject> GridObjects { get; private set; } = new HashSet<GridObject>();
     public HashSet<Tecton> Neighbors { get; set; } = new HashSet<Tecton>();
     public IEnumerable<GridObject> Spores => GridObjects.Where(go => go.occupantType == OccupantType.Spore);
-    
+
     // this will store all child gridObject networkids. we will use this to reconstruct the hierarchy on the clients
     [Networked, Capacity(1000)] public NetworkArray<NetworkId> GridObjectIds { get; }
     // this will be used to sync the fungusbodies
@@ -36,10 +37,10 @@ public class Tecton : NetworkBehaviour
     [Networked, Capacity(1000)] public NetworkArray<NetworkId> NeighborIds { get; }
 
 
-    
+
     private SporeManager sporeManager;
 
-     private FungusBody fungusBody;
+    private FungusBody fungusBody;
     public FungusBody FungusBody
     {
         get { return fungusBody; }
@@ -57,7 +58,8 @@ public class Tecton : NetworkBehaviour
     public override void Spawned()
     {
         sporeManager = FindFirstObjectByType<SporeManager>();
-        if (sporeManager == null) {
+        if (sporeManager == null)
+        {
             Debug.LogError("SporeManager not found in the scene");
             return;
         }
@@ -99,7 +101,7 @@ public class Tecton : NetworkBehaviour
             Debug.LogError("parent is null");
             return null;
         }
-        
+
         foreach (Transform child in parent)
         {
             tectons.Add(child.GetComponent<Tecton>());
@@ -124,33 +126,34 @@ public class Tecton : NetworkBehaviour
         int index = UnityEngine.Random.Range(0, tectons.Count);
         return tectons[index];
     }
-    private bool HasFullyDevelopedThread()
+    private FungalThread HasFullyDevelopedThread()
     {
         if (FungalThreadManager.Instance == null)
         {
             Debug.LogError("FungalThreadManager instance is not available.");
-            return false;
+            return null;
         }
 
         // Check if any thread in the manager is connected to this Tecton and is fully developed
         foreach (var thread in FungalThreadManager.Instance.FungalThreads)
         {
-            if ((thread.tectonA == GetComponent<NetworkObject>() || thread.tectonB == GetComponent<NetworkObject>()) &&
+            if (( thread.tectonA == GetComponent<NetworkObject>() || thread.tectonB == GetComponent<NetworkObject>() ) &&
                 thread.IsFullyDeveloped)
             {
-                return true; // Found a fully developed thread
+                return thread; // Found a fully developed thread
             }
         }
 
         Debug.Log($"No fully developed thread found for Tecton {Id}.");
-        return false;
+        return null;
     }
 
     // Add spores to the tekton, then check if enough spores have accumulated for a new fungus body to grow.
     /// <param name="amount">Number of spores to be added.</param>
     public void AddSpores(int amount)
     {
-        if (sporeManager == null) {
+        if (sporeManager == null)
+        {
             sporeManager = FindFirstObjectByType<SporeManager>();
         }
 
@@ -165,7 +168,8 @@ public class Tecton : NetworkBehaviour
         if (Spores.Count() >= SporeThreshold && FungusBody == null)
         {
             // Check if the Tecton has a fully developed thread
-            if (!HasFullyDevelopedThread())
+            FungalThread thread = HasFullyDevelopedThread();
+            if (thread == null)
             {
                 Debug.LogError($"Cannot spawn FungusBody: No fully developed thread on Tecton {Id}.");
                 return;
@@ -190,7 +194,7 @@ public class Tecton : NetworkBehaviour
             }
 
             // Get current tecton's fungus body's player
-            PlayerRef player = FungusBody != null ? FungusBody.GetComponent<NetworkObject>().InputAuthority : default;
+            PlayerRef player = thread.PlayerReference;
 
             FungusBodyFactory.Instance.SpawnFungusBody(spawnGridObject, player);
             // Despawn spores

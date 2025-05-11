@@ -32,6 +32,8 @@ public class FungalThread : NetworkBehaviour
     [SerializeField] private AnimationCurve widthCurve;
 
     private Coroutine growthCoroutine;
+
+    [Networked] public PlayerRef PlayerReference { get; set; }
     public override void Spawned()
     {
         base.Spawned();
@@ -97,7 +99,7 @@ public class FungalThread : NetworkBehaviour
             RPC_SetTectonNames(a.name, b.name);
             //RPC_SetTectons(a, b);
             UpdateLineRenderer();
-            if(growthCoroutine != null)
+            if (growthCoroutine != null)
             {
                 StopCoroutine(growthCoroutine);
             }
@@ -111,7 +113,7 @@ public class FungalThread : NetworkBehaviour
 
     private IEnumerator GrowThreadOverTime(float duration)
     {
-        if (tectonA == null || tectonB == null) 
+        if (tectonA == null || tectonB == null)
         {
             Debug.LogError("Tectons not set for the fungal thread.");
             yield break;
@@ -134,8 +136,8 @@ public class FungalThread : NetworkBehaviour
         var tectonAComponent = tectonA.GetComponent<Tecton>();
         var tectonBComponent = tectonB.GetComponent<Tecton>();
 
-        if ((tectonAComponent != null && tectonAComponent.TectonType == TectonType.ThreadGrowthBoost) ||
-        (tectonBComponent != null && tectonBComponent.TectonType == TectonType.ThreadGrowthBoost))
+        if (( tectonAComponent != null && tectonAComponent.TectonType == TectonType.ThreadGrowthBoost ) ||
+        ( tectonBComponent != null && tectonBComponent.TectonType == TectonType.ThreadGrowthBoost ))
         {
             duration /= 2f; // Grow twice as fast
             Debug.Log("ThreadGrowthBoost detected. Growth duration halved.");
@@ -184,7 +186,7 @@ public class FungalThread : NetworkBehaviour
         {
             StopCoroutine(growthCoroutine);
         }
-        
+
         growthCoroutine = StartCoroutine(GrowThreadOverTime(10f));
 
         UpdateLineRenderer();
