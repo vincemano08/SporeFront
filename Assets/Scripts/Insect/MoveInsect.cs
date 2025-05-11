@@ -119,7 +119,7 @@ public class MoveInsect : NetworkBehaviour
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_ConsumeSpore(NetworkId gridObjectId)
+    public void RPC_ConsumeSpore(NetworkId gridObjectId, MoveInsect insect)
     {
         if (!Runner.TryFindObject(gridObjectId, out var netObj))
         {
@@ -141,7 +141,7 @@ public class MoveInsect : NetworkBehaviour
             if (State.IsParalised() == false) 
             { 
                 NetworkedBiteTrigger++;
-                sporeManager.ConsumeSpores(neighbour);
+                sporeManager.ConsumeSpores(neighbour, insect);
                 Debug.Log("Spore consumed successfully."); 
             }
             else
@@ -407,7 +407,7 @@ public class MoveInsect : NetworkBehaviour
                 }
 
                 // Call the RPC to request spore consumption, since it work well on the server, but it seems the occupantType field is messed up on the clients
-                RPC_ConsumeSpore(CurrentGridObjectId); // xd
+                RPC_ConsumeSpore(CurrentGridObjectId, this); // xd
             }
 
             else if (Input.GetKeyDown(KeyCode.X))
