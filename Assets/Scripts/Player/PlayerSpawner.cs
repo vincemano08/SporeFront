@@ -2,11 +2,8 @@ using Fusion;
 using UnityEngine;
 using System.Collections.Generic;
 
-public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
+public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
 {
-
-
-
     public InsectSpawner insectSpawner;
     public FungusBodyFactory fungusBodyFactory;
     public TimerManager timerManager;
@@ -18,9 +15,6 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     // Track joined players
     private HashSet<PlayerRef> joinedPlayers = new HashSet<PlayerRef>();
 
-
-
-
     private Dictionary<PlayerRef, Color> playerColors = new Dictionary<PlayerRef, Color>();
     [SerializeField]
     private List<Color> availablePlayerColors = new List<Color>() {
@@ -28,25 +22,7 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     };
     private int nextColorIndex = 0;
 
-    public static PlayerSpawner Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindFirstObjectByType<PlayerSpawner>();
-                if (_instance == null)
-                {
-                    Debug.LogError("No instance of PlayerSpawner found in the scene!");
-                }
-            }
-            return _instance;
-        }
-        private set => _instance = value;
-    }
-
-    private static PlayerSpawner _instance;
-
+    public static PlayerSpawner Instance;
 
     void Awake()
     {
