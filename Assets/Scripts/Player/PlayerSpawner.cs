@@ -15,6 +15,13 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     [Tooltip("Number of players required to start the timer")]
     [SerializeField] private int requiredPlayerCount = 3;
 
+    //Networked Dictionary to store player scores
+    [Networked, Capacity(16)]
+    private NetworkDictionary<PlayerRef, PlayerScore> PlayerScores { get; }
+
+    // Local cache for UI updates
+    private Dictionary<PlayerRef, PlayerScore> localPlayerScores = new Dictionary<PlayerRef, PlayerScore>();
+
     // Track joined players
     private HashSet<PlayerRef> joinedPlayers = new HashSet<PlayerRef>();
 
@@ -65,6 +72,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         {
             // Don't call the RPC directly in Spawned - it can cause timing issues
             StartCoroutine(DelayedHudVisibility(false));
+            StartCoroutine(ShareScoresRegularly());
         }
     }
 
@@ -77,6 +85,16 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         {
             RpcSetHudVisibility(show);
             hudVisibilitySet = true;
+        }
+    }
+
+    private IEnumerator ShareScoresRegularly()
+    {
+        while (true)
+        {
+            // Update UI about once per second
+            yield return new WaitForSeconds(1.0f);
+            RaiseScoreboardUpdatedEvent();
         }
     }
 
@@ -110,6 +128,10 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
             // Add player to our tracking collection
             joinedPlayers.Add(player);
 
+            // Update the player score dictionary
+            string username = GetUsernameFromPlayer(player);
+            AddPlayerToScoreboard(player, username);
+
             // Check if we've reached the required player count
             if (!timerStarted && joinedPlayers.Count >= requiredPlayerCount)
             {
@@ -131,6 +153,70 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
             }
         }
     }
+
+    private string GetUsernameFromPlayer(PlayerRef player)
+    {
+        // Try to get username from the player's connection data
+        if (Runner.GetPlayerConnectionToken(player) is byte[] tokenData)
+        {
+            try 
+            {
+                string usernameFromToken = System.Text.Encoding.UTF8.GetString(tokenData);
+                if (!string.IsNullOrEmpty(usernameFromToken))
+                    return usernameFromToken;
+            }
+            catch {}
+        }
+        
+        // Fallback name if no token or parsing fails
+        return $"Player {player.PlayerId}";
+    }
+
+    private void AddPlayerToScoreboard(PlayerRef player, string username)
+    {
+        var playerScore = new PlayerScore { 
+            Username = username,
+            Score = 0 
+        };
+        playerScore.CopyToNetworked();
+        
+        PlayerScores.Add(player, playerScore);
+        RaiseScoreboardUpdatedEvent();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_UpdatePlayerScore(PlayerRef player, int scoreChange)
+    {
+        if (Runner.IsServer && PlayerScores.TryGet(player, out PlayerScore score))
+        {
+            score.Score += scoreChange;
+            score.CopyToNetworked();
+            PlayerScores.Set(player, score);
+            RaiseScoreboardUpdatedEvent();
+        }
+    }
+
+    private void RaiseScoreboardUpdatedEvent()
+    {
+        // Update local cache
+        localPlayerScores.Clear();
+        foreach (var kvp in PlayerScores)
+        {
+            var score = kvp.Value;
+            score.CopyFromNetworked();
+            localPlayerScores[kvp.Key] = score;
+        }
+        
+        // Notify UI
+        eventChannel?.RaiseScoreboardUpdated(localPlayerScores);
+    }
+
+    // Public method to get scores for UI
+    public Dictionary<PlayerRef, PlayerScore> GetScores()
+    {
+        return localPlayerScores;
+    }
+    
     /// <summary>
     /// Gets the assigned color for a given player.
     /// This is primarily authoritative and accurate on the Server/Host.

@@ -102,6 +102,11 @@ public class NetworkMenuManager : MonoBehaviour
     {
         // Save username if needed
         SaveUsername();
+        string username = PlayerPrefs.GetString(PLAYER_NAME_KEY, "Host");
+
+        // Convert username to connection data
+        byte[] connectionData = System.Text.Encoding.UTF8.GetBytes(username);
+        fusionBootstrap.SetConnectionData(connectionData);
 
         // Start as Host
         fusionBootstrap.StartHost();
@@ -113,6 +118,11 @@ public class NetworkMenuManager : MonoBehaviour
     {
         // Save username if needed
         SaveUsername();
+        string username = PlayerPrefs.GetString(PLAYER_NAME_KEY, "Client");
+
+        // Convert username to connection data
+        byte[] connectionData = System.Text.Encoding.UTF8.GetBytes(username);
+        fusionBootstrap.SetConnectionData(connectionData);
 
         // Start as Client
         fusionBootstrap.StartClient();
