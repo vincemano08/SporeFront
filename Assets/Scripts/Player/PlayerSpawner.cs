@@ -79,8 +79,8 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     private IEnumerator DelayedHudVisibility(bool show)
     {
         // Wait a frame to ensure network is ready
-        yield return new WaitForSeconds(0.5f);
-        
+        yield return new WaitForSeconds(0.1f);
+
         if (!hudVisibilitySet || show)
         {
             RpcSetHudVisibility(show);
@@ -94,7 +94,10 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         {
             // Update UI about once per second
             yield return new WaitForSeconds(1.0f);
-            RaiseScoreboardUpdatedEvent();
+            if (Runner.IsServer) // Ensure only server calls the RPC
+            {
+                SendScoreboardToClients();
+            }
         }
     }
 
@@ -137,7 +140,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
             {
                 if (timerManager != null)
                 {
-                    timerManager.RpcStartTimer(60f);
+                    timerManager.RpcStartTimer(300f);
                     timerStarted = true;
                     Debug.Log($"Timer started with {joinedPlayers.Count} players connected");
                     StartCoroutine(DelayedHudVisibility(true));
@@ -159,29 +162,27 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         // Try to get username from the player's connection data
         if (Runner.GetPlayerConnectionToken(player) is byte[] tokenData)
         {
-            try 
+            try
             {
                 string usernameFromToken = System.Text.Encoding.UTF8.GetString(tokenData);
                 if (!string.IsNullOrEmpty(usernameFromToken))
                     return usernameFromToken;
             }
-            catch {}
+            catch { }
         }
-        
+
         // Fallback name if no token or parsing fails
         return $"Player {player.PlayerId}";
     }
 
     private void AddPlayerToScoreboard(PlayerRef player, string username)
     {
-        var playerScore = new PlayerScore { 
-            Username = username,
-            Score = 0 
-        };
-        playerScore.CopyToNetworked();
-        
+        var playerScore = new PlayerScore();
+        playerScore.Score = 0;
+        playerScore.UsernameString = username;
+
         PlayerScores.Add(player, playerScore);
-        RaiseScoreboardUpdatedEvent();
+        SendScoreboardToClients(); // Changed from RpcUpdateClientScoreboards(PlayerScores)
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -190,25 +191,26 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         if (Runner.IsServer && PlayerScores.TryGet(player, out PlayerScore score))
         {
             score.Score += scoreChange;
-            score.CopyToNetworked();
             PlayerScores.Set(player, score);
-            RaiseScoreboardUpdatedEvent();
+            SendScoreboardToClients(); // Changed from RpcUpdateClientScoreboards(PlayerScores)
         }
     }
 
     private void RaiseScoreboardUpdatedEvent()
     {
-        // Update local cache
+        // Update local cache on the server
         localPlayerScores.Clear();
         foreach (var kvp in PlayerScores)
         {
             var score = kvp.Value;
-            score.CopyFromNetworked();
+            // score.CopyFromNetworked(); // Not needed for INetworkStruct if members are accessed directly
             localPlayerScores[kvp.Key] = score;
+
+            Debug.Log($"Server local cache: Player {kvp.Key.PlayerId} - Score: {score.Score} - Username: {score.UsernameString}");
         }
-        
-        // Notify UI
-        eventChannel?.RaiseScoreboardUpdated(localPlayerScores);
+        // This event is now primarily for server-side listeners, if any.
+        // eventChannel?.RaiseScoreboardUpdated(localPlayerScores); 
+        Debug.Log($"Scoreboard server-local cache updated with {localPlayerScores.Count} entries on Server");
     }
 
     // Public method to get scores for UI
@@ -216,7 +218,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     {
         return localPlayerScores;
     }
-    
+
     /// <summary>
     /// Gets the assigned color for a given player.
     /// This is primarily authoritative and accurate on the Server/Host.
@@ -243,5 +245,47 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     {
         Debug.Log($"RpcSetHudVisibility({show}) called on {(Runner.IsServer ? "Server" : "Client")}");
         eventChannel?.RaiseShowHideHud(show);
+    }
+
+    public struct PlayerScoreItem : INetworkStruct
+    {
+        public PlayerRef PlayerRef;
+        public PlayerScore Score;
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RpcUpdateClientScoreboards(PlayerScoreItem[] scoreItems)
+    {
+        var clientLocalScores = new Dictionary<PlayerRef, PlayerScore>();
+
+        foreach (var item in scoreItems)
+        {
+            clientLocalScores[item.PlayerRef] = item.Score;
+        }
+
+        // Debug.Log($"RpcUpdateClientScoreboards executed with {clientLocalScores.Count} scores.");
+        eventChannel?.RaiseScoreboardUpdated(clientLocalScores);
+    }
+
+    // Add this helper method to convert and send scores:
+    private void SendScoreboardToClients()
+    {
+        if (Runner.IsServer)
+        {
+            // Convert NetworkDictionary to array of PlayerScoreItem
+            var scoreItems = new PlayerScoreItem[PlayerScores.Count];
+            int index = 0;
+
+            foreach (var kvp in PlayerScores)
+            {
+                scoreItems[index++] = new PlayerScoreItem
+                {
+                    PlayerRef = kvp.Key,
+                    Score = kvp.Value
+                };
+            }
+
+            RpcUpdateClientScoreboards(scoreItems);
+        }
     }
 }

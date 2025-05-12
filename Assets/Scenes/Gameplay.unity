@@ -1570,6 +1570,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eventChannel: {fileID: 11400000, guid: 6bf5f1ad5b4e28e4789093b3b7a57d2e, type: 2}
+  playerSpawner: {fileID: 1027910113}
 --- !u!1 &583869174
 GameObject:
   m_ObjectHideFlags: 0
@@ -1869,11 +1870,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1062985366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -345.5, y: 223.24}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0.5, y: 0.23999023}
   m_SizeDelta: {x: 300, y: 160}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &704384932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2378,7 +2379,7 @@ MonoBehaviour:
   fungusBodyFactory: {fileID: 560777812}
   timerManager: {fileID: 239995626}
   eventChannel: {fileID: 11400000, guid: 6bf5f1ad5b4e28e4789093b3b7a57d2e, type: 2}
-  requiredPlayerCount: 2
+  requiredPlayerCount: 4
   availablePlayerColors:
   - {r: 0, g: 1, b: 1, a: 1}
   - {r: 1, g: 0, b: 1, a: 1}
@@ -2399,6 +2400,7 @@ GameObject:
   - component: {fileID: 1062985365}
   - component: {fileID: 1062985364}
   - component: {fileID: 1062985363}
+  - component: {fileID: 1062985367}
   m_Layer: 5
   m_Name: HudCanvas
   m_TagString: Untagged
@@ -2491,6 +2493,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1062985367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1062985362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c5c0b89b2d6e3740879dd2b0be8bffa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventChannel: {fileID: 11400000, guid: 6bf5f1ad5b4e28e4789093b3b7a57d2e, type: 2}
+  scoreEntryPrefab: {fileID: 2031156968377724541, guid: 83f2e54fa43acc846a0de1ec4115ce43, type: 3}
+  scoreboardContainer: {fileID: 704384931}
+  maxEntriesToShow: 4
 --- !u!1 &1155788661
 GameObject:
   m_ObjectHideFlags: 0

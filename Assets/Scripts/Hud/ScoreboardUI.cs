@@ -58,8 +58,8 @@ public class ScoreboardUI : MonoBehaviour
         GameObject entry = Instantiate(scoreEntryPrefab, scoreboardContainer);
         
         // Set the name
-        TextMeshProUGUI nameText = entry.transform.Find("NameText").GetComponent<TextMeshProUGUI>();
-        nameText.text = score.Username;
+        TextMeshProUGUI nameText = entry.transform.Find("UsernameText").GetComponent<TextMeshProUGUI>();
+        nameText.text = score.UsernameString;
         
         // Set the score
         TextMeshProUGUI scoreText = entry.transform.Find("ScoreText").GetComponent<TextMeshProUGUI>();

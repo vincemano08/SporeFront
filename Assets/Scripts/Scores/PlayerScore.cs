@@ -1,20 +1,33 @@
 using UnityEngine;
+using System;
 using Fusion;
 
-[System.Serializable]
+[Serializable]
 public struct PlayerScore : INetworkStruct
 {
-    public string Username;
+    // Use NetworkString<_16> instead of string
+    public NetworkString<_16> Username;
     public int Score;
-
-    public NetworkString<_16> NetworkUsername;
-
-    public void CopyFromNetworked()
+    
+    public string UsernameString 
     {
-        Username = NetworkUsername.ToString();
+        get => Username.ToString();
+        set => Username = new NetworkString<_16>(value);
     }
-    public void CopyToNetworked()
+    
+    // Add these empty implementation methods for PlayerSpawner compatibility
+    public void CopyToNetworked() 
     {
-        NetworkUsername = new NetworkString<_16>(Username);
+        // NetworkString is already networked, nothing to do
+    }
+    
+    public void CopyFromNetworked() 
+    {
+        // NetworkString is already networked, nothing to do
+    }
+    
+    public override string ToString()
+    {
+        return $"{UsernameString}: {Score}";
     }
 }

@@ -1,4 +1,5 @@
-namespace Fusion {
+namespace Fusion
+{
   using System;
   using Fusion.Sockets;
   using System.Collections;
@@ -21,12 +22,14 @@ namespace Fusion {
   [DisallowMultipleComponent]
   [AddComponentMenu("Fusion/Fusion Bootstrap")]
   [ScriptHelp(BackColor = ScriptHeaderBackColor.Steel)]
-  public class FusionBootstrap : Fusion.Behaviour {
+  public class FusionBootstrap : Fusion.Behaviour
+  {
 
     /// <summary>
     /// Selection for how <see cref="FusionBootstrap"/> will behave at startup.
     /// </summary>
-    public enum StartModes {
+    public enum StartModes
+    {
       UserInterface,
       Automatic,
       Manual
@@ -35,7 +38,8 @@ namespace Fusion {
     /// <summary>
     /// The current stage of connection or shutdown.
     /// </summary>
-    public enum Stage {
+    public enum Stage
+    {
       Disconnected,
       StartingUp,
       UnloadOriginalScene,
@@ -44,14 +48,23 @@ namespace Fusion {
       AllConnected,
     }
 
+    private byte[] _connectionData;
+
+    public void SetConnectionData(byte[] data)
+    {
+      _connectionData = data;
+    }
+
     [Serializable]
-    class StartCommand : FusionMppmCommand {
+    class StartCommand : FusionMppmCommand
+    {
       public string RoomName;
       public SceneRef InitialScene;
       public int ClientCount;
       public bool IsShared;
 
-      public override void Execute() { 
+      public override void Execute()
+      {
         Instance = this;
       }
 
@@ -126,10 +139,10 @@ namespace Fusion {
     [InlineHelp]
     [ScenePath]
     public string InitialScenePath;
-    
+
     // TODO: this is debt
     static string _initialScenePath;
-    
+
     /// <summary>
     /// Indicates which step of the startup process <see cref="FusionBootstrap"/> is currently in.
     /// </summary>
@@ -137,25 +150,27 @@ namespace Fusion {
     [SerializeField]
     [ReadOnly]
     protected Stage _currentStage;
-    
+
     /// <summary>
     /// Requires Multiplayer Play Mode (MPPM) to be installed. If enabled, <see cref="FusionBootstrap"/> will automatically join the virtual instance.
     /// </summary>
-    [DrawIf(nameof(IsMPPMEnabled), true)] 
+    [DrawIf(nameof(IsMPPMEnabled), true)]
     [Header("Multiplayer Play Mode")]
     public bool AutoConnectVirtualInstances = true;
     /// <summary>
     /// How much to wait before the main instance lets the virtual instances connect.
     /// </summary>
-    [DrawIf(nameof(IsMPPMEnabled), true)] 
+    [DrawIf(nameof(IsMPPMEnabled), true)]
     public float VirtualInstanceConnectDelay = 1f;
-    
+
     /// <summary>
     /// Indicates which step of the startup process <see cref="FusionBootstrap"/> is currently in.
     /// </summary>
-    public Stage CurrentStage {
+    public Stage CurrentStage
+    {
       get => _currentStage;
-      internal set {
+      internal set
+      {
         _currentStage = value;
 #if UNITY_EDITOR
         // Hack to force an inspector refresh when this value changes, as it affects which buttons are shown.
@@ -180,12 +195,14 @@ namespace Fusion {
     protected bool IsShutdownAndMultiPeer => CurrentStage == Stage.Disconnected && UsingMultiPeerMode;
 
     protected bool UsingMultiPeerMode => NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple;
-    protected bool ShowAutoClients    => UsingMultiPeerMode && (StartMode == StartModes.UserInterface || (StartMode == StartModes.Automatic && AutoStartAs != GameMode.Single));
+    protected bool ShowAutoClients => UsingMultiPeerMode && (StartMode == StartModes.UserInterface || (StartMode == StartModes.Automatic && AutoStartAs != GameMode.Single));
 
 
 #if UNITY_EDITOR
-    protected virtual void Reset() {
-      if (TryGetComponent<FusionBootstrapDebugGUI>(out var ndsg) == false) {
+    protected virtual void Reset()
+    {
+      if (TryGetComponent<FusionBootstrapDebugGUI>(out var ndsg) == false)
+      {
         ndsg = gameObject.AddComponent<FusionBootstrapDebugGUI>();
       }
     }
@@ -193,97 +210,129 @@ namespace Fusion {
 #endif
 
 
-    protected virtual void Start() {
+    protected virtual void Start()
+    {
 
-      if (_initialScenePath == null) {
-        if (string.IsNullOrEmpty(InitialScenePath)) {
+      if (_initialScenePath == null)
+      {
+        if (string.IsNullOrEmpty(InitialScenePath))
+        {
           var currentScene = SceneManager.GetActiveScene();
-          if (currentScene.IsValid()) {
+          if (currentScene.IsValid())
+          {
             _initialScenePath = currentScene.path;
-          } else {
+          }
+          else
+          {
             // Last fallback is the first entry in the build settings
             _initialScenePath = SceneManager.GetSceneByBuildIndex(0).path;
           }
 
           InitialScenePath = _initialScenePath;
-        } else {
+        }
+        else
+        {
           _initialScenePath = InitialScenePath;
         }
       }
 
-      var config      = NetworkProjectConfig.Global;
+      var config = NetworkProjectConfig.Global;
       var isMultiPeer = config.PeerMode == NetworkProjectConfig.PeerModes.Multiple;
 
       var existingRunner = FindFirstObjectByType<NetworkRunner>();
 
-      if (existingRunner && existingRunner != RunnerPrefab) {
-        if (existingRunner.State != NetworkRunner.States.Shutdown) {
+      if (existingRunner && existingRunner != RunnerPrefab)
+      {
+        if (existingRunner.State != NetworkRunner.States.Shutdown)
+        {
           // disable
           enabled = false;
 
           // destroy this and GUI (if exists), and return
           var gui = GetComponent<FusionBootstrapDebugGUI>();
-          if (gui) {
+          if (gui)
+          {
             Destroy(gui);
           }
 
           Destroy(this);
           return;
-        } else {
+        }
+        else
+        {
           // If no RunnerPrefab is supplied, use the scene runner.
-          if (RunnerPrefab == null) {
+          if (RunnerPrefab == null)
+          {
             RunnerPrefab = existingRunner;
           }
         }
       }
 
-      if (FusionMppm.Status == FusionMppmStatus.VirtualInstance && AutoConnectVirtualInstances) {
+      if (FusionMppm.Status == FusionMppmStatus.VirtualInstance && AutoConnectVirtualInstances)
+      {
         StartCoroutine(StartWithMppmVirtualInstance());
         return;
       }
 
-      switch (StartMode) {
+      switch (StartMode)
+      {
         case StartModes.Manual:
           // skip
           return;
-        case StartModes.Automatic: {
-          if (TryGetSceneRef(out var sceneRef)) {
-            int clientCount;
-            if (AutoStartAs == GameMode.Single) {
-              clientCount = 0;
-            } else if (isMultiPeer) {
-              clientCount = AutoClients;
-            } else if (AutoStartAs == GameMode.Client || AutoStartAs == GameMode.Shared || AutoStartAs == GameMode.AutoHostOrClient) {
-              clientCount = 1;
-            } else {
-              clientCount = 0;
+        case StartModes.Automatic:
+          {
+            if (TryGetSceneRef(out var sceneRef))
+            {
+              int clientCount;
+              if (AutoStartAs == GameMode.Single)
+              {
+                clientCount = 0;
+              }
+              else if (isMultiPeer)
+              {
+                clientCount = AutoClients;
+              }
+              else if (AutoStartAs == GameMode.Client || AutoStartAs == GameMode.Shared || AutoStartAs == GameMode.AutoHostOrClient)
+              {
+                clientCount = 1;
+              }
+              else
+              {
+                clientCount = 0;
+              }
+
+              StartCoroutine(StartWithClients(AutoStartAs, sceneRef, clientCount));
             }
 
-            StartCoroutine(StartWithClients(AutoStartAs, sceneRef, clientCount));
+            break;
           }
-
-          break;
-        }
-        default: {
-          ShowUserInterface();
-          break;
-        }
+        default:
+          {
+            ShowUserInterface();
+            break;
+          }
       }
     }
 
-    protected void ShowUserInterface() {
-      if (TryGetComponent<FusionBootstrapDebugGUI>(out var gui) == false) {
+    protected void ShowUserInterface()
+    {
+      if (TryGetComponent<FusionBootstrapDebugGUI>(out var gui) == false)
+      {
         gui = gameObject.AddComponent<FusionBootstrapDebugGUI>();
       }
       gui.enabled = true;
     }
-    
-    private bool TryGetSceneRef(out SceneRef sceneRef) {
+
+    private bool TryGetSceneRef(out SceneRef sceneRef)
+    {
       var activeScene = SceneManager.GetActiveScene();
-      if (activeScene.buildIndex < 0 || activeScene.buildIndex >= SceneManager.sceneCountInBuildSettings) {
+      if (activeScene.buildIndex < 0 || activeScene.buildIndex >= SceneManager.sceneCountInBuildSettings)
+      {
         sceneRef = default;
         return false;
-      } else {
+      }
+      else
+      {
         sceneRef = SceneRef.FromIndex(activeScene.buildIndex);
         return true;
       }
@@ -294,8 +343,10 @@ namespace Fusion {
     /// </summary>
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartSinglePlayer() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public virtual void StartSinglePlayer()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         StartCoroutine(StartWithClients(GameMode.Single, sceneRef, 0));
       }
     }
@@ -305,8 +356,10 @@ namespace Fusion {
     /// </summary>
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartServer() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public virtual void StartServer()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         StartCoroutine(StartWithClients(GameMode.Server, sceneRef, 0));
       }
     }
@@ -316,8 +369,10 @@ namespace Fusion {
     /// </summary>
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartHost() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public virtual void StartHost()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         StartCoroutine(StartWithClients(GameMode.Host, sceneRef, 0));
       }
     }
@@ -327,22 +382,27 @@ namespace Fusion {
     /// </summary>
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartClient() {
+    public virtual void StartClient()
+    {
       StartCoroutine(StartWithClients(GameMode.Client, default, 1));
     }
-    
+
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartSharedClient() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public virtual void StartSharedClient()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         StartCoroutine(StartWithClients(GameMode.Shared, sceneRef, 1));
       }
     }
-    
+
     [EditorButton("Start Auto Host Or Client", EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartAutoClient() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public virtual void StartAutoClient()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         StartCoroutine(StartWithClients(GameMode.AutoHostOrClient, sceneRef, 1));
       }
     }
@@ -353,7 +413,8 @@ namespace Fusion {
     /// </summary>
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public virtual void StartServerPlusClients() {
+    public virtual void StartServerPlusClients()
+    {
       StartServerPlusClients(AutoClients);
     }
 
@@ -363,13 +424,15 @@ namespace Fusion {
     /// </summary>
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(IsShutdown), Hide = true)]
-    public void StartHostPlusClients() {
+    public void StartHostPlusClients()
+    {
       StartHostPlusClients(AutoClients);
     }
 
     [EditorButton(EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(CurrentStage), Hide = true)]
-    public void Shutdown() {
+    public void Shutdown()
+    {
       ShutdownAll();
     }
 
@@ -377,12 +440,17 @@ namespace Fusion {
     /// Start a Fusion server instance, and the indicated number of client instances. 
     /// InstanceMode must be set to Multi-Peer mode, as this requires multiple <see cref="NetworkRunner"/> instances.
     /// </summary>
-    public virtual void StartServerPlusClients(int clientCount) {
-      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
-        if (TryGetSceneRef(out var sceneRef)) {
+    public virtual void StartServerPlusClients(int clientCount)
+    {
+      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple)
+      {
+        if (TryGetSceneRef(out var sceneRef))
+        {
           StartCoroutine(StartWithClients(GameMode.Server, sceneRef, clientCount));
         }
-      } else {
+      }
+      else
+      {
         Debug.LogWarning($"Unable to start multiple {nameof(NetworkRunner)}s in Unique Instance mode.");
       }
     }
@@ -391,12 +459,17 @@ namespace Fusion {
     /// Start a Fusion host instance (server with local player), and the indicated number of additional client instances. 
     /// InstanceMode must be set to Multi-Peer mode, as this requires multiple <see cref="NetworkRunner"/> instances.
     /// </summary>
-    public void StartHostPlusClients(int clientCount) {
-      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
-        if (TryGetSceneRef(out var sceneRef)) {
+    public void StartHostPlusClients(int clientCount)
+    {
+      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple)
+      {
+        if (TryGetSceneRef(out var sceneRef))
+        {
           StartCoroutine(StartWithClients(GameMode.Host, sceneRef, clientCount));
         }
-      } else {
+      }
+      else
+      {
         Debug.LogWarning($"Unable to start multiple {nameof(NetworkRunner)}s in Unique Instance mode.");
       }
     }
@@ -405,12 +478,17 @@ namespace Fusion {
     /// Start a Fusion host instance (server with local player), and the indicated number of additional client instances. 
     /// InstanceMode must be set to Multi-Peer mode, as this requires multiple <see cref="NetworkRunner"/> instances.
     /// </summary>
-    public void StartMultipleClients(int clientCount) {
-      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
-        if (TryGetSceneRef(out var sceneRef)) {
+    public void StartMultipleClients(int clientCount)
+    {
+      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple)
+      {
+        if (TryGetSceneRef(out var sceneRef))
+        {
           StartCoroutine(StartWithClients(GameMode.Client, sceneRef, clientCount));
         }
-      } else {
+      }
+      else
+      {
         Debug.LogWarning($"Unable to start multiple {nameof(NetworkRunner)}s in Unique Instance mode.");
       }
     }
@@ -419,29 +497,42 @@ namespace Fusion {
     /// Start as Room on the Photon cloud, and connects as one or more clients.
     /// </summary>
     /// <param name="clientCount"></param>
-    public void StartMultipleSharedClients(int clientCount) {
-      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
-        if (TryGetSceneRef(out var sceneRef)) {
+    public void StartMultipleSharedClients(int clientCount)
+    {
+      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple)
+      {
+        if (TryGetSceneRef(out var sceneRef))
+        {
           StartCoroutine(StartWithClients(GameMode.Shared, sceneRef, clientCount));
         }
-      } else {
+      }
+      else
+      {
         Debug.LogWarning($"Unable to start multiple {nameof(NetworkRunner)}s in Unique Instance mode.");
       }
     }
 
-    public void StartMultipleAutoClients(int clientCount) {
-      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
-        if (TryGetSceneRef(out var sceneRef)) {
+    public void StartMultipleAutoClients(int clientCount)
+    {
+      if (NetworkProjectConfig.Global.PeerMode == NetworkProjectConfig.PeerModes.Multiple)
+      {
+        if (TryGetSceneRef(out var sceneRef))
+        {
           StartCoroutine(StartWithClients(GameMode.AutoHostOrClient, sceneRef, clientCount));
         }
-      } else {
+      }
+      else
+      {
         Debug.LogWarning($"Unable to start multiple {nameof(NetworkRunner)}s in Unique Instance mode.");
       }
     }
 
-    public void ShutdownAll() {
-      foreach (var runner in NetworkRunner.Instances.ToList()) {
-        if (runner != null && runner.IsRunning) {
+    public void ShutdownAll()
+    {
+      foreach (var runner in NetworkRunner.Instances.ToList())
+      {
+        if (runner != null && runner.IsRunning)
+        {
           runner.Shutdown();
         }
       }
@@ -455,15 +546,18 @@ namespace Fusion {
     }
 
 
-    protected IEnumerator StartWithClients(GameMode serverMode, SceneRef sceneRef, int clientCount) {
+    protected IEnumerator StartWithClients(GameMode serverMode, SceneRef sceneRef, int clientCount)
+    {
       // Avoid double clicks or disallow multiple startup calls.
-      if (CurrentStage != Stage.Disconnected) {
+      if (CurrentStage != Stage.Disconnected)
+      {
         yield break;
       }
 
       bool includesServerStart = serverMode != GameMode.Shared && serverMode != GameMode.Client && serverMode != GameMode.AutoHostOrClient;
 
-      if (!includesServerStart && clientCount == 0) {
+      if (!includesServerStart && clientCount == 0)
+      {
         Debug.LogError($"{nameof(GameMode)} is set to {serverMode}, and {nameof(clientCount)} is set to zero. Starting no network runners.");
         yield break;
       }
@@ -473,7 +567,8 @@ namespace Fusion {
       var currentScene = SceneManager.GetActiveScene();
 
       // must have a runner
-      if (!RunnerPrefab) {
+      if (!RunnerPrefab)
+      {
         Debug.LogError($"{nameof(RunnerPrefab)} not set, can't perform debug start.");
         yield break;
       }
@@ -485,9 +580,11 @@ namespace Fusion {
 
       // Single-peer can't start more than one peer. Validate clientCount to make sure it complies with current PeerMode.
       var config = NetworkProjectConfig.Global;
-      if (config.PeerMode != NetworkProjectConfig.PeerModes.Multiple) {
+      if (config.PeerMode != NetworkProjectConfig.PeerModes.Multiple)
+      {
         int maxClientsAllowed = includesServerStart ? 0 : 1;
-        if (clientCount > maxClientsAllowed) {
+        if (clientCount > maxClientsAllowed)
+        {
           Debug.LogWarning($"Instance mode must be set to {nameof(NetworkProjectConfig.PeerModes.Multiple)} to perform a debug start multiple peers. Restricting client count to {maxClientsAllowed}.");
           clientCount = maxClientsAllowed;
         }
@@ -496,16 +593,18 @@ namespace Fusion {
       // If NDS is starting more than 1 shared or auto client, they need to use the same Session Name, otherwise, they will end up on different Rooms
       // as Fusion creates a Random Session Name when no name is passed on the args
       var localMultipeerCheck = (serverMode == GameMode.Shared || serverMode == GameMode.AutoHostOrClient || serverMode == GameMode.Server || serverMode == GameMode.Host) &&
-                                clientCount     > 1                                                                                                                        &&
+                                clientCount > 1 &&
                                 config.PeerMode == NetworkProjectConfig.PeerModes.Multiple;
       var isMppmMainInstance = FusionMppm.Status == FusionMppmStatus.MainInstance;
-      
-      if ((localMultipeerCheck || isMppmMainInstance) && string.IsNullOrEmpty(DefaultRoomName)) {
+
+      if ((localMultipeerCheck || isMppmMainInstance) && string.IsNullOrEmpty(DefaultRoomName))
+      {
         DefaultRoomName = Guid.NewGuid().ToString();
         Debug.Log($"Generated Session Name: {DefaultRoomName}");
       }
 
-      if (gameObject.transform.parent) {
+      if (gameObject.transform.parent)
+      {
         Debug.LogWarning($"{nameof(FusionBootstrap)} can't be a child game object, un-parenting.");
         gameObject.transform.parent = null;
       }
@@ -514,22 +613,26 @@ namespace Fusion {
       CurrentServerMode = serverMode;
 
       // start server, just take address from it
-      if (includesServerStart) {
+      if (includesServerStart)
+      {
         _server = Instantiate(RunnerPrefab);
         _server.name = serverMode.ToString();
 
-        var serverTask = InitializeNetworkRunner(_server, serverMode, NetAddress.Any(ServerPort), sceneRef, (runner) => {
+        var serverTask = InitializeNetworkRunner(_server, serverMode, NetAddress.Any(ServerPort), sceneRef, (runner) =>
+        {
 #if FUSION_DEV
           var name = _server.name; // closures do not capture values, need a local var to save it
           Debug.Log($"Server NetworkRunner '{name}' started.");
 #endif
         });
 
-        while (serverTask.IsCompleted == false) {
+        while (serverTask.IsCompleted == false)
+        {
           yield return new WaitForSeconds(1f);
         }
 
-        if (serverTask.IsFaulted) {
+        if (serverTask.IsFaulted)
+        {
           Log.Debug($"Unable to start server: {serverTask.Exception}");
 
           ShutdownAll();
@@ -538,52 +641,64 @@ namespace Fusion {
 
         // this action is called after InitializeNetworkRunner for the server has completed startup
         yield return StartClients(clientCount, serverMode, sceneRef);
-      } else {
+      }
+      else
+      {
         yield return StartClients(clientCount, serverMode, sceneRef);
       }
-      
-      if (FusionMppm.Status == FusionMppmStatus.MainInstance && serverMode != GameMode.Single) {
-        if (VirtualInstanceConnectDelay > 0) {
+
+      if (FusionMppm.Status == FusionMppmStatus.MainInstance && serverMode != GameMode.Single)
+      {
+        if (VirtualInstanceConnectDelay > 0)
+        {
           yield return new WaitForSecondsRealtime(VirtualInstanceConnectDelay);
         }
-        FusionMppm.MainEditor?.Send(new StartCommand {
+        FusionMppm.MainEditor?.Send(new StartCommand
+        {
           RoomName = DefaultRoomName,
           InitialScene = sceneRef,
-          ClientCount =  1,
+          ClientCount = 1,
           IsShared = serverMode == GameMode.Shared
         });
       }
     }
 
-    protected IEnumerator StartWithMppmVirtualInstance() {
-      while (StartCommand.Instance == null) {
+    protected IEnumerator StartWithMppmVirtualInstance()
+    {
+      while (StartCommand.Instance == null)
+      {
         yield return null;
       }
-      
+
       var command = StartCommand.Instance;
       StartCommand.Instance = null;
-      
+
       DefaultRoomName = command.RoomName;
       yield return StartClients(command.ClientCount, command.IsShared ? GameMode.Shared : GameMode.Client, command.InitialScene);
     }
 
     [EditorButton("Add Additional Client", EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(CanAddClients), Hide = true)]
-    public void AddClient() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public void AddClient()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         AddClient(GameMode.Client, sceneRef);
       }
     }
 
     [EditorButton("Add Additional Shared Client", EditorButtonVisibility.PlayMode)]
     [DrawIf(nameof(CanAddSharedClients), Hide = true)]
-    public void AddSharedClient() {
-      if (TryGetSceneRef(out var sceneRef)) {
+    public void AddSharedClient()
+    {
+      if (TryGetSceneRef(out var sceneRef))
+      {
         AddClient(GameMode.Shared, sceneRef);
       }
     }
 
-    public Task AddClient(GameMode serverMode, SceneRef sceneRef) {
+    public Task AddClient(GameMode serverMode, SceneRef sceneRef)
+    {
       var client = Instantiate(RunnerPrefab);
       DontDestroyOnLoad(client);
 
@@ -591,7 +706,8 @@ namespace Fusion {
 
       // if server mode is Shared or AutoHostOrClient, then game client mode is the same as the server, otherwise it is client
       var mode = GameMode.Client;
-      switch (serverMode) {
+      switch (serverMode)
+      {
         case GameMode.Shared:
         case GameMode.AutoHostOrClient:
           mode = serverMode;
@@ -610,63 +726,73 @@ namespace Fusion {
       return clientTask;
     }
 
-    protected IEnumerator StartClients(int clientCount, GameMode serverMode, SceneRef sceneRef = default) {
+    protected IEnumerator StartClients(int clientCount, GameMode serverMode, SceneRef sceneRef = default)
+    {
 
       CurrentStage = Stage.ConnectingClients;
 
       var clientTasks = new List<Task>();
-      for (int i = 0; i < clientCount; ++i) {
+      for (int i = 0; i < clientCount; ++i)
+      {
         clientTasks.Add(AddClient(serverMode, sceneRef));
         yield return new WaitForSeconds(ClientStartDelay);
       }
 
       var clientsStartTask = Task.WhenAll(clientTasks);
 
-      while (clientsStartTask.IsCompleted == false) {
+      while (clientsStartTask.IsCompleted == false)
+      {
         yield return new WaitForSeconds(1f);
       }
 
-      if (clientsStartTask.IsFaulted) {
+      if (clientsStartTask.IsFaulted)
+      {
         Debug.LogWarning(clientsStartTask.Exception);
       }
 
       CurrentStage = Stage.AllConnected;
     }
 
-    protected virtual Task InitializeNetworkRunner(NetworkRunner runner, GameMode gameMode, NetAddress address, SceneRef scene, Action<NetworkRunner> onGameStarted, 
-      INetworkRunnerUpdater updater = null) {
+    protected virtual Task InitializeNetworkRunner(NetworkRunner runner, GameMode gameMode, NetAddress address, SceneRef scene, Action<NetworkRunner> onGameStarted,
+      INetworkRunnerUpdater updater = null)
+    {
 
       var sceneManager = runner.GetComponent<INetworkSceneManager>();
-      if (sceneManager == null) {
+      if (sceneManager == null)
+      {
         Debug.Log($"NetworkRunner does not have any component implementing {nameof(INetworkSceneManager)} interface, adding {nameof(NetworkSceneManagerDefault)}.", runner);
         sceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
       }
 
       var objectProvider = runner.GetComponent<INetworkObjectProvider>();
-      if (objectProvider == null) {
+      if (objectProvider == null)
+      {
         Debug.Log($"NetworkRunner does not have any component implementing {nameof(INetworkObjectProvider)} interface, adding {nameof(NetworkObjectProviderDefault)}.", runner);
         objectProvider = runner.gameObject.AddComponent<NetworkObjectProviderDefault>();
       }
 
       var sceneInfo = new NetworkSceneInfo();
-      if (scene.IsValid) {
+      if (scene.IsValid)
+      {
         sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
       }
 
-      return runner.StartGame(new StartGameArgs {
-        GameMode       = gameMode,
-        Address        = address,
-        Scene          = sceneInfo,
-        SessionName    = DefaultRoomName,
-        OnGameStarted    = onGameStarted,
-        SceneManager   = sceneManager,
-        Updater        = updater,
+      return runner.StartGame(new StartGameArgs
+      {
+        GameMode = gameMode,
+        ConnectionToken = _connectionData,
+        Address = address,
+        Scene = sceneInfo,
+        SessionName = DefaultRoomName,
+        OnGameStarted = onGameStarted,
+        SceneManager = sceneManager,
+        Updater = updater,
         ObjectProvider = objectProvider,
       });
     }
-    
+
     private static bool IsMPPMEnabled => FusionMppm.Status != FusionMppmStatus.Disabled;
-    
+
     /// <summary>
     /// Only show the GUI if the StartMode is set to UserInterface and not being run in a Virtual Instance (MPPM).
     /// </summary>

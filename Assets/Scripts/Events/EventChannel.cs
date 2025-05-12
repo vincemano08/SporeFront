@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
-using Fusion;   
+using Fusion;
 
 [CreateAssetMenu(fileName = "EventChannel", menuName = "Scriptable Objects/EventChannel")]
 public class EventChannel : ScriptableObject

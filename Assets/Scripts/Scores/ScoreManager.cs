@@ -42,7 +42,7 @@ public class ScoreManager : MonoBehaviour
     private void UpdateScore(int score)
     {
         // Update local player's score
-        if (playerSpawner.Runner.LocalPlayer.IsValid)
+        if (playerSpawner.Runner != null && playerSpawner.Runner.LocalPlayer != PlayerRef.None)
         {
             AddScore(playerSpawner.Runner.LocalPlayer, score);
         }
