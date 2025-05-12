@@ -19,7 +19,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     [Networked, Capacity(16)]
     private NetworkDictionary<PlayerRef, PlayerScore> PlayerScores { get; }
 
-    // Local cache for UI updates
+    // Local cache for UI updates(Szia Bandi)
     private Dictionary<PlayerRef, PlayerScore> localPlayerScores = new Dictionary<PlayerRef, PlayerScore>();
 
     // Track joined players
