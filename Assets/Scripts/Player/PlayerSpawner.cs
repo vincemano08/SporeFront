@@ -28,20 +28,37 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
     };
     private int nextColorIndex = 0;
 
-    public static PlayerSpawner Instance { get; private set; }
+    public static PlayerSpawner Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<PlayerSpawner>();
+                if (_instance == null)
+                {
+                    Debug.LogError("No instance of PlayerSpawner found in the scene!");
+                }
+            }
+            return _instance;
+        }
+        private set => _instance = value;
+    }
+
+    private static PlayerSpawner _instance;
+
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else if (Instance != this)
+        if (Instance != null && Instance != this)
         {
             Debug.LogWarning($"Multiple instances of PlayerSpawner found. Destroying this one: {gameObject.name}");
-            Destroy(gameObject); // Destroy duplicate instance
+            Destroy(gameObject);
             return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
         timerManager = FindFirstObjectByType<TimerManager>();
         if (timerManager == null)
@@ -56,6 +73,10 @@ public class PlayerSpawner : SimulationBehaviour, IPlayerJoined
         {
             Debug.LogWarning("FungusBodyFactory cannot be found!");
         }
+
+        timerManager ??= FindFirstObjectByType<TimerManager>();
+        insectSpawner ??= FindFirstObjectByType<InsectSpawner>();
+        fungusBodyFactory ??= FindFirstObjectByType<FungusBodyFactory>();
     }
 
     public void PlayerJoined(PlayerRef player)

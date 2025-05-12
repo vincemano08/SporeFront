@@ -170,7 +170,9 @@ public class FungusBody : NetworkBehaviour
     public void ChangeColor(Color newColor)
     {
         if (objectRenderer != null)
+        {
             objectRenderer.material.color = newColor;
+        }
         else
             Debug.LogWarning("Renderer not found on " + gameObject.name);
     }

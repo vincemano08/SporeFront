@@ -24,15 +24,16 @@ public class FungusBodyFactory : NetworkBehaviour
 
     public FungusBody SpawnDefault(PlayerRef player)
     {
-
+        Debug.Log($"[FungusBodyFactory] SpawnDefault called for player: {player}");
         Tecton tecton = Tecton.ChooseRandom(x => !x.FungusBody);
         if (tecton != null && tecton.FungusBody == null)
         {
             GridObject spawnGridObject = tecton.ChooseRandomEmptyGridObject();
+            Debug.Log($"[FungusBodyFactory] Found spawnGridObject: {spawnGridObject}");
 
             if (spawnGridObject == null)
             {
-                Debug.LogError("No empty grid objects found on the selected Tecton");
+                Debug.LogError("[FungusBodyFactory] spawnGridObject is NULL before calling SpawnFungusBody!");
                 return null;
             }
             return SpawnFungusBody(spawnGridObject, player);
@@ -46,6 +47,14 @@ public class FungusBodyFactory : NetworkBehaviour
 
     public FungusBody SpawnFungusBody(GridObject spawnGridObject, PlayerRef player)
     {
+        Debug.Log($"[FungusBodyFactory] SpawnFungusBody called with spawnGridObject: {spawnGridObject}, player: {player}");
+
+        if (spawnGridObject == null)
+        {
+            Debug.LogError("[FungusBodyFactory] CRITICAL: spawnGridObject is NULL inside SpawnFungusBody!");
+            return null; // Ne folytasd, ha null
+        }
+
         Tecton tecton = spawnGridObject.parentTecton;
 
         if (tecton == null || tecton.FungusBody != null)
@@ -81,7 +90,7 @@ public class FungusBodyFactory : NetworkBehaviour
         fungusBody.Tecton = tecton;
         tecton.FungusBody = fungusBody;
 
-        fungusBody.GetComponent<Renderer>().material.color = PlayerSpawner.Instance.GetPlayerColor(player);
+        fungusBody.ChangeColor(PlayerSpawner.Instance.GetPlayerColor(player));
 
         // Set the player reference for the fungus body
         fungusBody.PlayerReference = player;
