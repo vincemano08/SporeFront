@@ -1,13 +1,16 @@
 using Fusion;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
 {
     public InsectSpawner insectSpawner;
     public FungusBodyFactory fungusBodyFactory;
     public TimerManager timerManager;
+    [SerializeField] private EventChannel eventChannel;
     private bool timerStarted = false;
+    private bool hudVisibilitySet = false;
 
     [Tooltip("Number of players required to start the timer")]
     [SerializeField] private int requiredPlayerCount = 3;
@@ -22,7 +25,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     };
     private int nextColorIndex = 0;
 
-    public static PlayerSpawner Instance;
+    public static PlayerSpawner Instance { get; private set; }
 
     void Awake()
     {
@@ -53,6 +56,28 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         timerManager ??= FindFirstObjectByType<TimerManager>();
         insectSpawner ??= FindFirstObjectByType<InsectSpawner>();
         fungusBodyFactory ??= FindFirstObjectByType<FungusBodyFactory>();
+    }
+
+    public override void Spawned()
+    {
+        // Add a delay to ensure network is properly established
+        if (Runner.IsServer)
+        {
+            // Don't call the RPC directly in Spawned - it can cause timing issues
+            StartCoroutine(DelayedHudVisibility(false));
+        }
+    }
+
+    private IEnumerator DelayedHudVisibility(bool show)
+    {
+        // Wait a frame to ensure network is ready
+        yield return new WaitForSeconds(0.5f);
+        
+        if (!hudVisibilitySet || show)
+        {
+            RpcSetHudVisibility(show);
+            hudVisibilitySet = true;
+        }
     }
 
     public void PlayerJoined(PlayerRef player)
@@ -93,6 +118,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
                     timerManager.RpcStartTimer(60f);
                     timerStarted = true;
                     Debug.Log($"Timer started with {joinedPlayers.Count} players connected");
+                    StartCoroutine(DelayedHudVisibility(true));
                 }
                 else
                 {
@@ -126,6 +152,10 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         return Color.white; // Fallback
     }
 
-
-
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RpcSetHudVisibility(bool show)
+    {
+        Debug.Log($"RpcSetHudVisibility({show}) called on {(Runner.IsServer ? "Server" : "Client")}");
+        eventChannel?.RaiseShowHideHud(show);
+    }
 }

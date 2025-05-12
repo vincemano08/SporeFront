@@ -2,7 +2,7 @@ using System.Collections;
 using Fusion;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; 
+using TMPro;
 
 public class NetworkMenuManager : MonoBehaviour
 {
@@ -21,7 +21,7 @@ public class NetworkMenuManager : MonoBehaviour
     private FusionBootstrap fusionBootstrap;
 
     private const string PLAYER_NAME_KEY = "PlayerName";
-    
+
     private void Awake()
     {
         // Find the FusionBootstrap component
@@ -31,18 +31,18 @@ public class NetworkMenuManager : MonoBehaviour
             fusionBootstrap = FindFirstObjectByType<FusionBootstrap>();
             if (fusionBootstrap == null)
             {
-            Debug.LogError("FusionBootstrap not found in the scene!");
-            return;
+                Debug.LogError("FusionBootstrap not found in the scene!");
+                return;
             }
         }
-        
+
         // Hook up the button events
 
         if (joinAsHostButton != null)
             joinAsHostButton.onClick.AddListener(StartAsHost);
         else
             Debug.LogWarning("Join As Host Button reference is missing!");
-            
+
         if (joinAsClientButton != null)
             joinAsClientButton.onClick.AddListener(StartAsClient);
         else
@@ -53,7 +53,7 @@ public class NetworkMenuManager : MonoBehaviour
             saveUsernameButton.onClick.AddListener(SaveUsername);
         else
             Debug.LogWarning("Save Username Button reference is missing!");
-            
+
         if (clearUsernameButton != null)
             clearUsernameButton.onClick.AddListener(ClearUsername);
         else
@@ -77,7 +77,7 @@ public class NetworkMenuManager : MonoBehaviour
             Debug.Log($"Username saved: {usernameInput.text}");
         }
     }
-    
+
     private void ClearUsername()
     {
         if (usernameInput != null)
@@ -88,7 +88,7 @@ public class NetworkMenuManager : MonoBehaviour
             Debug.Log("Username cleared");
         }
     }
-    
+
     private void LoadSavedUsername()
     {
         if (usernameInput != null && PlayerPrefs.HasKey(PLAYER_NAME_KEY))
@@ -97,31 +97,41 @@ public class NetworkMenuManager : MonoBehaviour
             Debug.Log($"Loaded saved username: {usernameInput.text}");
         }
     }
-    
+
     private void StartAsHost()
     {
         // Save username if needed
         SaveUsername();
-        
+
         // Start as Host
         fusionBootstrap.StartHost();
-        
-        // Switch visibility: hide menu canvas, show HUD canvas
-        ToggleUI(showHud: true);
+
+        HideMenuCanvas();
     }
-    
+
     private void StartAsClient()
     {
         // Save username if needed
         SaveUsername();
-        
+
         // Start as Client
         fusionBootstrap.StartClient();
-        
-        // Switch visibility: hide menu canvas, show HUD canvas
-        ToggleUI(showHud: true);
+
+        HideMenuCanvas();
     }
-    
+
+    private void HideMenuCanvas()
+    {
+        if (menuCanvas != null)
+        {
+            menuCanvas.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning("Menu Canvas reference is missing!");
+        }
+    }
+
     // New helper method to toggle UI elements
     private void ToggleUI(bool showHud)
     {
@@ -134,7 +144,7 @@ public class NetworkMenuManager : MonoBehaviour
         {
             Debug.LogWarning("Menu Canvas reference is missing!");
         }
-        
+
         // Show/hide HUD based on parameter
         if (hudCanvas != null)
         {
