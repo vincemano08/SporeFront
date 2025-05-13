@@ -27,9 +27,6 @@ public class FungusBody : NetworkBehaviour
     [Networked, OnChangedRender(nameof(OnColorChanged))]
     public Color NetworkedColor { get; set; }
 
-    [Networked]
-    public Color PreviousColor { get; set; }
-
     private Material _materialInstance;
 
     private Renderer objectRenderer;
@@ -121,8 +118,7 @@ public class FungusBody : NetworkBehaviour
         if (Tecton != null || true) //it should be correctted
         {
             RPC_SpreadSpores();
-            PreviousColor = NetworkedColor;
-            NetworkedColor = Color.black;
+            GetComponent<Outline>().OutlineColor = Color.red;
             canRelease = false;
         }
     }
@@ -140,7 +136,7 @@ public class FungusBody : NetworkBehaviour
         if (sporeCooldownTimer.Expired(Runner))
         {
             // TODO: correct it to set back to original color, instead of default
-            NetworkedColor = PreviousColor;
+            GetComponent<Outline>().OutlineColor = Color.green;
             sporeCooldownTimer = TickTimer.None;
             canRelease = true;
         }

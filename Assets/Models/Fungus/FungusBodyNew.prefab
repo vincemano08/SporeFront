@@ -126,6 +126,7 @@ MonoBehaviour:
   _sporeProductionLimit: 5
   _isAdvanced: 0
   _NetworkedColor: {r: 0, g: 0, b: 0, a: 0}
+  _PreviousColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &1661144146902683363
 MonoBehaviour:
   m_ObjectHideFlags: 0
