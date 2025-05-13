@@ -166,6 +166,12 @@ public class MoveInsect : NetworkBehaviour
             return;
         }
 
+        GridObject startGridObject = this.CurrentGridObject;
+        if (startGridObject == null)
+        {
+            Debug.LogError("Cannot request move: No valid CurrentGridObject");
+            return;
+        }
         // TODO: validate client input
 
         // If the insect is already moving, and we get a new target, we need to mark the previous path unoccupied
@@ -185,7 +191,6 @@ public class MoveInsect : NetworkBehaviour
             return;
         }
 
-        GridObject startGridObject = GridObject.GetGridObjectAt(transform.position);
         List<GridObject> computedPath = AStarPathFinder.FindPath(startGridObject, targetGridObject);
 
         if (computedPath == null || computedPath.Count == 0)
@@ -277,6 +282,14 @@ public class MoveInsect : NetworkBehaviour
             if (!CanCrossThread(CurrentGridObject, nextGridObject))
             {
                 Debug.Log("Insect cannot cross the thread.");
+
+                // Felszabadítjuk az összes eddig lefoglalt mezõt
+                foreach (var grid in path)
+                    grid.occupantType = OccupantType.None;
+                path.Clear();
+
+                IsMoving = false;
+                animator.SetBool("isMoving", false);
                 return;
             }
 
