@@ -32,6 +32,8 @@ public class FungalThread : NetworkBehaviour
     [SerializeField] private AnimationCurve widthCurve;
 
     private Coroutine growthCoroutine;
+
+    [Networked] public PlayerRef PlayerReference { get; set; }
     public override void Spawned()
     {
         base.Spawned();
@@ -75,6 +77,47 @@ public class FungalThread : NetworkBehaviour
             lastTectonA = tectonA;
             lastTectonB = tectonB;
         }
+        // Check if the tectonA and tectonB still has a FungusBody (that has the same InputAuthority as the Thread, check if the FUngusbody has inputauthority)
+        // if not, than destroy the thread
+        if (tectonA != null && tectonB != null)
+        {
+
+            var tectonComponentA = tectonA.GetComponent<Tecton>();
+            var tectonComponentB = tectonB.GetComponent<Tecton>();
+
+            if (tectonComponentA != null && tectonComponentB != null)
+            {
+                // Try to find FungusBody through NetworkId (FungusId)
+                NetworkObject fungusNetObjA = null;
+                NetworkObject fungusNetObjB = null;
+
+                // Only try to find the objects if the IDs are valid
+                if (tectonComponentA.FungusId.IsValid)
+                    Runner.TryFindObject(tectonComponentA.FungusId, out fungusNetObjA);
+
+                if (tectonComponentB.FungusId.IsValid)
+                    Runner.TryFindObject(tectonComponentB.FungusId, out fungusNetObjB);
+
+                // Log for debugging
+                //Debug.Log($"FungusNetObjA: {fungusNetObjA != null}, FungusNetObjB: {fungusNetObjB != null}");
+
+                FungusBody fungusBodyA = fungusNetObjA?.GetComponent<FungusBody>();
+                FungusBody fungusBodyB = fungusNetObjB?.GetComponent<FungusBody>();
+
+                // Only validate if we can find at least one FungusBody
+                if ((fungusBodyA == null && fungusBodyB == null) ||
+                    (fungusBodyA != null && fungusBodyA.Object.InputAuthority != PlayerReference &&
+                     fungusBodyB != null && fungusBodyB.Object.InputAuthority != PlayerReference))
+                {
+                    Debug.Log("The thread has no valid access to its parent FungusBodies. Despawning thread.");
+                    if (Object.HasStateAuthority)
+                    {
+                        Runner.Despawn(Object);
+                    }
+                }
+            }
+
+        }
     }
 
     public void SetTectons(NetworkObject a, NetworkObject b)
@@ -97,7 +140,7 @@ public class FungalThread : NetworkBehaviour
             RPC_SetTectonNames(a.name, b.name);
             //RPC_SetTectons(a, b);
             UpdateLineRenderer();
-            if(growthCoroutine != null)
+            if (growthCoroutine != null)
             {
                 StopCoroutine(growthCoroutine);
             }
@@ -111,7 +154,7 @@ public class FungalThread : NetworkBehaviour
 
     private IEnumerator GrowThreadOverTime(float duration)
     {
-        if (tectonA == null || tectonB == null) 
+        if (tectonA == null || tectonB == null)
         {
             Debug.LogError("Tectons not set for the fungal thread.");
             yield break;
@@ -134,8 +177,8 @@ public class FungalThread : NetworkBehaviour
         var tectonAComponent = tectonA.GetComponent<Tecton>();
         var tectonBComponent = tectonB.GetComponent<Tecton>();
 
-        if ((tectonAComponent != null && tectonAComponent.TectonType == TectonType.ThreadGrowthBoost) ||
-        (tectonBComponent != null && tectonBComponent.TectonType == TectonType.ThreadGrowthBoost))
+        if (( tectonAComponent != null && tectonAComponent.TectonType == TectonType.ThreadGrowthBoost ) ||
+        ( tectonBComponent != null && tectonBComponent.TectonType == TectonType.ThreadGrowthBoost ))
         {
             duration /= 2f; // Grow twice as fast
             Debug.Log("ThreadGrowthBoost detected. Growth duration halved.");
@@ -184,7 +227,7 @@ public class FungalThread : NetworkBehaviour
         {
             StopCoroutine(growthCoroutine);
         }
-        
+
         growthCoroutine = StartCoroutine(GrowThreadOverTime(10f));
 
         UpdateLineRenderer();

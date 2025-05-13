@@ -7,12 +7,14 @@ public class HudManager : MonoBehaviour
     [SerializeField] private EventChannel eventChannel;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private GameObject hudContent;
 
     private void OnEnable()
     {
         if (eventChannel != null) {
             eventChannel.OnTimerUpdated += UpdateTimer;
             eventChannel.OnUpdateHud += UpdateHud;
+            eventChannel.OnShowHideHud += ShowHideHud;
         }
     }
 
@@ -21,6 +23,7 @@ public class HudManager : MonoBehaviour
         if (eventChannel != null) {
             eventChannel.OnUpdateHud -= UpdateHud;
             eventChannel.OnTimerUpdated -= UpdateTimer;
+            eventChannel.OnShowHideHud -= ShowHideHud;
         }
     }
 
@@ -36,4 +39,16 @@ public class HudManager : MonoBehaviour
         timerText.text = $"{minutes:00}:{seconds:00}";
     }
 
+    private void ShowHideHud(bool show)
+    {
+        if (hudContent != null)
+        {
+            hudContent.SetActive(show);
+            Debug.Log($"HUD visibility set to {show}");
+        }
+        else
+        {
+            Debug.LogWarning("HUD content reference is missing in HudManager");
+        }
+    }
 }

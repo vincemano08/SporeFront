@@ -12,8 +12,9 @@ public class FungusBodyFactory : NetworkBehaviour
     [Tooltip("How high above the tekton the fungus body should spawn")]
     [SerializeField] private float dropHeight = 3f;
 
- 
-    private void Awake() {
+
+    private void Awake()
+    {
         if (Instance == null)
             Instance = this;
         else
@@ -21,17 +22,18 @@ public class FungusBodyFactory : NetworkBehaviour
             Destroy(gameObject);
     }
 
-    public FungusBody SpawnDefault(PlayerRef player) 
+    public FungusBody SpawnDefault(PlayerRef player)
     {
-
+        Debug.Log($"[FungusBodyFactory] SpawnDefault called for player: {player}");
         Tecton tecton = Tecton.ChooseRandom(x => !x.FungusBody);
         if (tecton != null && tecton.FungusBody == null)
         {
             GridObject spawnGridObject = tecton.ChooseRandomEmptyGridObject();
+            Debug.Log($"[FungusBodyFactory] Found spawnGridObject: {spawnGridObject}");
 
             if (spawnGridObject == null)
             {
-                Debug.LogError("No empty grid objects found on the selected Tecton");
+                Debug.LogError("[FungusBodyFactory] spawnGridObject is NULL before calling SpawnFungusBody!");
                 return null;
             }
             return SpawnFungusBody(spawnGridObject, player);
@@ -42,9 +44,17 @@ public class FungusBodyFactory : NetworkBehaviour
             return null;
         }
     }
-    
+
     public FungusBody SpawnFungusBody(GridObject spawnGridObject, PlayerRef player)
     {
+        Debug.Log($"[FungusBodyFactory] SpawnFungusBody called with spawnGridObject: {spawnGridObject}, player: {player}");
+
+        if (spawnGridObject == null)
+        {
+            Debug.LogError("[FungusBodyFactory] CRITICAL: spawnGridObject is NULL inside SpawnFungusBody!");
+            return null; // Ne folytasd, ha null
+        }
+
         Tecton tecton = spawnGridObject.parentTecton;
 
         if (tecton == null || tecton.FungusBody != null)
@@ -79,6 +89,11 @@ public class FungusBodyFactory : NetworkBehaviour
         // Assign the fungus body to the tekton and vice versa
         fungusBody.Tecton = tecton;
         tecton.FungusBody = fungusBody;
+
+        fungusBody.ChangeColor(PlayerSpawner.Instance.GetPlayerColor(player));
+
+        // Set the player reference for the fungus body
+        fungusBody.PlayerReference = player;
 
         return fungusBody;
     }

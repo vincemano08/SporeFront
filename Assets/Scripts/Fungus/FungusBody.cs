@@ -33,6 +33,8 @@ public class FungusBody : NetworkBehaviour
     private Material _materialInstance;
 
     private Renderer objectRenderer;
+    [Networked] public PlayerRef PlayerReference { get; set; }
+
 
     private void Awake() {
         objectRenderer = GetComponentInChildren<Renderer>();
@@ -79,12 +81,14 @@ public class FungusBody : NetworkBehaviour
             Debug.Log("player which clicked on this fungusbody has no input authority so cant release spores");
             return;
         }
-        if (!canRelease) {
+        if (!canRelease)
+        {
             Debug.Log("Cannot release spores: cooldown is active.");
             return;
         }
 
-        if (sporeCooldownTimer.IsRunning) {
+        if (sporeCooldownTimer.IsRunning)
+        {
             Debug.Log("Spore release is on cooldown.");
             return;
         }
@@ -104,7 +108,7 @@ public class FungusBody : NetworkBehaviour
                     RPC_RequestDespawn();
 
                 }
-                
+
                 Tecton.FungusBody = null;
             }
             return;
@@ -115,7 +119,7 @@ public class FungusBody : NetworkBehaviour
         sporeCooldownTimer = TickTimer.CreateFromSeconds(Runner, sporeCooldown);
 
         if (Tecton != null || true) //it should be correctted
-        {  
+        {
             RPC_SpreadSpores();
             NetworkedColor = Color.black;
             canRelease = false;
@@ -128,8 +132,10 @@ public class FungusBody : NetworkBehaviour
         Runner.Despawn(Object);
     }
 
-    public override void FixedUpdateNetwork() {
+    public override void FixedUpdateNetwork()
+    {
         //if (!HasStateAuthority) return; This line is not necessarry, since every user manages their own Fungusbody and spore releases
+
 
         if (sporeCooldownTimer.Expired(Runner)) {
             // TODO: correct it to set back to original color, instead of default
