@@ -176,7 +176,7 @@ public class Tecton : NetworkBehaviour
             FungalThread thread = HasFullyDevelopedThread();
             if (thread == null)
             {
-                Debug.LogError($"Cannot spawn FungusBody: No fully developed thread on Tecton {Id}.");
+                Debug.Log($"Cannot spawn FungusBody: No fully developed thread on Tecton {Id}.");
                 return;
             }
             GridObject spawnGridObject = ChooseRandomEmptyGridObject();

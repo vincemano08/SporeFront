@@ -32,14 +32,24 @@ public class FungusBody : NetworkBehaviour
     private Renderer objectRenderer;
     [Networked] public PlayerRef PlayerReference { get; set; }
 
-    private void Awake() {
+    private void Awake()
+    {
         objectRenderer = GetComponentInChildren<Renderer>();
-        if (objectRenderer != null) {
+        if (objectRenderer != null)
+        {
             _materialInstance = objectRenderer.material;
         }
     }
 
-    private void OnColorChanged() {
+    public override void Spawned()
+    {
+        base.Spawned();
+
+        OnColorChanged();
+    }
+
+    public void OnColorChanged()
+    {
         _materialInstance.SetColor("_BaseColor", NetworkedColor);
     }
 
@@ -115,7 +125,7 @@ public class FungusBody : NetworkBehaviour
         if (Tecton != null || true) //it should be correctted
         {
             RPC_SpreadSpores();
-            NetworkedColor = Color.black;
+            GetComponent<Outline>().OutlineColor = Color.red;
             canRelease = false;
         }
     }
@@ -133,7 +143,7 @@ public class FungusBody : NetworkBehaviour
         if (sporeCooldownTimer.Expired(Runner))
         {
             // TODO: correct it to set back to original color, instead of default
-            NetworkedColor = Color.white;
+            GetComponent<Outline>().OutlineColor = Color.green;
             sporeCooldownTimer = TickTimer.None;
             canRelease = true;
         }

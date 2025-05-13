@@ -84,6 +84,14 @@ public class FungalThreadManager : NetworkBehaviour
 
         thread.SetTectons(netA, netB);
         thread.PlayerReference = player;
+
+        //Set the color of the thread
+        var renderer = thread.GetComponent<Renderer>();
+        Material mat = renderer.material;
+        mat.SetColor("_Color", PlayerSpawner.Instance.GetPlayerColor(player));
+
+        thread.NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(player);
+
         fungalThreads.Add(thread);
 
         // Set logical connection
