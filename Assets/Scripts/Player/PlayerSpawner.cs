@@ -181,8 +181,11 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
         playerScore.Score = 0;
         playerScore.UsernameString = username;
 
-        PlayerScores.Add(player, playerScore);
-        SendScoreboardToClients(); // Changed from RpcUpdateClientScoreboards(PlayerScores)
+        if (!PlayerScores.ContainsKey(player))
+            PlayerScores.Add(player, playerScore);
+        else
+            PlayerScores.Set(player, playerScore);
+        SendScoreboardToClients();
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

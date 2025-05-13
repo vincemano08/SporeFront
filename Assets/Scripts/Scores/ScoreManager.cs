@@ -36,6 +36,11 @@ public class ScoreManager : MonoBehaviour
 
     public void AddScore(PlayerRef player, int score)
     {
+        if (playerSpawner == null)
+        {
+            Debug.LogError("PlayerSpawner reference is missing in ScoreManager");
+            return;
+        }
         playerSpawner.RPC_UpdatePlayerScore(player, score);
     }
 

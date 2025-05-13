@@ -3,6 +3,7 @@ using UnityEngine;
 using static Fusion.TickRate;
 using UnityEngine.UIElements;
 using System;
+using UnityEngine.SocialPlatforms.Impl;
 
 public enum SporeType
 {
@@ -22,6 +23,17 @@ public class SporeManager : NetworkBehaviour
     private NetworkDictionary<NetworkId, NetworkId> SporeToGridMap { get; }
 
     [Networked] public SporeType sporeType { get; set; }
+
+    private ScoreManager scoreManager;
+
+    private void Start()
+    {
+        scoreManager = FindFirstObjectByType<ScoreManager>();
+        if (scoreManager == null)
+        {
+            Debug.LogError("ScoreManager not found in the scene.");
+        }   
+    }
 
 
     public void SpawnSpore(GridObject gridObject)
@@ -188,6 +200,7 @@ public class SporeManager : NetworkBehaviour
         }
     }
 
+
     public void ConsumeSpores(GridObject gridObject, MoveInsect insect)
     {
         //el�re defini�lt id�be telik az elfogyaszt�s
@@ -200,8 +213,6 @@ public class SporeManager : NetworkBehaviour
         // Use the InputAuthority of the insect to determine the owner
         if (insect.Object.HasInputAuthority || Object.HasStateAuthority)
         {
-            // Find the ScoreManager
-            ScoreManager scoreManager = FindFirstObjectByType<ScoreManager>();
             if (scoreManager != null)
             {
                 // Award 10 points for consuming a spore
