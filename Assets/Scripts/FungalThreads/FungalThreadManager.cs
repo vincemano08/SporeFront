@@ -52,12 +52,12 @@ public class FungalThreadManager : NetworkBehaviour
             Debug.LogWarning($"Connection already exists between {source.Id} and {target.Id}");
             return false;
         }
-        if (( source.TectonType == TectonType.SingleThreadOnly && HasThread(source) ) ||
-            ( target.TectonType == TectonType.SingleThreadOnly && HasThread(target) ))
-        {
-            Debug.LogWarning($"Cannot connect Thread({source.Id}) and Thread({target.Id}): one of them has a single thread restriction.");
-            return false;
-        }
+        //if (( source.TectonType == TectonType.SingleThreadOnly && HasThread(source) ) ||
+        //    ( target.TectonType == TectonType.SingleThreadOnly && HasThread(target) ))
+        //{
+        //    Debug.LogWarning($"Cannot connect Thread({source.Id}) and Thread({target.Id}): one of them has a single thread restriction.");
+        //    return false;
+        //}
 
         return true;
     }
