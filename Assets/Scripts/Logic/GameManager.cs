@@ -121,7 +121,7 @@ public class GameManager : MonoBehaviour
                 GridObject gridObject = hit.collider.GetComponent<GridObject>();
                 if (gridObject != null)
                 {
-                    Debug.Log($"we have a gridobj {gridObject != null}, we have a fungusbody {SelectedFungusBody != null}");
+                    //Debug.Log($"we have a gridobj {gridObject != null}, we have a fungusbody {SelectedFungusBody != null}");
                     Tecton targetTecton = gridObject.parentTecton;
                     if (CurrentMode == ActionMode.ThreadGrowth && SelectedFungusBody != null)
                     {
