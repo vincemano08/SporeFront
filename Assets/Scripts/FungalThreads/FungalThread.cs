@@ -77,6 +77,47 @@ public class FungalThread : NetworkBehaviour
             lastTectonA = tectonA;
             lastTectonB = tectonB;
         }
+        // Check if the tectonA and tectonB still has a FungusBody (that has the same InputAuthority as the Thread, check if the FUngusbody has inputauthority)
+        // if not, than destroy the thread
+        if (tectonA != null && tectonB != null)
+        {
+
+            var tectonComponentA = tectonA.GetComponent<Tecton>();
+            var tectonComponentB = tectonB.GetComponent<Tecton>();
+
+            if (tectonComponentA != null && tectonComponentB != null)
+            {
+                // Try to find FungusBody through NetworkId (FungusId)
+                NetworkObject fungusNetObjA = null;
+                NetworkObject fungusNetObjB = null;
+
+                // Only try to find the objects if the IDs are valid
+                if (tectonComponentA.FungusId.IsValid)
+                    Runner.TryFindObject(tectonComponentA.FungusId, out fungusNetObjA);
+
+                if (tectonComponentB.FungusId.IsValid)
+                    Runner.TryFindObject(tectonComponentB.FungusId, out fungusNetObjB);
+
+                // Log for debugging
+                //Debug.Log($"FungusNetObjA: {fungusNetObjA != null}, FungusNetObjB: {fungusNetObjB != null}");
+
+                FungusBody fungusBodyA = fungusNetObjA?.GetComponent<FungusBody>();
+                FungusBody fungusBodyB = fungusNetObjB?.GetComponent<FungusBody>();
+
+                // Only validate if we can find at least one FungusBody
+                if ((fungusBodyA == null && fungusBodyB == null) ||
+                    (fungusBodyA != null && fungusBodyA.Object.InputAuthority != PlayerReference &&
+                     fungusBodyB != null && fungusBodyB.Object.InputAuthority != PlayerReference))
+                {
+                    Debug.Log("The thread has no valid access to its parent FungusBodies. Despawning thread.");
+                    if (Object.HasStateAuthority)
+                    {
+                        Runner.Despawn(Object);
+                    }
+                }
+            }
+
+        }
     }
 
     public void SetTectons(NetworkObject a, NetworkObject b)
