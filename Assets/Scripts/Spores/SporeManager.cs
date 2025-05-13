@@ -3,6 +3,7 @@ using UnityEngine;
 using static Fusion.TickRate;
 using UnityEngine.UIElements;
 using System;
+using UnityEngine.SocialPlatforms.Impl;
 
 public enum SporeType
 {
@@ -22,6 +23,17 @@ public class SporeManager : NetworkBehaviour
     private NetworkDictionary<NetworkId, NetworkId> SporeToGridMap { get; }
 
     [Networked] public SporeType sporeType { get; set; }
+
+    private ScoreManager scoreManager;
+
+    private void Start()
+    {
+        scoreManager = FindFirstObjectByType<ScoreManager>();
+        if (scoreManager == null)
+        {
+            Debug.LogError("ScoreManager not found in the scene.");
+        }   
+    }
 
 
     public void SpawnSpore(GridObject gridObject)
@@ -49,10 +61,10 @@ public class SporeManager : NetworkBehaviour
         gridObject.occupantType = OccupantType.Spore;
 
         // Set a random spore type
-        Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint) Environment.TickCount);    //Get a random number generator
+        Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)Environment.TickCount);    //Get a random number generator
         int rand1 = rng.NextInt(Enum.GetNames(typeof(SporeType)).Length); //Get a random number between 0 and the number of spore types
 
-        sporeType = (SporeType) rand1;                                    //Set the spore type to the random number
+        sporeType = (SporeType)rand1;                                    //Set the spore type to the random number
     }
 
 
@@ -188,6 +200,7 @@ public class SporeManager : NetworkBehaviour
         }
     }
 
+
     public void ConsumeSpores(GridObject gridObject, MoveInsect insect)
     {
         //el�re defini�lt id�be telik az elfogyaszt�s
@@ -195,6 +208,22 @@ public class SporeManager : NetworkBehaviour
         //StartCoroutine(ConsumeSporesCoroutine());
         RemoveSpore(gridObject);
         SetStateForInsect(insect);
+
+        // Award points to the player who owns the insect
+        // Use the InputAuthority of the insect to determine the owner
+        if (insect.Object.HasInputAuthority || Object.HasStateAuthority)
+        {
+            if (scoreManager != null)
+            {
+                // Award 10 points for consuming a spore
+                scoreManager.AddScore(insect.Object.InputAuthority, 10);
+                Debug.Log($"Added 10 points to player {insect.Object.InputAuthority} for consuming a spore");
+            }
+            else
+            {
+                Debug.LogError("ScoreManager not found when trying to award points for spore consumption");
+            }
+        }
     }
 
 

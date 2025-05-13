@@ -1,3 +1,4 @@
+using Fusion;
 using System.Diagnostics.Tracing;
 using UnityEngine;
 
@@ -42,6 +43,25 @@ public class GameManager : MonoBehaviour
             SelectedFungusBody.GetComponent<Outline>().enabled = false;
         }
         SelectedFungusBody = fungusBody;
+        if (SelectedFungusBody.Tecton == null)
+        {
+            // Try to find the GridObject the FungusBody is on
+            GridObject gridObjectBelow = GridObject.GetGridObjectAt(SelectedFungusBody.transform.position);
+            if (gridObjectBelow != null && gridObjectBelow.parentTecton != null)
+            {
+                // Assign the parentTecton to the FungusBody
+                SelectedFungusBody.Tecton = gridObjectBelow.parentTecton;
+                Debug.Log($"Assigned Tecton {gridObjectBelow.parentTecton.Id} to FungusBody {SelectedFungusBody.name} at {SelectedFungusBody.transform.position}");
+            }
+            else
+            {
+                Debug.LogWarning($"Could not determine Tecton for FungusBody {SelectedFungusBody.name} at {SelectedFungusBody.transform.position}. Raycast did not find a GridObject with a parentTecton.");
+            }
+        }
+
+
+
+
         fungusBody.GetComponent<Outline>().enabled = true;
         CurrentMode = ActionMode.None;
     }
@@ -107,7 +127,7 @@ public class GameManager : MonoBehaviour
                     {
                         if (CanGrowThread(SelectedFungusBody.Tecton, targetTecton))
                         {
-                            FungalThreadManager.Instance.Connect(SelectedFungusBody.Tecton, targetTecton);
+                            FungalThreadManager.Instance.Connect(SelectedFungusBody.Tecton, targetTecton, SelectedFungusBody.PlayerReference);
                             DeselectFungus();
                         }
                     }
