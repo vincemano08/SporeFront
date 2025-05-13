@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using Fusion;
+using UnityEngine.InputSystem;
 
 public class FungusBody : NetworkBehaviour
 {
@@ -23,12 +24,23 @@ public class FungusBody : NetworkBehaviour
     private int currentProductionCount { get; set; } = 0;   // Number of emissions so far.
     private TickTimer sporeCooldownTimer { get; set; } //Why was this Networked??
 
+    [Networked, OnChangedRender(nameof(OnColorChanged))]
+    public Color NetworkedColor { get; set; }
+
+    private Material _materialInstance;
+
     private Renderer objectRenderer;
     [Networked] public PlayerRef PlayerReference { get; set; }
 
-    private void Awake()
-    {
-        objectRenderer = GetComponent<Renderer>();
+    private void Awake() {
+        objectRenderer = GetComponentInChildren<Renderer>();
+        if (objectRenderer != null) {
+            _materialInstance = objectRenderer.material;
+        }
+    }
+
+    private void OnColorChanged() {
+        _materialInstance.SetColor("_BaseColor", NetworkedColor);
     }
 
     private void OnMouseDown()
@@ -103,7 +115,7 @@ public class FungusBody : NetworkBehaviour
         if (Tecton != null || true) //it should be correctted
         {
             RPC_SpreadSpores();
-            ChangeColor(Color.red);
+            NetworkedColor = Color.black;
             canRelease = false;
         }
     }
@@ -120,8 +132,8 @@ public class FungusBody : NetworkBehaviour
 
         if (sporeCooldownTimer.Expired(Runner))
         {
-            // Terrible soltuion but whatever
-            ChangeColor(Color.cyan);
+            // TODO: correct it to set back to original color, instead of default
+            NetworkedColor = Color.white;
             sporeCooldownTimer = TickTimer.None;
             canRelease = true;
         }
@@ -165,15 +177,5 @@ public class FungusBody : NetworkBehaviour
                 }
             }
         }
-    }
-
-    public void ChangeColor(Color newColor)
-    {
-        if (objectRenderer != null)
-        {
-            objectRenderer.material.color = newColor;
-        }
-        else
-            Debug.LogWarning("Renderer not found on " + gameObject.name);
     }
 }
