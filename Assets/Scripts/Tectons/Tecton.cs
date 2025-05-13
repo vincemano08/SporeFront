@@ -9,7 +9,7 @@ public enum TectonType
     Default,                     // No special effect
     ThreadGrowthBoost,           // Speeds up FungalThread growth (when there are spores)
     ThreadDecay,                 // FungalThreads disappear over time
-    SingleThreadOnly,            // Only one FungalThread can grow here
+    //SingleThreadOnly,            // Only one FungalThread can grow here, this is in the specifikation, but it practically doesnt make sense
     NoFungusBodyAllowed,         // FungusBody cannot grow here
     InsectEffectZone,            // Material affects insects (speed up)
     //Breakable                    // TODO Tecton can split, severing FungalThreads
