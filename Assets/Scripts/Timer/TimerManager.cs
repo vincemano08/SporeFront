@@ -5,7 +5,7 @@ public class TimerManager : NetworkBehaviour
 {
     [SerializeField] private EventChannel eventChannel;
 
-    // [Networked]
+    [Networked]
     public float TimeRemaining { get; set; }
     private bool isRunning = false;
 
