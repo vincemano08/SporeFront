@@ -120,7 +120,7 @@ public class GameEndManager : MonoBehaviour
         // Highlight local player
         if (runner != null && player == runner.LocalPlayer)
         {
-            // Highlight the current player
+            // Change text color to yellow
             nameText.color = Color.yellow;
             scoreText.color = Color.yellow;
         }

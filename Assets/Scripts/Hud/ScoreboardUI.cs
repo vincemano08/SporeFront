@@ -68,7 +68,7 @@ public class ScoreboardUI : MonoBehaviour
         // Highlight local player
         if (runner != null && player == runner.LocalPlayer)
         {
-            // Highlight the current player (optional)
+            // Highlight the current player
             nameText.color = Color.yellow;
             scoreText.color = Color.yellow;
         }
