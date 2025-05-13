@@ -159,7 +159,7 @@ Material:
     - _IntersectionFoamColor: {r: 0.59623957, g: 8.47419, b: 0, a: 1}
     - _PositionRipples: {r: 0, g: 0, b: 0, a: 0}
     - _SecondaryFoamColor: {r: 0.16603772, g: 0.8820755, b: 0, a: 0}
-    - _ShallowColor: {r: 0.05218143, g: 0.62291634, b: 0, a: 1}
+    - _ShallowColor: {r: 0.026090715, g: 0.31145817, b: 0, a: 1}
     - _SpecularColor: {r: 0, g: 0, b: 0, a: 0.31764707}
     - _SurfaceFoamColor: {r: 0.81960565, g: 5.59088, b: 0, a: 0.18431373}
     - _TopColor: {r: 0, g: 0.17848217, b: 0.5622641, a: 0.44705883}
