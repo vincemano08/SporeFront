@@ -31,14 +31,24 @@ public class FungalThread : NetworkBehaviour
 
     [SerializeField] private AnimationCurve widthCurve;
 
+    private Material _materialInstance;
+    [Networked, OnChangedRender(nameof(OnColorChanged))] public Color NetworkedColor { get; set; }
+
     private Coroutine growthCoroutine;
 
     [Networked] public PlayerRef PlayerReference { get; set; }
+
+    public void OnColorChanged()
+    {
+        GetComponent<Renderer>().material.SetColor("_Color", NetworkedColor);
+    }
+
     public override void Spawned()
     {
         base.Spawned();
         IsSpawned = true;
-        GetComponent<Renderer>().material.SetColor("_Color", PlayerSpawner.Instance.GetPlayerColor(PlayerReference));
+
+        OnColorChanged();
     }
 
     private void Awake()
