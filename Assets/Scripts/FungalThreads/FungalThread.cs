@@ -38,6 +38,7 @@ public class FungalThread : NetworkBehaviour
     {
         base.Spawned();
         IsSpawned = true;
+        GetComponent<Renderer>().material.SetColor("_Color", PlayerSpawner.Instance.GetPlayerColor(PlayerReference));
     }
 
     private void Awake()
@@ -105,9 +106,9 @@ public class FungalThread : NetworkBehaviour
                 FungusBody fungusBodyB = fungusNetObjB?.GetComponent<FungusBody>();
 
                 // Only validate if we can find at least one FungusBody
-                if ((fungusBodyA == null && fungusBodyB == null) ||
-                    (fungusBodyA != null && fungusBodyA.Object.InputAuthority != PlayerReference &&
-                     fungusBodyB != null && fungusBodyB.Object.InputAuthority != PlayerReference))
+                if (( fungusBodyA == null && fungusBodyB == null ) ||
+                    ( fungusBodyA != null && fungusBodyA.Object.InputAuthority != PlayerReference &&
+                     fungusBodyB != null && fungusBodyB.Object.InputAuthority != PlayerReference ))
                 {
                     Debug.Log("The thread has no valid access to its parent FungusBodies. Despawning thread.");
                     if (Object.HasStateAuthority)
