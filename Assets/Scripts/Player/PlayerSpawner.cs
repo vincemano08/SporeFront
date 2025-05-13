@@ -124,6 +124,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
             }
             // Spawn one fungus body for the player
             var fungusBody = fungusBodyFactory.SpawnDefault(player);
+            fungusBody.OnColorChanged();
 
             // Spawn insects near the fungus body
             insectSpawner.SpawnInsectsNearBody(player, fungusBody);
@@ -246,7 +247,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     private void RpcSetHudVisibility(bool show)
     {
-        Debug.Log($"RpcSetHudVisibility({show}) called on {(Runner.IsServer ? "Server" : "Client")}");
+        Debug.Log($"RpcSetHudVisibility({show}) called on {( Runner.IsServer ? "Server" : "Client" )}");
         eventChannel?.RaiseShowHideHud(show);
     }
 

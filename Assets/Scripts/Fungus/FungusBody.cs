@@ -41,7 +41,12 @@ public class FungusBody : NetworkBehaviour
         }
     }
 
-    private void OnColorChanged()
+    private void Update()
+    {
+        OnColorChanged();
+    }
+
+    public void OnColorChanged()
     {
         _materialInstance.SetColor("_BaseColor", NetworkedColor);
     }
