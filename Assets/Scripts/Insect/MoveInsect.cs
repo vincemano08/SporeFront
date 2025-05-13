@@ -77,6 +77,16 @@ public class MoveInsect : NetworkBehaviour
 
     private SporeManager sporeManager;
 
+    [Networked, OnChangedRender(nameof(OnColorChanged))] public Color NetworkedColor { get; set; }
+
+    public void OnColorChanged()
+    {
+        //defaultMaterial.color = NetworkedColor;
+        defaultMaterial.SetColor("_BaseColor", NetworkedColor);
+        defaultMaterial.SetColor("_SpecColor", NetworkedColor);
+        defaultMaterial.SetColor("_Color", NetworkedColor);
+    }
+
     public override void Spawned()
     {
         base.Spawned();
@@ -104,8 +114,12 @@ public class MoveInsect : NetworkBehaviour
         {
             Debug.LogError("SporeManager not found in the scene.");
         }
+
+
+
         // Wait 0.5 seconds, than Initialize CurrentGridObject
         Invoke(nameof(InitializeCurrentGridObject), 0.5f);
+        OnColorChanged();
     }
 
     private void InitializeCurrentGridObject()

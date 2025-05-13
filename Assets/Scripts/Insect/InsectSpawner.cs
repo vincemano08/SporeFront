@@ -55,6 +55,7 @@ public class InsectSpawner : NetworkBehaviour
         if (insectComponent == null)
         {
             insectComponent = insect.AddComponent<MoveInsect>();
+            insectComponent.NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(player);
         }
         insects.Add(insectComponent);
         Debug.Log($"Insect added.");
