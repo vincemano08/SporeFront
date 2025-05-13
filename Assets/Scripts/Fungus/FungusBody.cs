@@ -41,8 +41,10 @@ public class FungusBody : NetworkBehaviour
         }
     }
 
-    private void Update()
+    public override void Spawned()
     {
+        base.Spawned();
+
         OnColorChanged();
     }
 
