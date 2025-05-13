@@ -90,6 +90,8 @@ public class FungalThreadManager : NetworkBehaviour
         Material mat = renderer.material;
         mat.SetColor("_Color", PlayerSpawner.Instance.GetPlayerColor(player));
 
+        thread.NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(player);
+
         fungalThreads.Add(thread);
 
         // Set logical connection
