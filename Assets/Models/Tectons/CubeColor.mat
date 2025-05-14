@@ -12,14 +12,14 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _METALLICSPECGLOSSMAP
   - _NORMALMAP
   - _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+  - _SPECULAR_SETUP
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2000
   stringTagMap:
     RenderType: Opaque
   disabledShaderPasses:
@@ -33,7 +33,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
-        m_Texture: {fileID: 2800000, guid: 21c3d8b07597e1848b6d325cbddcefb3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 852df24036ede79488dc9851da3d70ce, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -57,7 +57,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
-        m_Texture: {fileID: 2800000, guid: 712be3a3cfa51ff4580423fe3d7edcce, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4788f2bd60294f241b05bba627dc673b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -115,11 +115,11 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _WorkflowMode: 1
+    - _WorkflowMode: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.22745098, g: 0.44705883, b: 0.1254902, a: 1}
-    - _Color: {r: 0.22745094, g: 0.4470588, b: 0.12549016, a: 1}
+    - _BaseColor: {r: 0.2784314, g: 0.23137255, b: 0.23529412, a: 1}
+    - _Color: {r: 0.27843136, g: 0.2313725, b: 0.23529407, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
