@@ -123,7 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sporeCooldown: 5
   _sporeReleaseAmount: 3
-  _sporeProductionLimit: 5
+  _sporeProductionLimit: 8
   _isAdvanced: 0
   _NetworkedColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &1661144146902683363

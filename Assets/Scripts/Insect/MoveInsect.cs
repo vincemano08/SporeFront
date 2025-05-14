@@ -17,6 +17,9 @@ public class MoveInsect : NetworkBehaviour
     [SerializeField] private EventChannel eventChannel;
     [SerializeField] private Animator animator;
 
+    [SerializeField] private AudioClip eatingSound;
+    [SerializeField] private AudioSource audioSource;
+
 
     [SerializeField] private InsectState state;
     public InsectState State
@@ -80,7 +83,8 @@ public class MoveInsect : NetworkBehaviour
 
     public void OnColorChanged()
     {
-        foreach (var mat in defaultMaterials) {
+        foreach (var mat in defaultMaterials)
+        {
             mat.SetColor("_BaseColor", NetworkedColor);
             mat.SetColor("_SpecColor", NetworkedColor);
             mat.SetColor("_Color", NetworkedColor);
@@ -88,7 +92,8 @@ public class MoveInsect : NetworkBehaviour
     }
 
 
-    public void Awake() {
+    public void Awake()
+    {
         // Set the default color
         defaultMaterials = GetComponentsInChildren<Renderer>().Select(r => r.material).ToArray();
     }
@@ -121,7 +126,11 @@ public class MoveInsect : NetworkBehaviour
             Debug.LogError("SporeManager not found in the scene.");
         }
 
-
+        // Get AudioSource component if not already assigned
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
 
         // Wait 0.5 seconds, than Initialize CurrentGridObject
         Invoke(nameof(InitializeCurrentGridObject), 0.5f);
@@ -267,8 +276,8 @@ public class MoveInsect : NetworkBehaviour
 
         // Find the thread connecting the two GridObjects
         var thread = FungalThreadManager.Instance.FungalThreads.FirstOrDefault(t =>
-            ( t.gridObjectA == current && t.gridObjectB == next ) ||
-            ( t.gridObjectA == next && t.gridObjectB == current ));
+            (t.gridObjectA == current && t.gridObjectB == next) ||
+            (t.gridObjectA == next && t.gridObjectB == current));
 
         if (thread == null)
         {
@@ -304,7 +313,7 @@ public class MoveInsect : NetworkBehaviour
             {
                 Debug.Log("Insect cannot cross the thread.");
 
-                // Felszabadítjuk az összes eddig lefoglalt mezõt
+                // Felszabadï¿½tjuk az ï¿½sszes eddig lefoglalt mezï¿½t
                 foreach (var grid in path)
                     grid.occupantType = OccupantType.None;
                 path.Clear();
@@ -380,6 +389,13 @@ public class MoveInsect : NetworkBehaviour
         if (NetworkedBiteTrigger != _lastProcessedBiteTrigger)
         {
             animator.SetTrigger("bite");
+
+            // Play the eating sound on all clients
+            if (eatingSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(eatingSound);
+            }
+
             _lastProcessedBiteTrigger = NetworkedBiteTrigger;
         }
         // --- End Animation Updates ---
