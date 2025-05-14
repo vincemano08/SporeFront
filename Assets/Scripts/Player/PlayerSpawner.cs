@@ -141,7 +141,7 @@ public class PlayerSpawner : NetworkBehaviour, IPlayerJoined
             {
                 if (timerManager != null)
                 {
-                    timerManager.RpcStartTimer(300f);
+                    timerManager.RpcStartTimer(220f);
                     timerStarted = true;
                     Debug.Log($"Timer started with {joinedPlayers.Count} players connected");
                     StartCoroutine(DelayedHudVisibility(true));
