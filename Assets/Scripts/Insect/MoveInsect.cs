@@ -125,8 +125,6 @@ public class MoveInsect : NetworkBehaviour
 
         // Wait 0.5 seconds, than Initialize CurrentGridObject
         Invoke(nameof(InitializeCurrentGridObject), 0.5f);
-
-        NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(Object.InputAuthority);
     }
 
     private void InitializeCurrentGridObject()
@@ -234,6 +232,8 @@ public class MoveInsect : NetworkBehaviour
     private void Update()
     {
         if (!HasInputAuthority) return;
+        NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(Object.InputAuthority);
+
         if (Input.GetMouseButtonDown(1) && Selected)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
