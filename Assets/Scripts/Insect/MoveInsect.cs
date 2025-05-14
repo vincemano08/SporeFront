@@ -13,8 +13,7 @@ public class MoveInsect : NetworkBehaviour
     [SerializeField] private float rotationSpeed;
     [SerializeField] private InsectSpawner insectSpawner;
 
-    [SerializeField] private Material defaultMaterial;
-    [SerializeField] private Material selectedMaterial;
+    [SerializeField] private Material[] defaultMaterials;
     [SerializeField] private EventChannel eventChannel;
     [SerializeField] private Animator animator;
 
@@ -77,6 +76,23 @@ public class MoveInsect : NetworkBehaviour
 
     private SporeManager sporeManager;
 
+    [Networked, OnChangedRender(nameof(OnColorChanged))] public Color NetworkedColor { get; set; }
+
+    public void OnColorChanged()
+    {
+        foreach (var mat in defaultMaterials) {
+            mat.SetColor("_BaseColor", NetworkedColor);
+            mat.SetColor("_SpecColor", NetworkedColor);
+            mat.SetColor("_Color", NetworkedColor);
+        }
+    }
+
+
+    public void Awake() {
+        // Set the default color
+        defaultMaterials = GetComponentsInChildren<Renderer>().Select(r => r.material).ToArray();
+    }
+
     public override void Spawned()
     {
         base.Spawned();
@@ -104,8 +120,13 @@ public class MoveInsect : NetworkBehaviour
         {
             Debug.LogError("SporeManager not found in the scene.");
         }
+
+
+
         // Wait 0.5 seconds, than Initialize CurrentGridObject
         Invoke(nameof(InitializeCurrentGridObject), 0.5f);
+
+        NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(Object.InputAuthority);
     }
 
     private void InitializeCurrentGridObject()
@@ -378,11 +399,6 @@ public class MoveInsect : NetworkBehaviour
             {
                 if (!insect.HasInputAuthority) continue;
                 insect.Selected = false;
-                insect.SetObjectMaterial(insect.gameObject, defaultMaterial);
-            }
-            else
-            {
-                SetObjectMaterial(this.gameObject, Selected ? selectedMaterial : defaultMaterial);
             }
         }
 
