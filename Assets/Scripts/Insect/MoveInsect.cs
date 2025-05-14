@@ -231,8 +231,13 @@ public class MoveInsect : NetworkBehaviour
 
     private void Update()
     {
-        if (!HasInputAuthority) return;
-        NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(Object.InputAuthority);
+        if (HasStateAuthority) {
+            NetworkedColor = PlayerSpawner.Instance.GetPlayerColor(Object.InputAuthority);
+        }
+
+        if (!HasInputAuthority) {
+            return;
+        }
 
         if (Input.GetMouseButtonDown(1) && Selected)
         {
